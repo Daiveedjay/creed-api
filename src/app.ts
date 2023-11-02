@@ -1,12 +1,14 @@
 import express, { Request, Response, NextFunction } from "express";
 import createHttpError, { isHttpError } from "http-errors";
 import morgan from "morgan";
+import cors from "cors";
 import authRoutes from "./routes/auth.route";
 
 const app = express();
 
 // Middlewares
 app.use(morgan("dev"));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
