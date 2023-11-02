@@ -1,9 +1,11 @@
 # Creed API
 
+## Features
+Please see the [Features.md](/FEATURES.md) file.
+
 ## Application Requirements
 1. Nodejs
 2. Postgresql
-3. 
 
 ## Application Setup
 ### Install Dependencies
