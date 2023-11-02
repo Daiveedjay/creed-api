@@ -30,4 +30,107 @@ model User {
   availableHoursTo   String?
 
   // Relations
+  announcement     Announcement[]
+  tasks            Task[]
+  subTasks         SubTask[]
+  DomainMembership DomainMembership[]
+}
+
+model Domain {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name          String
+  announcements Announcement[]
+  boards        Board[]
+  domainMembers DomainMembership[]
+}
+
+model DomainMembership {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId     String
+  memberRole Roles  @default(Member)
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  domainId String
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+}
+
+// TODO: Should be called Panel instead
+model Board {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  // statusOrder String? // TODO: Write code to handle this
+
+  domainId String
+  domain   Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  status   Status[]
+}
+
+model Status {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  // relations
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+}
+
+model Task {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  text String
+
+  // relations
+  authorId String
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Status   Status?   @relation(fields: [statusId], references: [id])
+  statusId String?
+  subTasks SubTask[]
+}
+
+model SubTask {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  text String
+  done Boolean @default(false)
+
+  // relation
+  authorId     String
+  author       User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentTaskId String
+  parentTask   Task   @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relation
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  domainId String
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+}
+
+enum Roles {
+  Owner
+  Admin
+  Member
 }
