@@ -28,6 +28,8 @@ model User {
   language           String?
   availableHoursFrom String?
   availableHoursTo   String?
+  profilePicture     String?
+  emailVerified      Boolean @default(false)
 
   // Relations
   announcement     Announcement[]
