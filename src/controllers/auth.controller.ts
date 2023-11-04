@@ -62,20 +62,24 @@ export const signUp = async (
   }
 };
 
-export const signIn = async (req: Request, res: Response) => {
+export const signIn = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { email, password } = req.body;
 
     const user = await db.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return next(createError(401, "Invalid credentials"));
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid password" });
+      return next(createError(401, "Invalid credentails"));
     }
 
     // TODO: Send signin email
@@ -83,9 +87,9 @@ export const signIn = async (req: Request, res: Response) => {
     const token = jwt.sign({ uid: user.id }, CONSTANTS.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res.json({ token });
+    res.json({ success: true, message: "Access Token", data: token });
   } catch (error) {
-    res.status(500).json({ error: "Error logging in" });
+    return next(createError(500, "Error logging in"));
   }
 };
 
