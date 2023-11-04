@@ -1,6 +1,6 @@
 import express from "express";
 import userController from "@/controllers/user.controller";
-import authenticate from "@/middlewares/authMiddleware";
+import authenticate from "@/middlewares/auth.middleware";
 const userRoutes = express.Router();
 
 // User profile
