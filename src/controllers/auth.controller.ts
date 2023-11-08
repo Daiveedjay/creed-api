@@ -56,7 +56,6 @@ export const signUp = async (
       next(createError(400, "Validation error", { errors }));
     } else {
       // Handle other unexpected errors
-      console.log(error);
       next(createError(500, "Internal server error"));
     }
   }
@@ -87,7 +86,7 @@ export const signIn = async (
     const token = jwt.sign({ uid: user.id }, CONSTANTS.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res.json({ success: true, message: "Access Token", data: token });
+    res.json({ success: true, message: "Login successful", data: token });
   } catch (error) {
     return next(createError(500, "Error logging in"));
   }
@@ -132,7 +131,6 @@ async function getUserData(access_token: string, credentials: ObjType) {
 
   if (!response.ok) null;
   const data = await response.json();
-  // console.log(JSON.stringify(data, null, 2));
   return {
     googleId: data.sub,
     name: data.name,
@@ -193,7 +191,6 @@ export const signUpGoogle = async (
       .status(201)
       .json({ success: true, message: "Signup successful", data: token });
   } catch (err) {
-    console.log("Error logging in with user", err);
     return res
       .status(500)
       .json({ success: false, message: "User signup failed" });
@@ -238,7 +235,6 @@ export const signInGoogle = async (
       .status(201)
       .json({ success: true, message: "Signin successful", data: token });
   } catch (err) {
-    console.log("Error logging in with user", err);
     return res
       .status(500)
       .json({ success: false, message: "User signin failed" });
