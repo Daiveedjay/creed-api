@@ -98,12 +98,12 @@ export const signGoogleLink = async (
   res: Response,
   next: NextFunction
 ) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Origin", CONSTANTS.CLIENT_APP_URL);
   res.header("Referrer-Policy", "no-referrer-when-downgrade");
 
   const redirectURL =
     (req.query.redirectURL as string) ||
-    "http://localhost:5000/api/auth/signup-google";
+    `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
 
   const oAuth2Client = new OAuth2Client(
     CONSTANTS.GOOGLE_CLIENT_ID,
@@ -114,7 +114,7 @@ export const signGoogleLink = async (
   const authorizedUrl = oAuth2Client.generateAuthUrl({
     access_type: "offline",
     scope:
-      "https://www.googleapis.com/auth/userinfo.profile openid https://www.googleapis.com/auth/userinfo.email",
+      `${CONSTANTS.GOOGLE_API_BASE_URL}/auth/userinfo.profile openid ${CONSTANTS.GOOGLE_API_BASE_URL}/auth/userinfo.email`,
     prompt: "consent",
   });
 
@@ -127,7 +127,7 @@ export const signGoogleLink = async (
 
 async function getUserData(access_token: string, credentials: ObjType) {
   const response = await fetch(
-    `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+    `${CONSTANTS.GOOGLE_API_BASE_URL}/oauth2/v3/userinfo?access_token=${access_token}`
   );
 
   if (!response.ok) null;
@@ -150,7 +150,7 @@ export const signUpGoogle = async (
   try {
     const redirectURL =
       (req.query.redirectURL as string) ||
-      "http://localhost:5000/api/auth/signup-google";
+      `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
 
     const oAuth2Client = new OAuth2Client(
       CONSTANTS.GOOGLE_CLIENT_ID,
@@ -209,7 +209,7 @@ export const signInGoogle = async (
   try {
     const redirectURL =
       (req.query.redirectURL as string) ||
-      "http://localhost:5000/api/auth/signin-google";
+      `${req.protocol}://${req.get('host')}/api/auth/signin-google`;
 
     const oAuth2Client = new OAuth2Client(
       CONSTANTS.GOOGLE_CLIENT_ID,
