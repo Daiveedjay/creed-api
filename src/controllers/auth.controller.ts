@@ -56,7 +56,6 @@ export const signUp = async (
       next(createError(400, "Validation error", { errors }));
     } else {
       // Handle other unexpected errors
-      console.log(error);
       next(createError(500, "Internal server error"));
     }
   }
@@ -87,7 +86,7 @@ export const signIn = async (
     const token = jwt.sign({ uid: user.id }, CONSTANTS.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res.json({ success: true, message: "Access Token", data: token });
+    res.json({ success: true, message: "Login successful", data: token });
   } catch (error) {
     return next(createError(500, "Error logging in"));
   }
@@ -98,12 +97,12 @@ export const signGoogleLink = async (
   res: Response,
   next: NextFunction
 ) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Origin", CONSTANTS.CLIENT_APP_URL);
   res.header("Referrer-Policy", "no-referrer-when-downgrade");
 
   const redirectURL =
     (req.query.redirectURL as string) ||
-    "http://localhost:5000/api/auth/signup-google";
+    `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
 
   const oAuth2Client = new OAuth2Client(
     CONSTANTS.GOOGLE_CLIENT_ID,
@@ -114,7 +113,7 @@ export const signGoogleLink = async (
   const authorizedUrl = oAuth2Client.generateAuthUrl({
     access_type: "offline",
     scope:
-      "https://www.googleapis.com/auth/userinfo.profile openid https://www.googleapis.com/auth/userinfo.email",
+      `${CONSTANTS.GOOGLE_API_BASE_URL}/auth/userinfo.profile openid ${CONSTANTS.GOOGLE_API_BASE_URL}/auth/userinfo.email`,
     prompt: "consent",
   });
 
@@ -127,12 +126,11 @@ export const signGoogleLink = async (
 
 async function getUserData(access_token: string, credentials: ObjType) {
   const response = await fetch(
-    `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+    `${CONSTANTS.GOOGLE_API_BASE_URL}/oauth2/v3/userinfo?access_token=${access_token}`
   );
 
   if (!response.ok) null;
   const data = await response.json();
-  // console.log(JSON.stringify(data, null, 2));
   return {
     googleId: data.sub,
     name: data.name,
@@ -150,7 +148,7 @@ export const signUpGoogle = async (
   try {
     const redirectURL =
       (req.query.redirectURL as string) ||
-      "http://localhost:5000/api/auth/signup-google";
+      `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
 
     const oAuth2Client = new OAuth2Client(
       CONSTANTS.GOOGLE_CLIENT_ID,
@@ -193,7 +191,6 @@ export const signUpGoogle = async (
       .status(201)
       .json({ success: true, message: "Signup successful", data: token });
   } catch (err) {
-    console.log("Error logging in with user", err);
     return res
       .status(500)
       .json({ success: false, message: "User signup failed" });
@@ -209,7 +206,7 @@ export const signInGoogle = async (
   try {
     const redirectURL =
       (req.query.redirectURL as string) ||
-      "http://localhost:5000/api/auth/signin-google";
+      `${req.protocol}://${req.get('host')}/api/auth/signin-google`;
 
     const oAuth2Client = new OAuth2Client(
       CONSTANTS.GOOGLE_CLIENT_ID,
@@ -238,7 +235,6 @@ export const signInGoogle = async (
       .status(201)
       .json({ success: true, message: "Signin successful", data: token });
   } catch (err) {
-    console.log("Error logging in with user", err);
     return res
       .status(500)
       .json({ success: false, message: "User signin failed" });

@@ -33,7 +33,6 @@ export const getProfile = async (
     if(!profile) return next(createHttpError(400, "Invalid access token"));
     return res.json({ success: true, message: "Profile", data: profile });
   } catch (err) {
-    console.log(err);
     return next(createHttpError(500, "Server error"));
   }
 };
@@ -101,7 +100,6 @@ export const editProfile = async (
       next(createHttpError(400, "Validation error", { errors }));
     } else {
       // Handle other unexpected errors
-      console.log(error);
       next(createHttpError(500, "Internal server error"));
     }
   }

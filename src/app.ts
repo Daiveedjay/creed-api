@@ -7,6 +7,10 @@ import userRoutes from "@/routes/user.route";
 
 const app = express();
 
+app.get('/', (req: Request, res: Response) => {
+  res.send('Creed API is live');
+});
+
 // Middlewares
 app.use(morgan("dev"));
 app.use(cors());
