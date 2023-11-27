@@ -7,7 +7,10 @@
     "test": "jest",
     "test:docker": "bash ./run-tests.sh",
     "build": "tsc",
-    "dev": "nodemon -r tsconfig-paths/register src/index.ts",
+    "predev": "npm run swagger",
+    "prebuild": "tsoa routes && npm run swagger",
+    "dev": "concurrently \"nodemon -x tsoa routes\" \"nodemon -r tsconfig-paths/register src/index.ts\"",
+    "swagger": "tsoa spec",
     "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register build/index.js"
   },
   "keywords": [],
@@ -25,6 +28,8 @@
     "@types/passport": "^1.0.14",
     "@types/passport-google-oauth2": "^0.1.7",
     "@types/supertest": "^2.0.15",
+    "@types/swagger-ui-express": "^4.1.6",
+    "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
     "jest": "^29.7.0",
     "nodemon": "^3.0.1",
@@ -47,6 +52,10 @@
     "morgan": "^1.10.0",
     "passport": "^0.6.0",
     "passport-google-oauth2": "^0.2.0",
+    "reflect-metadata": "^0.1.13",
+    "swagger-ui-express": "^5.0.0",
+    "tsoa": "^5.1.1",
+    "tsyringe": "^4.8.0",
     "zod": "^3.22.4"
   }
 }

@@ -13,6 +13,18 @@ export const userUpdateSchema = z.object({
   availableHoursTo: z.string().trim().optional(),
 });
 
+export type UserUpdateDTOType = {
+  fullName?: string,
+  domainName?: string,
+  username?: string,
+  jobTitle?: string,
+  department?: string,
+  location?: string,
+  language?: string,
+  availableHoursFrom?: string,
+  availableHoursTo?: string,
+}
+
 export default {
   userUpdateSchema,
 };

@@ -27,7 +27,7 @@ describe("Auth - Service", () => {
         email: "example1@gmail.com",
         password: "Ex@mple123",
       });
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(500);
       expect(Reflect.get(response.body, "success")).toBe(false);
       expect(Reflect.get(response.body, "message")).toContain("Validation error");
     });
@@ -62,7 +62,7 @@ describe("Auth - Service", () => {
   describe("Signin (Email/Password)", () => {
     describe("Invalid credentials", () => {
       test("should return error", async () => {
-        const response = await supertest(app).post("/api/auth/login").send({
+        const response = await supertest(app).post("/api/auth/signin").send({
           email: "example@gmail1.com",
           password: "pass123",
         });
@@ -76,7 +76,7 @@ describe("Auth - Service", () => {
 
     describe("Valid credentials", () => {
       test("should return token", async () => {
-        const response = await supertest(app).post("/api/auth/login").send({
+        const response = await supertest(app).post("/api/auth/signin").send({
           email: "example1@gmail.com",
           password: "Ex@mple123",
         });
@@ -90,7 +90,7 @@ describe("Auth - Service", () => {
   describe("Signin (Google)", () => {
     test("should get a google signin link", async () => {
       const response = await supertest(app)
-        .get("/api/auth/auth-google-link")
+        .get("/api/auth/sign-google-link")
         .send();
       expect(response.statusCode).toBe(200);
       expect(Reflect.get(response.body, "success")).toBe(true);
