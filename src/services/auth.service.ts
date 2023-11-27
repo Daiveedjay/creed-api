@@ -86,7 +86,7 @@ export default class AuthService {
 
       if (!passwordMatch) {
         controller.setStatus(401);
-        return { success: false, message: "Invalid credentails", errors: null };
+        return { success: false, message: "Invalid credentials", errors: null };
       }
 
       // TODO: Send signin email

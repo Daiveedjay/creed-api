@@ -27,7 +27,7 @@ describe("Auth - Service", () => {
         email: "example1@gmail.com",
         password: "Ex@mple123",
       });
-      expect(response.statusCode).toBe(500);
+      expect(response.statusCode).toBe(400);
       expect(Reflect.get(response.body, "success")).toBe(false);
       expect(Reflect.get(response.body, "message")).toContain("Validation error");
     });

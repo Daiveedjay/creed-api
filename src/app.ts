@@ -27,16 +27,8 @@ app.use(
       swaggerUi.generateHTML(await import("./utils/swagger.json"))
     );
   }
-  // swaggerUi.setup(undefined, {
-  //   swaggerOptions: {
-  //     url: "/swagger.json",
-  //   },
-  // })
 );
 
-// routes
-// app.use("/api/auth", authRoutes);
-// app.use("/api/user", userRoutes);
 RegisterRoutes(app);
 
 // Error handling middlewares
@@ -47,7 +39,7 @@ app.use((_req, _res, next: NextFunction) => {
 
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
   let errorMessage = "An unknown error occurred.";
-  let statusCode = 500;
+  let statusCode = 100;
   let errors = null;
 
   if (isHttpError(error)) {

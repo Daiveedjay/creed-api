@@ -18,7 +18,7 @@ import type { RequestHandler, Router } from 'express';
 const models: TsoaRoute.Models = {
     "UserSignupDTOType": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"password":{"dataType":"string","required":true},"email":{"dataType":"string","required":true},"domainName":{"dataType":"string","required":true},"fullName":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"password":{"dataType":"string"},"email":{"dataType":"string"},"domainName":{"dataType":"string"},"fullName":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserSigninDTOType": {

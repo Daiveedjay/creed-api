@@ -21,12 +21,6 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"password",
-					"email",
-					"domainName",
-					"fullName"
-				],
 				"type": "object"
 			},
 			"UserSigninDTOType": {
