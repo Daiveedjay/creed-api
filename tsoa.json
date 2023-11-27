@@ -1,0 +1,27 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/**/*controller.ts"],
+  "spec": {
+    "outputDirectory": "src/utils",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "bearerAuth": {
+        "type": "apiKey",
+        "name": "access_token",
+        "in": "query"
+      }
+    }
+  },
+  "routes": {
+    "routesDir": "src/routes",
+    "iocModule": "src/utils/ioc",
+    "authenticationModule": "src/middlewares/auth.middleware.ts"
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+}
+}

@@ -8,9 +8,13 @@
     "strict": true,                                      /* Enable all strict type-checking options. */
     "skipLibCheck": true,
     "baseUrl": "./",
+    "resolveJsonModule": true,
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": ["src/*"],
+      "tsoa": ["node_modules/tsoa/dist"]
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"]
 }

@@ -1,0 +1,336 @@
+{
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"UserSignupDTOType": {
+				"properties": {
+					"password": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"domainName": {
+						"type": "string"
+					},
+					"fullName": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			},
+			"UserSigninDTOType": {
+				"properties": {
+					"password": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"password",
+					"email"
+				],
+				"type": "object"
+			},
+			"UserUpdateDTOType": {
+				"properties": {
+					"availableHoursTo": {
+						"type": "string"
+					},
+					"availableHoursFrom": {
+						"type": "string"
+					},
+					"language": {
+						"type": "string"
+					},
+					"location": {
+						"type": "string"
+					},
+					"department": {
+						"type": "string"
+					},
+					"jobTitle": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					},
+					"domainName": {
+						"type": "string"
+					},
+					"fullName": {
+						"type": "string"
+					}
+				},
+				"type": "object"
+			}
+		},
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "apiKey",
+				"name": "access_token",
+				"in": "query"
+			}
+		}
+	},
+	"info": {
+		"title": "creed-api",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"openapi": "3.0.0",
+	"paths": {
+		"/api/auth/signup": {
+			"post": {
+				"operationId": "SignUp",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"email": "john@example.com",
+											"password": "My_$3cure_p1n",
+											"fullName": "John Doe",
+											"domainName": "JohnDoe"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "Retrieves the details of an existing user.\nProvided the user is logged in this endpoint returns the corresponding user details.",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserSignupDTOType"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/auth/signin": {
+			"post": {
+				"operationId": "SignIn",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"email": "john@example.com",
+											"password": "My_$3cure_p1n"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "Endpoint to collect auth details and issue auth tokens if correct.",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserSigninDTOType"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/auth/sign-google-link": {
+			"get": {
+				"operationId": "SignGoogleLink",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Retrieves a google signin link for google signin or signup processes",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "(Optional) url google should redirect the user to after the google auth screen",
+						"in": "query",
+						"name": "redirectURL",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/auth/signin-google": {
+			"post": {
+				"operationId": "SignInGoogle",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Uses successfull google auth screen parameters to signin a new user",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "code",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "redirectURL",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/auth/signup-google": {
+			"post": {
+				"operationId": "SignUpGoogle",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Uses successfull google auth screen parameters to signup a new user",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/user/profile": {
+			"get": {
+				"operationId": "GetProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Retrieves the details of an existing user.\nProvided the user is logged in this endpoint returns the corresponding user details.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/api/user": {
+			"put": {
+				"operationId": "EditProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"fullName": "John Doe",
+											"domainName": "JohnDoe"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "Updates the details of an existing user.\nProvided the user is logged in this endpoint accepts primary values for change except email and password.",
+				"tags": [
+					"User"
+				],
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserUpdateDTOType"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

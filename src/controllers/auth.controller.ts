@@ -1,250 +1,109 @@
-import { NextFunction, Request, Response } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import db from "@/utils/db";
-import authSchema from "@/schemas/auth.schema";
-import createError from "http-errors";
-import { ZodError } from "zod";
-import CONSTANTS from "@/utils/constants";
-import { OAuth2Client } from "google-auth-library";
 import { ObjType } from "@/types/util.types";
-import createHttpError from "http-errors";
+import {
+  Body,
+  Controller,
+  Example,
+  Get,
+  Post,
+  Query,
+  Request,
+  Route,
+  SuccessResponse,
+  Tags,
+} from "tsoa";
+import AuthService from "@/services/auth.service";
+import Express from "express";
+import { injectable } from "tsyringe";
+import CONSTANTS from "@/utils/constants";
+import { UserSigninDTOType, UserSignupDTOType } from "@/schemas/auth.schema";
 
-export const signUp = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { email, password, domainName, fullName } =
-      authSchema.userSignupSchema.parse(req.body);
-
-    const oldUser = await db.user.findUnique({ where: { email } });
-
-    if (oldUser)
-      return next(
-        createError(400, "Existing user", {
-          errors: { email: "A user with this email already exists" },
-        })
-      );
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await db.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        domainName,
-        fullName,
-      },
-    });
-
-    // TODO: Send welcome email
-
-    const token = jwt.sign({ uid: user.id }, CONSTANTS.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res
-      .status(201)
-      .json({ success: true, message: "Signup successful", data: token });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      // Zod validation error handling with http-errors
-      const errors = error.errors.reduce((acc: any, cur) => {
-        acc[cur.path.shift() as string] = cur.message;
-        return acc;
-      }, {});
-      next(createError(400, "Validation error", { errors }));
-    } else {
-      // Handle other unexpected errors
-      next(createError(500, "Internal server error"));
-    }
+@injectable()
+@Route("/api/auth")
+@Tags("Auth")
+export class Authcontroller extends Controller {
+  constructor(private authService: AuthService) {
+    super();
   }
-};
 
-export const signIn = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await db.user.findUnique({ where: { email } });
-
-    if (!user) {
-      return next(createError(401, "Invalid credentials"));
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return next(createError(401, "Invalid credentails"));
-    }
-
-    // TODO: Send signin email
-
-    const token = jwt.sign({ uid: user.id }, CONSTANTS.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res.json({ success: true, message: "Login successful", data: token });
-  } catch (error) {
-    return next(createError(500, "Error logging in"));
+  /**
+   * Retrieves the details of an existing user.
+   * Provided the user is logged in this endpoint returns the corresponding user details.
+   */
+  @Post("/signup")
+  @SuccessResponse("201", "Created")
+  @Example<UserSignupDTOType>({
+    email: "john@example.com",
+    password: "My_$3cure_p1n",
+    fullName: "John Doe",
+    domainName: "JohnDoe",
+  })
+  public async signUp(@Body() dto: UserSignupDTOType): Promise<any> {
+    return this.authService.signUp(this, dto);
   }
-};
 
-export const signGoogleLink = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  res.header("Access-Control-Allow-Origin", CONSTANTS.CLIENT_APP_URL);
-  res.header("Referrer-Policy", "no-referrer-when-downgrade");
+  /**
+   * Endpoint to collect auth details and issue auth tokens if correct.
+   */
+  @Post("signin")
+  @Example<UserSigninDTOType>({
+    email: "john@example.com",
+    password: "My_$3cure_p1n",
+  })
+  public async signIn(@Body() dto: UserSigninDTOType): Promise<any> {
+    return this.authService.signIn(this, dto);
+  }
 
-  const redirectURL =
-    (req.query.redirectURL as string) ||
-    `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
+  /**
+   * Retrieves a google signin link for google signin or signup processes
+   * @param redirectURL (Optional) url google should redirect the user to after the google auth screen
+   */
+  @Get("sign-google-link")
+  public async signGoogleLink(
+    @Request() req: Express.Request,
+    @Query("redirectURL") redirectURL?: string
+  ): Promise<any> {
+    this.setHeader("Access-Control-Allow-Origin", CONSTANTS.CLIENT_APP_URL);
+    this.setHeader("Referrer-Policy", "no-referrer-when-downgrade");
+    const redirectURLi =
+      redirectURL ||
+      `${req.protocol}://${req.get("host")}/api/auth/signup-google`;
+    console.log(redirectURLi);
 
-  const oAuth2Client = new OAuth2Client(
-    CONSTANTS.GOOGLE_CLIENT_ID,
-    CONSTANTS.GOOGLE_CLIENT_SECRET,
-    redirectURL
-  );
+    return this.authService.signGoogleLink(redirectURLi);
+  }
 
-  const authorizedUrl = oAuth2Client.generateAuthUrl({
-    access_type: "offline",
-    scope:
-      `${CONSTANTS.GOOGLE_API_BASE_URL}/auth/userinfo.profile openid ${CONSTANTS.GOOGLE_API_BASE_URL}/auth/userinfo.email`,
-    prompt: "consent",
-  });
+  /**
+   * Uses successfull google auth screen parameters to signin a new user
+   * @param code
+   * @param redirectURL
+   */
+  @Post("signin-google")
+  public async signInGoogle(
+    @Request() req: Express.Request,
+    @Query("code") code: string,
+    @Query("redirectURL") redirectURL: string
+  ) {
+    const redirectURLi =
+      (redirectURL as string) ||
+      `${req.protocol}://${req.get("host")}/api/auth/signup-google`;
+    return this.authService.signInGoogle(redirectURLi, code);
+  }
 
-  return res.json({
-    success: true,
-    message: "Authorized url",
-    data: authorizedUrl,
-  });
-};
-
-async function getUserData(access_token: string, credentials: ObjType) {
-  const response = await fetch(
-    `${CONSTANTS.GOOGLE_API_BASE_URL}/oauth2/v3/userinfo?access_token=${access_token}`
-  );
-
-  if (!response.ok) null;
-  const data = await response.json();
-  return {
-    googleId: data.sub,
-    name: data.name,
-    email: data.email,
-    picture: data.picture, // Users who use google signin have verified email automatically,
-    googleCredentials: credentials,
-  };
+  /**
+   * Uses successfull google auth screen parameters to signup a new user
+   * @param code
+   * @param redirectURL
+   * @example {
+   *  "domainName": "My domain name"
+   * }
+   */
+  @SuccessResponse("201", "Created")
+  @Post("/signup-google")
+  public async signUpGoogle(
+    @Request() req: Express.Request,
+  ) {
+    const redirectURL = (req.query.redirectURL as string) ||
+    `${req.protocol}://${req.get("host")}/api/auth/signup-google`;
+    return this.authService.signUpGoogle(this, req.body, redirectURL, req.query.code as string);
+  }
 }
-export const signUpGoogle = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const code = req.query.code as string;
-  try {
-    const redirectURL =
-      (req.query.redirectURL as string) ||
-      `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
-
-    const oAuth2Client = new OAuth2Client(
-      CONSTANTS.GOOGLE_CLIENT_ID,
-      CONSTANTS.GOOGLE_CLIENT_SECRET,
-      redirectURL
-    );
-    const r = await oAuth2Client.getToken(code);
-    // Make sure to set the credentials on the OAuth2 client.
-    oAuth2Client.setCredentials(r.tokens);
-    const user = oAuth2Client.credentials;
-    const cred = await getUserData(
-      oAuth2Client.credentials.access_token!,
-      user
-    );
-
-    if (!cred) return next(createHttpError(500, "Internal Server Error"));
-
-    // no duplicate user check
-    const oldUser = await db.user.findUnique({
-      where: { googleId: cred.googleId },
-    });
-    if (oldUser) return next(createHttpError(400, "User already exist"));
-
-    const newUser = await db.user.create({
-      data: {
-        domainName: req.body.domainName,
-        email: cred.email,
-        fullName: cred.name,
-        password: "",
-        googleId: cred.googleId,
-        profilePicture: cred.picture,
-        emailVerified: true,
-      },
-    });
-
-    const token = jwt.sign({ uid: newUser.id }, CONSTANTS.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res
-      .status(201)
-      .json({ success: true, message: "Signup successful", data: token });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, message: "User signup failed" });
-  }
-};
-
-export const signInGoogle = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const code = req.query.code as string;
-  try {
-    const redirectURL =
-      (req.query.redirectURL as string) ||
-      `${req.protocol}://${req.get('host')}/api/auth/signin-google`;
-
-    const oAuth2Client = new OAuth2Client(
-      CONSTANTS.GOOGLE_CLIENT_ID,
-      CONSTANTS.GOOGLE_CLIENT_SECRET,
-      redirectURL
-    );
-    const r = await oAuth2Client.getToken(code);
-    // Make sure to set the credentials on the OAuth2 client.
-    oAuth2Client.setCredentials(r.tokens);
-    const user = oAuth2Client.credentials;
-    const cred = await getUserData(
-      oAuth2Client.credentials.access_token!,
-      user
-    );
-
-    if (!cred) return next(createHttpError(500, "Internal Server Error"));
-    const oldUser = await db.user.findUnique({
-      where: { googleId: cred.googleId },
-    });
-    if (!oldUser) return next(createHttpError(400, "Account does not exist"));
-
-    const token = jwt.sign({ uid: oldUser.id }, CONSTANTS.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res
-      .status(201)
-      .json({ success: true, message: "Signin successful", data: token });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, message: "User signin failed" });
-  }
-};
-
-export default {
-  signUp,
-  signIn,
-  signGoogleLink,
-  signUpGoogle,
-  signInGoogle,
-};

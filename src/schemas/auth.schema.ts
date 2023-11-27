@@ -10,10 +10,22 @@ export const userSignupSchema = z.object({
   ).trim(), // Password must contain at least one capital letter, one small letter, one number, and one special character
 });
 
+export type UserSignupDTOType = {
+  fullName?: string,
+  domainName?: string,
+  email?: string,
+  password?: string
+}
+
 export const userSigninSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
   password: z.string().trim(),
 });
+
+export type UserSigninDTOType = {
+  email: string,
+  password: string
+}
 
 export default {
   userSignupSchema, 

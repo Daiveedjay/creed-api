@@ -1,111 +1,53 @@
-import userSchema from "@/schemas/user.schema";
+import { UserUpdateDTOType } from "@/schemas/user.schema";
+import UserService from "@/services/user.service";
 import { AuthRequest } from "@/types/auth.types";
 import { ObjType } from "@/types/util.types";
-import db from "@/utils/db";
-import { NextFunction, Request, Response } from "express";
-import createHttpError from "http-errors";
-import { ZodError } from "zod";
+import {
+  Put,
+  Route,
+  Get,
+  Controller,
+  Tags,
+  Request,
+  Security,
+  Body,
+  Example,
+} from "tsoa";
+import { injectable } from "tsyringe";
 
-export const getProfile = async (
-  req: AuthRequest | ObjType,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const profile = await db.user.findUnique({
-      where: { id: req.auth.uid },
-      select: {
-        domainName: true,
-        createdAt: true,
-        email: true,
-        fullName: true,
-        updatedAt: true,
-        id: true,
-        jobTitle: true,
-        department: true,
-        location: true,
-        language: true,
-        availableHoursFrom: true,
-        availableHoursTo: true,
-        username: true
-      },
-    });
-    if(!profile) return next(createHttpError(400, "Invalid access token"));
-    return res.json({ success: true, message: "Profile", data: profile });
-  } catch (err) {
-    return next(createHttpError(500, "Server error"));
+@injectable()
+@Route("/api/user")
+@Tags("User")
+export class UserController extends Controller {
+  constructor(private userService: UserService) {
+    super();
   }
-};
 
-export const editProfile = async (
-  req: AuthRequest | ObjType,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const {
-      domainName,
-      // email,
-      fullName,
-      username,
-      jobTitle,
-      department,
-      location,
-      language,
-      availableHoursFrom,
-      availableHoursTo,
-    } = userSchema.userUpdateSchema.parse(req.body);
-    const profile = await db.user.update({
-      where: { id: req.auth.uid },
-      data: {
-        ...(domainName && { domainName }),
-        // ...(email && { email }),
-        ...(fullName && { fullName }),
-        ...(username && { username }),
-        ...(jobTitle && { jobTitle }),
-        ...(department && { department }),
-        ...(location && { location }),
-        ...(language && { language }),
-        ...(availableHoursFrom && { availableHoursFrom }),
-        ...(availableHoursTo && { availableHoursTo }),
-      },
-      select: {
-        domainName: true,
-        createdAt: true,
-        email: true,
-        fullName: true,
-        updatedAt: true,
-        id: true,
-        jobTitle: true,
-        department: true,
-        location: true,
-        language: true,
-        availableHoursFrom: true,
-        availableHoursTo: true,
-        username: true
-      },
-    });
-    return res.json({
-      success: true,
-      message: "Profile updated",
-      data: profile,
-    });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      // Zod validation error handling with http-errors
-      const errors = error.errors.reduce((acc: any, cur) => {
-        acc[cur.path.shift() as string] = cur.message;
-        return acc;
-      }, {});
-      next(createHttpError(400, "Validation error", { errors }));
-    } else {
-      // Handle other unexpected errors
-      next(createHttpError(500, "Internal server error"));
-    }
+  /**
+   * Retrieves the details of an existing user.
+   * Provided the user is logged in this endpoint returns the corresponding user details.
+   */
+  @Get("/profile")
+  @Security("bearerAuth")
+  public async getProfile(@Request() req: AuthRequest): Promise<any> {
+    return this.userService.getProfile(req.auth?.uid as string);
   }
-};
 
-export default {
-  getProfile,
-  editProfile,
-};
+  /**
+   * Updates the details of an existing user.
+   * Provided the user is logged in this endpoint accepts primary values for change except email and password.
+   */
+  @Put("/")
+  @Security("bearerAuth")
+  @Example<UserUpdateDTOType>({
+    fullName: "John Doe",
+    domainName: "JohnDoe",
+  })
+  public async editProfile(
+    @Request() req: AuthRequest,
+    @Body() body: UserUpdateDTOType
+  ) {
+    return this.userService.editProfile(req.auth?.uid as string, body);
+  }
+}
+
