@@ -40,7 +40,8 @@ model User {
   announcement     Announcement[]
   tasks            Task[]
   subTasks         SubTask[]
-  DomainMembership DomainMembership[]
+  domainMembership DomainMembership[]
+  domains          Domain[]
 }
 
 model Domain {
@@ -49,6 +50,8 @@ model Domain {
   updatedAt DateTime @updatedAt
 
   name          String
+  ownerId       String
+  owner         User               @relation(fields: [ownerId], references: [id])
   announcements Announcement[]
   boards        Board[]
   domainMembers DomainMembership[]

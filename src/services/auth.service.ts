@@ -47,6 +47,14 @@ export default class AuthService {
         },
       });
 
+      // Setup default domain
+      await this.db.domain.create({
+        data: {
+          name: domainName,
+          ownerId: user.id,
+        },
+      });
+
       // TODO: Send welcome email
 
       const token = jwt.sign({ uid: user.id }, CONSTANTS.JWT_SECRET, {
@@ -267,6 +275,14 @@ export default class AuthService {
           googleId: cred.googleId,
           profilePicture: cred.picture,
           emailVerified: true,
+        },
+      });
+
+      // Setup default domain
+      await this.db.domain.create({
+        data: {
+          name: dto.domainName,
+          ownerId: newUser.id,
         },
       });
 

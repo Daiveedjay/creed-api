@@ -1,7 +1,6 @@
 import { UserUpdateDTOType } from "@/schemas/user.schema";
 import UserService from "@/services/user.service";
 import { AuthRequest } from "@/types/auth.types";
-import { ObjType } from "@/types/util.types";
 import {
   Put,
   Route,
