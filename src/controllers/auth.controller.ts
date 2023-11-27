@@ -15,12 +15,13 @@ import AuthService from "@/services/auth.service";
 import Express from "express";
 import { injectable } from "tsyringe";
 import CONSTANTS from "@/utils/constants";
-import { UserSigninDTOType, UserSignupDTOType } from "@/schemas/auth.schema";
+import { PasswordResetDTO, UserSigninDTOType, UserSignupDTOType } from "@/schemas/auth.schema";
+import BaseController from "@/utils/customBaseController";
 
 @injectable()
 @Route("/api/auth")
 @Tags("Auth")
-export class Authcontroller extends Controller {
+export class Authcontroller extends BaseController {
   constructor(private authService: AuthService) {
     super();
   }
@@ -54,6 +55,25 @@ export class Authcontroller extends Controller {
   }
 
   /**
+   * Generates and send an OTP to user email if a user with the specified email exists
+   * @param email Email address of account for password reset
+   */
+  @Get("forgot-password")
+  public async forgotPassword(@Query("email") email?: string): Promise<any> {
+    return this.authService.forgotPassword(this, email || "");
+  }
+
+  /**
+   * Accepts new password and OTP sent to email for password reset process
+   * @param otp A six (6) character long text sent to user email
+   * @param password New password to be used by account
+   */
+  @Post("reset-password")
+  public async resetPassword(@Body() dto: PasswordResetDTO): Promise<any> {
+    return this.authService.resetPassword(this, dto);
+  }
+
+  /**
    * Retrieves a google signin link for google signin or signup processes
    * @param redirectURL (Optional) url google should redirect the user to after the google auth screen
    */
@@ -67,7 +87,6 @@ export class Authcontroller extends Controller {
     const redirectURLi =
       redirectURL ||
       `${req.protocol}://${req.get("host")}/api/auth/signup-google`;
-    console.log(redirectURLi);
 
     return this.authService.signGoogleLink(redirectURLi);
   }
@@ -99,11 +118,15 @@ export class Authcontroller extends Controller {
    */
   @SuccessResponse("201", "Created")
   @Post("/signup-google")
-  public async signUpGoogle(
-    @Request() req: Express.Request,
-  ) {
-    const redirectURL = (req.query.redirectURL as string) ||
-    `${req.protocol}://${req.get("host")}/api/auth/signup-google`;
-    return this.authService.signUpGoogle(this, req.body, redirectURL, req.query.code as string);
+  public async signUpGoogle(@Request() req: Express.Request) {
+    const redirectURL =
+      (req.query.redirectURL as string) ||
+      `${req.protocol}://${req.get("host")}/api/auth/signup-google`;
+    return this.authService.signUpGoogle(
+      this,
+      req.body,
+      redirectURL,
+      req.query.code as string
+    );
   }
 }

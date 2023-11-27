@@ -26,6 +26,11 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"password":{"dataType":"string","required":true},"email":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PasswordResetDTO": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"password":{"dataType":"string","required":true},"otp":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserUpdateDTOType": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"availableHoursTo":{"dataType":"string"},"availableHoursFrom":{"dataType":"string"},"language":{"dataType":"string"},"location":{"dataType":"string"},"department":{"dataType":"string"},"jobTitle":{"dataType":"string"},"username":{"dataType":"string"},"domainName":{"dataType":"string"},"fullName":{"dataType":"string"}},"validators":{}},
@@ -95,6 +100,66 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.signIn.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/auth/forgot-password',
+            ...(fetchMiddlewares<RequestHandler>(Authcontroller)),
+            ...(fetchMiddlewares<RequestHandler>(Authcontroller.prototype.forgotPassword)),
+
+            async function Authcontroller_forgotPassword(request: any, response: any, next: any) {
+            const args = {
+                    email: {"in":"query","name":"email","dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<Authcontroller>(Authcontroller);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.forgotPassword.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/auth/reset-password',
+            ...(fetchMiddlewares<RequestHandler>(Authcontroller)),
+            ...(fetchMiddlewares<RequestHandler>(Authcontroller.prototype.resetPassword)),
+
+            async function Authcontroller_resetPassword(request: any, response: any, next: any) {
+            const args = {
+                    dto: {"in":"body","name":"dto","required":true,"ref":"PasswordResetDTO"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<Authcontroller>(Authcontroller);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.resetPassword.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

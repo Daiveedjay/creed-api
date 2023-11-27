@@ -31,6 +31,11 @@ model User {
   profilePicture     String?
   emailVerified      Boolean @default(false)
 
+  // extras
+  otp               String?
+  otpLastModifiedAt DateTime?
+  otpReason         OTPReason?
+
   // Relations
   announcement     Announcement[]
   tasks            Task[]
@@ -135,4 +140,8 @@ enum Roles {
   Owner
   Admin
   Member
+}
+
+enum OTPReason {
+  PasswordReset
 }

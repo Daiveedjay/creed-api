@@ -4,14 +4,12 @@ import { singleton } from "tsyringe";
 import { DbService } from "./db.service";
 import { ZodError } from "zod";
 import userSchema, { UserUpdateDTOType } from "@/schemas/user.schema";
-import { ObjType } from "@/types/util.types";
 
 @singleton()
 export default class UserService {
   constructor(private db: DbService) {}
 
   async getProfile(uid: string) {
-    console.log("uid", uid);
     try {
       const profile = await this.db.user.findUnique({
         where: { id: uid },

@@ -38,6 +38,21 @@
 				],
 				"type": "object"
 			},
+			"PasswordResetDTO": {
+				"properties": {
+					"password": {
+						"type": "string"
+					},
+					"otp": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"password",
+					"otp"
+				],
+				"type": "object"
+			},
 			"UserUpdateDTOType": {
 				"properties": {
 					"availableHoursTo": {
@@ -163,6 +178,68 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UserSigninDTOType"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/auth/forgot-password": {
+			"get": {
+				"operationId": "ForgotPassword",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Generates and send an OTP to user email if a user with the specified email exists",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Email address of account for password reset",
+						"in": "query",
+						"name": "email",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/auth/reset-password": {
+			"post": {
+				"operationId": "ResetPassword",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Accepts new password and OTP sent to email for password reset process",
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PasswordResetDTO"
 							}
 						}
 					}
