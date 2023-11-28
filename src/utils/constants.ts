@@ -8,6 +8,7 @@ const CONSTANTS = {
 
   OTP_LENGTH: 6,
   OTP_TTL: 1, // in minutes
+  RATE_LIMIT_FEEDBACK: 5, // in minutes
 };
 
 export default CONSTANTS;

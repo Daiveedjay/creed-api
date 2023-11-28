@@ -108,6 +108,21 @@
 			"DomainUpdateDTO": {
 				"$ref": "#/components/schemas/ReturnType_typeofdomainUpdateSchema.parse_"
 			},
+			"ReturnType_typeofcontactUsSchema.parse_": {
+				"properties": {
+					"message": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"description": "Obtain the return type of a function type"
+			},
+			"ContactUsDTO": {
+				"$ref": "#/components/schemas/ReturnType_typeofcontactUsSchema.parse_"
+			},
 			"UserUpdateDTOType": {
 				"properties": {
 					"availableHoursTo": {
@@ -730,6 +745,45 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/feedback/message": {
+			"post": {
+				"operationId": "SignUp",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {},
+								"examples": {
+									"Example 1": {
+										"value": {
+											"email": "john@example.com",
+											"message": "Hello I am John Doe..."
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"description": "Accepts message of users whether signed in or not.\nAnd sends message admin email.",
+				"tags": [
+					"Feedback"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ContactUsDTO"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/user/profile": {

@@ -9,6 +9,8 @@ import { BoardController } from './../controllers/board.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { DomainController } from './../controllers/domain.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { FeedbackController } from './../controllers/feedback.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controllers/user.controller';
 import { expressAuthentication } from './../middlewares/auth.middleware';
 // @ts-ignore - no great way to install types from subpackage
@@ -88,6 +90,16 @@ const models: TsoaRoute.Models = {
     "DomainUpdateDTO": {
         "dataType": "refAlias",
         "type": {"ref":"ReturnType_typeofdomainUpdateSchema.parse_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ReturnType_typeofcontactUsSchema.parse_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"message":{"dataType":"string"},"email":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ContactUsDTO": {
+        "dataType": "refAlias",
+        "type": {"ref":"ReturnType_typeofcontactUsSchema.parse_","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserUpdateDTOType": {
@@ -633,6 +645,36 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.deleteDomain.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/feedback/message',
+            ...(fetchMiddlewares<RequestHandler>(FeedbackController)),
+            ...(fetchMiddlewares<RequestHandler>(FeedbackController.prototype.signUp)),
+
+            async function FeedbackController_signUp(request: any, response: any, next: any) {
+            const args = {
+                    dto: {"in":"body","name":"dto","required":true,"ref":"ContactUsDTO"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<FeedbackController>(FeedbackController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.signUp.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
