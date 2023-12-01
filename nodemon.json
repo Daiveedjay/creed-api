@@ -1,6 +1,6 @@
 {
   "verbose": false,
-  "ignore": ["*.test.js", "src/routes/**"],
+  "ignore": ["*.test.ts", "src/routes", "src/utils/swagger.json"],
   "execMap": {
     "rb": "ruby",
     "pde": "processing --sketch={{pwd}} --run"

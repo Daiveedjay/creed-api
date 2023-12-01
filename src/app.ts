@@ -10,7 +10,7 @@ import { ValidateError } from "tsoa";
 const app = express();
 const theme = new SwaggerTheme("v3");
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (_req: Request, res: Response) => {
   res.send("Creed API is live");
 });
 

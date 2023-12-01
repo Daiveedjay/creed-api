@@ -9,7 +9,7 @@
     "build": "tsc",
     "predev": "npm run swagger",
     "prebuild": "npm run swagger",
-    "dev": "concurrently \"nodemon -x tsoa routes\" \"nodemon -r tsconfig-paths/register src/index.ts\"",
+    "dev": "concurrently \"nodemon -x tsoa spec-and-routes\" \"nodemon -r tsconfig-paths/register src/index.ts\"",
     "swagger": "tsoa spec-and-routes",
     "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register build/index.js"
   },
