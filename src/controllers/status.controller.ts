@@ -17,16 +17,16 @@ export class StatusController extends BaseController {
   /**
    * Create a status
    */
-  @Post("/")
+  @Post()
   @Security("bearerAuth")
-  public async createStatus(@Request() req: AuthRequest, @Body() dto: StatusCreateDTO): Promise<any> {
+  public async addStatus(@Request() req: AuthRequest, @Body() dto: StatusCreateDTO): Promise<any> {
     return this.statusService.createStatus(req.auth?.uid as string, dto);
   }
 
   /**
    * Retrieves list of status belonging to a board
    */
-  @Get("/")
+  @Get()
   @Security("bearerAuth")
   public async readStatus(@Request() req: AuthRequest): Promise<any> {
     return this.statusService.getStatus(req.auth?.uid as string);
@@ -37,7 +37,7 @@ export class StatusController extends BaseController {
    */
   @Patch("{statusId}")
   @Security("bearerAuth")
-  public async editStatus(statusId: string, @Request() req: AuthRequest, @Body() dto: StatusEditDTO): Promise<any> {
+  public async updateStatus(statusId: string, @Request() req: AuthRequest, @Body() dto: StatusEditDTO): Promise<any> {
     return this.statusService.editStatus(req.auth?.uid as string, statusId, dto);
   }
 
@@ -46,7 +46,7 @@ export class StatusController extends BaseController {
    */
   @Delete("{statusId}")
   @Security("bearerAuth")
-  public async deleteDomain(statusId: string, @Request() req: AuthRequest): Promise<any> {
+  public async removeDomain(statusId: string, @Request() req: AuthRequest): Promise<any> {
     return this.statusService.deleteStatus(req.auth?.uid as string, statusId);
   }
 }

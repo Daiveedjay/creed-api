@@ -11,6 +11,10 @@ import { DomainController } from './../controllers/domain.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { FeedbackController } from './../controllers/feedback.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { StatusController } from './../controllers/status.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { SubtaskController } from './../controllers/subtask.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controllers/user.controller';
 import { expressAuthentication } from './../middlewares/auth.middleware';
 // @ts-ignore - no great way to install types from subpackage
@@ -100,6 +104,26 @@ const models: TsoaRoute.Models = {
     "ContactUsDTO": {
         "dataType": "refAlias",
         "type": {"ref":"ReturnType_typeofcontactUsSchema.parse_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ReturnType_typeofstatusCreateSchema.parse_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"boardId":{"dataType":"string"},"name":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StatusCreateDTO": {
+        "dataType": "refAlias",
+        "type": {"ref":"ReturnType_typeofstatusCreateSchema.parse_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ReturnType_typeofstatusEditSchema.parse_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StatusEditDTO": {
+        "dataType": "refAlias",
+        "type": {"ref":"ReturnType_typeofstatusEditSchema.parse_","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserUpdateDTOType": {
@@ -675,6 +699,134 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.signUp.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/status',
+            authenticateMiddleware([{"bearerAuth":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(StatusController)),
+            ...(fetchMiddlewares<RequestHandler>(StatusController.prototype.addStatus)),
+
+            async function StatusController_addStatus(request: any, response: any, next: any) {
+            const args = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    dto: {"in":"body","name":"dto","required":true,"ref":"StatusCreateDTO"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<StatusController>(StatusController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.addStatus.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/status',
+            authenticateMiddleware([{"bearerAuth":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(StatusController)),
+            ...(fetchMiddlewares<RequestHandler>(StatusController.prototype.readStatus)),
+
+            async function StatusController_readStatus(request: any, response: any, next: any) {
+            const args = {
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<StatusController>(StatusController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.readStatus.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.patch('/api/status/:statusId',
+            authenticateMiddleware([{"bearerAuth":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(StatusController)),
+            ...(fetchMiddlewares<RequestHandler>(StatusController.prototype.updateStatus)),
+
+            async function StatusController_updateStatus(request: any, response: any, next: any) {
+            const args = {
+                    statusId: {"in":"path","name":"statusId","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    dto: {"in":"body","name":"dto","required":true,"ref":"StatusEditDTO"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<StatusController>(StatusController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.updateStatus.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.delete('/api/status/:statusId',
+            authenticateMiddleware([{"bearerAuth":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(StatusController)),
+            ...(fetchMiddlewares<RequestHandler>(StatusController.prototype.removeDomain)),
+
+            async function StatusController_removeDomain(request: any, response: any, next: any) {
+            const args = {
+                    statusId: {"in":"path","name":"statusId","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(request) : iocContainer;
+
+                const controller: any = await container.get<StatusController>(StatusController);
+                if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+                }
+
+
+              const promise = controller.removeDomain.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
