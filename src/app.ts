@@ -19,6 +19,10 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/docs/postman", async (req: Request, res: Response) => {
+  const postmanDocument = await import("./utils/postman.json");
+  return res.json(postmanDocument);
+});
 app.use("/docs", swaggerUi.serve, async (req: Request, res: Response) => {
   const swaggerDocument = await import("./utils/swagger.json");
   swaggerDocument.info.title = "Creed API";
