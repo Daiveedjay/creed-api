@@ -8,7 +8,7 @@
     "test:docker": "bash ./run-tests.sh",
     "build": "tsc",
     "predev": "npm run swagger",
-    "prebuild": "npm run swagger",
+    "prebuild": "npm run swagger && npx openapi-to-postmanv2 convert -s ./src/utils/swagger.json -o ./src/utils/postman.json",
     "dev": "concurrently \"nodemon -x tsoa spec-and-routes\" \"nodemon -r tsconfig-paths/register src/index.ts\"",
     "swagger": "tsoa spec-and-routes",
     "start": "node -r ts-node/register/transpile-only -r tsconfig-paths/register build/index.js"
@@ -53,6 +53,7 @@
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "openapi-to-postmanv2": "^4.18.0",
     "passport": "^0.6.0",
     "passport-google-oauth2": "^0.2.0",
     "reflect-metadata": "^0.1.13",
