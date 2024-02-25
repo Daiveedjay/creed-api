@@ -1,8 +1,0 @@
-{
-  "verbose": false,
-  "ignore": ["*.test.ts", "src/routes", "src/utils/swagger.json"],
-  "execMap": {
-    "rb": "ruby",
-    "pde": "processing --sketch={{pwd}} --run"
-  }
-}

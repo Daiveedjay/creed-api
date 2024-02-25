@@ -1,0 +1,49 @@
+name: Deploy CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: 'npm'
+
+      - name: Install dependencies
+        run:  npm ci
+       
+      - name: Build application
+        run: |
+          touch .env
+          echo "PORT=3000" >> ".env"
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+          echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+          echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+          npx prisma db push
+          npm run build
+
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          SCRIPT_AFTER: |
+            # if pm2 describe 'node dist/main' > /dev/null; then
+            #   pm2 restart 'node dist/main' --update-env
+            # else
+            #   pm2 start npm --name 'node dist/main' -- start
+            # fi
