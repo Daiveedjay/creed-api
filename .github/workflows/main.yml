@@ -18,9 +18,6 @@ jobs:
         with:
           node-version: "18"
           cache: 'npm'
-
-      - name: Install dependencies
-        run:  npm ci
        
       - name: Build application
         run: |
@@ -32,8 +29,6 @@ jobs:
           echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
           echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
-          npx prisma db push
-          npm run build
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
@@ -42,6 +37,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           SCRIPT_AFTER: |
+            echo "Hello world"
             # if pm2 describe 'node dist/main' > /dev/null; then
             #   pm2 restart 'node dist/main' --update-env
             # else
