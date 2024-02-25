@@ -19,16 +19,16 @@ jobs:
           node-version: "18"
           cache: 'npm'
        
-      - name: Build application
-        run: |
-          touch .env
-          echo "PORT=3000" >> ".env"
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-          echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-          echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+      # - name: Build application
+      #   run: |
+      #     touch .env
+      #     echo "PORT=3000" >> ".env"
+      #     echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
+      #     echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+      #     echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+      #     echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+      #     echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+      #     echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
