@@ -6,7 +6,9 @@ import { UserUpdateDTOType } from './user.dto';
 export class UserService {
   constructor(private readonly dbService: DbService) {}
 
-  async getProfile(userId: string) {}
+  async getProfile(userId: string) {
+    return this.dbService.user.findUnique({ where: { id: userId }});
+  }
 
   async editProfile(userId: string, body: UserUpdateDTOType) {}
 }

@@ -11,6 +11,10 @@ export class AuthController {
 
   constructor(private authService: AuthService) {};
   
+  /**
+   * Endpoint to signup user
+   */
+  @Post("signup")
   async signUp(@Body() dto: UserSignupDTOType): Promise<any> {
     return this.authService.signUp(dto);
   }

@@ -19,19 +19,24 @@ export class UserSignupDTOType {
   email: string;
 
   @ApiProperty()
-  @MinLength(8)
+  @MinLength(6)
   @MaxLength(30)
   password: string;
 
   @ApiProperty()
-  @IsNotEmpty()
   @IsString()
+  // @IsNotEmpty()
   country: string;
+
+  @ApiProperty()
+  @IsString()
+  // @IsNotEmpty()
+  phone: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  phone: string;
+  domainName: string;
 }
 
 export class UserSigninDTOType {
@@ -53,15 +58,10 @@ export class UserSigninDTOType {
 export class PasswordResetDTO {
   @ApiProperty()
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  password: string;
+
 
   @ApiProperty()
   @IsNotEmpty()
-  password: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  rememberMe?: boolean;
+  otp: string;
 }

@@ -37,9 +37,4 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           SCRIPT_AFTER: |
-            echo "Hello world"
-            # if pm2 describe 'node dist/main' > /dev/null; then
-            #   pm2 restart 'node dist/main' --update-env
-            # else
-            #   pm2 start npm --name 'node dist/main' -- start
-            # fi
+            sudo systemctl restart creed-api.service

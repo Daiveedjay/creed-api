@@ -3,10 +3,23 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerTheme } from 'swagger-themes';
 import { AppModule } from './app.module';
 import { SwaggerThemeNameEnum } from 'swagger-themes/build/enums/swagger-theme-name';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const theme = new SwaggerTheme();
+
+  // Enable cors
+  app.enableCors();
+
+  // API input validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Creed API')

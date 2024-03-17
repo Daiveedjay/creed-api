@@ -8,10 +8,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
 import { DbService } from '../utils/db.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly dbService: DbService) {}
+  constructor(private readonly dbService: DbService, private readonly configService: ConfigService) {}
 
   canActivate(
     context: ExecutionContext,
@@ -22,18 +23,19 @@ export class AuthGuard implements CanActivate {
 
   async validateRequest(req: any) {
     const authHeader = req.headers.authorization;
-    const token = authHeader.split(' ').pop();
+    if (!authHeader) throw new ForbiddenException('Please provide auth token');
+    const token: string | undefined = authHeader.split(' ').pop();
     if (!token) {
       throw new ForbiddenException('Invalid token');
     }
 
     try {
       const decoded = new JwtService().verify(token, {
-        secret: process.env.JWT_SECRET,
+        secret: this.configService.get("JWT_SECRET"),
       });
 
       const user = await this.dbService.user.findUnique({
-        where: { id: decoded.sub },
+        where: { id: decoded.uid },
         select: {
           id: true,
           createdAt: true,
@@ -50,7 +52,6 @@ export class AuthGuard implements CanActivate {
       req.user = user;
       return true;
     } catch (err) {
-      console.log(err);
       throw new ForbiddenException('Invalid token');
     }
   }

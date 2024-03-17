@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Put, Req } from '@nestjs/common';
+import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserUpdateDTOType } from './user.dto';
 import { AuthRequest } from 'src/types';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { User } from './user.decorator';
 
 @ApiTags('User')
 @Controller('user')
@@ -15,8 +17,9 @@ export class UserController {
    */
   @Get('/profile')
   @ApiSecurity('bearerAuth')
-  public async getProfile(@Req() req: AuthRequest): Promise<any> {
-    return this.userService.getProfile(req.auth?.uid as string);
+  @UseGuards(AuthGuard)
+  public async getProfile(@User() user): Promise<any> {
+    return this.userService.getProfile(user.id);
   }
 
   /**

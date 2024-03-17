@@ -1,0 +1,13 @@
+[Unit]
+Description=Creed API
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node /home/ubuntu/dist/main.js
+WorkingDirectory=/home/ubuntu
+Restart=always
+User=ubuntu
+Environment=PATH=/usr/bin:/usr/local/bin
+EnvironmentFile=/home/ubuntu/.env
+[Install]
+WantedBy=multi-user.target
