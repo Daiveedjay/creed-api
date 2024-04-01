@@ -4,7 +4,7 @@ import { UserUpdateDTOType } from './user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(private readonly dbService: DbService) { }
 
   async getProfile(userId: string) {
     return this.dbService.user.findUnique({
@@ -14,7 +14,6 @@ export class UserService {
         createdAt: true,
         updatedAt: true,
         email: true,
-        domainName: true,
         fullName: true,
         username: true,
         jobTitle: true,
@@ -25,9 +24,14 @@ export class UserService {
         availableHoursTo: true,
         profilePicture: true,
         emailVerified: true,
+        domainMembership: {
+          include: {
+            domain: true
+          }
+        },
       },
     });
   }
 
-  async editProfile(userId: string, body: UserUpdateDTOType) {}
+  async editProfile(userId: string, body: UserUpdateDTOType) { }
 }

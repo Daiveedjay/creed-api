@@ -12,7 +12,7 @@ import { DbService } from 'src/utils/db.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { OTPReason } from '@prisma/client';
+import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AuthService {
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async signUp(dto: UserSignupDTOType) {
     try {
@@ -38,7 +38,6 @@ export class AuthService {
         data: {
           email: dto.email,
           password: hashedPassword,
-          domainName: dto.domainName,
           fullName: dto.fullName,
         },
       });
@@ -48,6 +47,13 @@ export class AuthService {
         data: {
           name: dto.domainName,
           ownerId: user.id,
+
+          domainMembers: {
+            create: {
+              memberRole: Roles.Owner,
+              userId: user.id
+            }
+          }
         },
       });
 
@@ -268,7 +274,6 @@ export class AuthService {
 
       const newUser = await this.dbService.user.create({
         data: {
-          domainName: dto.domainName,
           email: cred.email,
           fullName: cred.name,
           password: '',
@@ -283,8 +288,15 @@ export class AuthService {
         data: {
           name: dto.domainName,
           ownerId: newUser.id,
+
+          domainMembers: {
+            create: {
+              memberRole: Roles.Owner,
+              userId: newUser.id
+            }
+          }
         },
-      });
+      })
 
       const token = this.jwtService.sign(
         { uid: newUser.id },

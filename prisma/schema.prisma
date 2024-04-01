@@ -15,11 +15,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email      String  @unique
-  password   String
-  domainName String
-  fullName   String
-  googleId   String? @unique
+  email           String  @unique
+  password        String
+  fullName        String
+  googleId        String? @unique
 
   username           String?
   jobTitle           String?
