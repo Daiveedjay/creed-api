@@ -37,4 +37,5 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           SCRIPT_AFTER: |
+            npm run build
             sudo systemctl restart creed-api.service
