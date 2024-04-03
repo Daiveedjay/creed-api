@@ -77,6 +77,13 @@ export class AuthService {
   async signIn(dto: UserSigninDTOType) {
     const user = await this.dbService.user.findUnique({
       where: { email: dto.email },
+      include: {
+        domainMembership: {
+          include: {
+            domain: true
+          }
+        },
+      }
     });
 
     if (!user) {
@@ -100,6 +107,7 @@ export class AuthService {
     return {
       message: 'Access Token',
       access_token: token,
+      domainMemberships: user.domainMembership,
     };
   }
 

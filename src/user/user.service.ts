@@ -24,11 +24,6 @@ export class UserService {
         availableHoursTo: true,
         profilePicture: true,
         emailVerified: true,
-        domainMembership: {
-          include: {
-            domain: true
-          }
-        },
       },
     });
   }
