@@ -43,7 +43,7 @@ export class AuthService {
       });
 
       // Setup default domain
-      await this.dbService.domain.create({
+      const newDomain = await this.dbService.domain.create({
         data: {
           name: dto.domainName,
           ownerId: user.id,
@@ -68,6 +68,7 @@ export class AuthService {
       return {
         message: 'Signup successful',
         access_token: token,
+        default_domain: newDomain,
       };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
