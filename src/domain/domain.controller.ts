@@ -6,7 +6,7 @@ import { CreateDomainDTO, UpdateDefaultDomainDTO } from './domain.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Domain')
-@Controller('domain')
+@Controller('domains')
 export class DomainController {
   constructor(private readonly domainService: DomainService) {}
 

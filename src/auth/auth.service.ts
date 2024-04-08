@@ -105,6 +105,8 @@ export class AuthService {
         expiresIn: '1h',
       },
     );
+
+    user.domainMembership = user.domainMembership.map(membership => ({ ...membership, domain: membership.domain.name })) as any;
     return {
       message: 'Access Token',
       access_token: token,
