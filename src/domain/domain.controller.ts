@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { DomainService } from './domain.service';
 import { User } from 'src/user/user.decorator';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -16,9 +16,27 @@ export class DomainController {
     return this.domainService.getUserDomains(user.id);
   }
 
+  @Get("/:domainID")
+  @UseGuards(AuthGuard)
+  getDomain(@User() user, @Param("domainID") domainID: string) {
+    return this.domainService.getUserDomain(user.id, domainID);
+  }
+
+  @Patch("/:domainID")
+  @UseGuards(AuthGuard)
+  updateDomain(@User() user, @Body() dto: CreateDomainDTO, @Param("domainID") domainID: string) {
+    return this.domainService.update(user.id, dto, domainID);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   createDomain(@User() user, @Body() dto: CreateDomainDTO) {
     return this.domainService.create(user.id, dto);
+  }
+
+  @Delete(":/domainID")
+  @UseGuards(AuthGuard)
+  deletePanel(@Param("domainID") domainID) {
+    return this.domainService.deleteDomain(domainID);
   }
 }
