@@ -80,8 +80,13 @@ export class AuthService {
       where: { email: dto.email },
       include: {
         domainMembership: {
-          include: {
-            domain: true
+          select: {
+            domain: {
+              include: {
+                boards: true
+              }
+            },
+
           }
         },
       }
@@ -106,11 +111,27 @@ export class AuthService {
       },
     );
 
-    user.domainMembership = user.domainMembership.map(membership => ({ ...membership, domain: membership.domain.name })) as any;
+    const userObj = {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+      jobTitle: user.jobTitle,
+      department: user.department,
+      location: user.location,
+      language: user.language,
+      availableHoursFrom: user.availableHoursFrom,
+      availableHoursTo: user.availableHoursTo,
+      profilePicture: user.profilePicture,
+      emailVerified: user.emailVerified,
+    };
+
+    const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
     return {
       message: 'Access Token',
       access_token: token,
-      domainMemberships: user.domainMembership,
+      user_data: userObj,
+      domains: domainMembership,
     };
   }
 
