@@ -52,7 +52,7 @@ model Domain {
   ownerId       String
   owner         User               @relation(fields: [ownerId], references: [id])
   announcements Announcement[]
-  boards        Board[]
+  panels        Panel[]
   domainMembers DomainMembership[]
 }
 
@@ -70,7 +70,7 @@ model DomainMembership {
 }
 
 // TODO: Should be called Panel instead
-model Board {
+model Panel {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -91,8 +91,8 @@ model Status {
   name String
 
   // relations
-  boardId String
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  panelId String
+  panel   Panel  @relation(fields: [panelId], references: [id], onDelete: Cascade)
   tasks   Task[]
 }
 

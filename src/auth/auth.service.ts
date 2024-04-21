@@ -83,7 +83,7 @@ export class AuthService {
           select: {
             domain: {
               include: {
-                boards: true
+                panels: true
               }
             },
 

@@ -26,13 +26,13 @@ jobs:
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
           SCRIPT_AFTER: |
-            touch .env
-            echo "PORT=3000" > ".env"
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-            echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-            echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+            # touch .env
+            # echo "PORT=3000" > ".env"
+            # echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
+            # echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+            # echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+            # echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+            # echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+            # echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
             npm run build
-            sudo systemctl restart creed-api.service
+            pm2 restart all --update-env

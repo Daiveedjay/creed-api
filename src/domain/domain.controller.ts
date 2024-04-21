@@ -34,7 +34,7 @@ export class DomainController {
     return this.domainService.create(user.id, dto);
   }
 
-  @Delete(":/domainID")
+  @Delete("/:domainID")
   @UseGuards(AuthGuard)
   deletePanel(@Param("domainID") domainID) {
     return this.domainService.deleteDomain(domainID);
