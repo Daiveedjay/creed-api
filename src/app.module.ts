@@ -9,6 +9,8 @@ import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { DomainModule } from './domain/domain.module';
 import { PanelModule } from './panel/panel.module';
+import { StatusModule } from './status/status.module';
+import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { PanelModule } from './panel/panel.module';
     ConfigModule.forRoot({ isGlobal: true }),
     DomainModule,
     PanelModule,
+    StatusModule,
+    TaskModule,
   ],
   controllers: [AppController, UserController],
   providers: [AppService, UserService],

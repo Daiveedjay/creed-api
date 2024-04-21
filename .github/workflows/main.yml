@@ -34,5 +34,6 @@ jobs:
             # echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
             # echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
             # echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+            npx prisma generate
             npm run build
             pm2 restart all --update-env

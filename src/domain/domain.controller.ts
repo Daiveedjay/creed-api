@@ -5,7 +5,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateDomainDTO, UpdateDefaultDomainDTO } from './domain.dto';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Domain')
+@ApiTags('Domains')
 @Controller('domains')
 export class DomainController {
   constructor(private readonly domainService: DomainService) {}
