@@ -6,30 +6,30 @@ import { CreateStatusDTO } from './status.dto';
 export class StatusService {
   constructor(private readonly dbService: DbService) { }
 
-  async getStatus(panelID: string) {
-    const status = await this.dbService.status.findMany({ where: { panelId: panelID } });
+  async getStatus(domainID: string) {
+    const status = await this.dbService.status.findMany({ where: { domainId: domainID } });
     return status;
   }
 
-  async createStatus(panelD: string, dto: CreateStatusDTO) {
+  async createStatus(domainID: string, dto: CreateStatusDTO) {
     const status = await this.dbService.status.create({
       data: {
         name: dto.name,
-        panelId: panelD
+        domainId: domainID
       }
     });
     return status;
   }
 
-  async editStatus(statusID: string, panelID: string, dto: CreateStatusDTO) {
-    await this.dbService.status.update({ where: { id: statusID, panelId: panelID }, data: { ...dto } });
+  async editStatus(statusID: string, domainId: string, dto: CreateStatusDTO) {
+    await this.dbService.status.update({ where: { id: statusID, domainId: domainId }, data: { ...dto } });
     return {
       message: "Updated",
     }
   }
 
-  async deleteStatus(statusID: string, panelID: string) {
-    await this.dbService.status.delete({ where: { id: statusID, panelId: panelID } });
+  async deleteStatus(statusID: string, domainId: string) {
+    await this.dbService.status.delete({ where: { id: statusID, domainId, } });
     return {
       message: "Deleted",
     }

@@ -15,10 +15,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email           String  @unique
-  password        String
-  fullName        String
-  googleId        String? @unique
+  email    String  @unique
+  password String
+  fullName String
+  googleId String? @unique
 
   username           String?
   jobTitle           String?
@@ -54,6 +54,7 @@ model Domain {
   announcements Announcement[]
   panels        Panel[]
   domainMembers DomainMembership[]
+  status        Status[]
 }
 
 model DomainMembership {
@@ -79,8 +80,7 @@ model Panel {
   // statusOrder String? // TODO: Write code to handle this
 
   domainId String
-  domain   Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  status   Status[]
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }
 
 model Status {
@@ -91,9 +91,9 @@ model Status {
   name String
 
   // relations
-  panelId String
-  panel   Panel  @relation(fields: [panelId], references: [id], onDelete: Cascade)
-  tasks   Task[]
+  domainId String
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  tasks    Task[]
 }
 
 model Task {

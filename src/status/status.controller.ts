@@ -5,31 +5,31 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateStatusDTO } from './status.dto';
 
 @ApiTags('Status')
-@Controller('status/:panelID')
+@Controller('status/:domainID')
 export class StatusController {
   constructor(private readonly statusService: StatusService) {}
 
   @Get()
   @UseGuards(AuthGuard)
-  getPanels(@Param("panelID") panelID) {
-    return this.statusService.getStatus(panelID);
+  getPanels(@Param("domainID") domainID) {
+    return this.statusService.getStatus(domainID);
   }
 
   @Post()
   @UseGuards(AuthGuard)
-  createStatus(@Param("panelID") panelID, @Body() dto: CreateStatusDTO) {
-    return this.statusService.createStatus(panelID, dto);
+  createStatus(@Param("domainID") domainID, @Body() dto: CreateStatusDTO) {
+    return this.statusService.createStatus(domainID, dto);
   }
 
   @Patch("/:statusID")
   @UseGuards(AuthGuard)
-  editStatus(@Param("statusID") statusID, @Param("panelID") panelID, @Body() dto: CreateStatusDTO) {
-    return this.statusService.editStatus(statusID, panelID, dto);
+  editStatus(@Param("statusID") statusID, @Param("domainID") domainID, @Body() dto: CreateStatusDTO) {
+    return this.statusService.editStatus(statusID, domainID, dto);
   }
 
   @Delete("/:statusID")
   @UseGuards(AuthGuard)
-  deleteStatus(@Param("panelID") panelID, @Param("statusID") statusID) {
-    return this.statusService.deleteStatus(statusID, panelID);
+  deleteStatus(@Param("domainID") domainID, @Param("statusID") statusID) {
+    return this.statusService.deleteStatus(statusID, domainID);
   }
 }
