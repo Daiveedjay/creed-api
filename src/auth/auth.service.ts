@@ -76,63 +76,67 @@ export class AuthService {
   }
 
   async signIn(dto: UserSigninDTOType) {
-    const user = await this.dbService.user.findUnique({
-      where: { email: dto.email },
-      include: {
-        domainMembership: {
-          select: {
-            domain: {
-              include: {
-                panels: true
-              }
-            },
-
-          }
-        },
+    try {
+      const user = await this.dbService.user.findUnique({
+        where: { email: dto.email },
+        include: {
+          domainMembership: {
+            select: {
+              domain: {
+                include: {
+                  panels: true
+                }
+              },
+  
+            }
+          },
+        }
+      });
+  
+      if (!user) {
+        throw new ForbiddenException('Invalid credentials');
       }
-    });
-
-    if (!user) {
-      throw new ForbiddenException('Invalid credentials');
+  
+      const passwordMatch = await bcrypt.compare(dto.password, user.password);
+  
+      if (!passwordMatch) {
+        throw new ForbiddenException('Invalid credentials');
+      }
+  
+      // TODO: Send signin email
+  
+      const token = this.jwtService.sign(
+        { uid: user.id },
+        {
+          expiresIn: '24h',
+        },
+      );
+  
+      const userObj = {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        username: user.username,
+        jobTitle: user.jobTitle,
+        department: user.department,
+        location: user.location,
+        language: user.language,
+        availableHoursFrom: user.availableHoursFrom,
+        availableHoursTo: user.availableHoursTo,
+        profilePicture: user.profilePicture,
+        emailVerified: user.emailVerified,
+      };
+  
+      const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
+      return {
+        message: 'Access Token',
+        access_token: token,
+        user_data: userObj,
+        domains: domainMembership,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
     }
-
-    const passwordMatch = await bcrypt.compare(dto.password, user.password);
-
-    if (!passwordMatch) {
-      throw new ForbiddenException('Invalid credentials');
-    }
-
-    // TODO: Send signin email
-
-    const token = this.jwtService.sign(
-      { uid: user.id },
-      {
-        expiresIn: '24h',
-      },
-    );
-
-    const userObj = {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      username: user.username,
-      jobTitle: user.jobTitle,
-      department: user.department,
-      location: user.location,
-      language: user.language,
-      availableHoursFrom: user.availableHoursFrom,
-      availableHoursTo: user.availableHoursTo,
-      profilePicture: user.profilePicture,
-      emailVerified: user.emailVerified,
-    };
-
-    const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
-    return {
-      message: 'Access Token',
-      access_token: token,
-      user_data: userObj,
-      domains: domainMembership,
-    };
   }
 
   async forgotPassword(email: string) {
@@ -203,19 +207,23 @@ export class AuthService {
     access_token: string,
     credentials: Record<string, any>,
   ) {
-    const response = await fetch(
-      `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
-    );
-
-    if (!response.ok) null;
-    const data = await response.json();
-    return {
-      googleId: data.sub,
-      name: data.name,
-      email: data.email,
-      picture: data.picture, // Users who use google signin have verified email automatically,
-      googleCredentials: credentials,
-    };
+    try {
+      const response = await fetch(
+        `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
+      );
+  
+      if (!response.ok) null;
+      const data = await response.json();
+      return {
+        googleId: data.sub,
+        name: data.name,
+        email: data.email,
+        picture: data.picture, // Users who use google signin have verified email automatically,
+        googleCredentials: credentials,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
   }
 
   async signGoogleLink(redirectURLi: string) {
@@ -238,7 +246,8 @@ export class AuthService {
         data: authorizedUrl,
       };
     } catch (err) {
-      throw new InternalServerErrorException();
+      console.log(err.message)
+      throw new InternalServerErrorException(err.message);
     }
   }
 

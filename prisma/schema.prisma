@@ -38,7 +38,6 @@ model User {
   // Relations
   announcement     Announcement[]
   tasks            Task[]
-  subTasks         SubTask[]
   domainMembership DomainMembership[]
   domains          Domain[]
 }
@@ -52,6 +51,7 @@ model Domain {
   ownerId       String
   owner         User               @relation(fields: [ownerId], references: [id])
   announcements Announcement[]
+  tasks         Task[]
   panels        Panel[]
   domainMembers DomainMembership[]
   status        Status[]
@@ -79,6 +79,8 @@ model Panel {
   name String
   // statusOrder String? // TODO: Write code to handle this
 
+  // Relations
+  Tasks    Task[]
   domainId String
   domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }
@@ -101,30 +103,35 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  text String
+  text        String
+  description String
 
   // relations
   authorId String
-  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Status   Status?   @relation(fields: [statusId], references: [id])
-  statusId String?
-  subTasks SubTask[]
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Status   Status   @relation(fields: [statusId], references: [id])
+  statusId String
+  panel    Panel    @relation(fields: [panelId], references: [id])
+  panelId  String
+  domain   Domain   @relation(fields: [domainId], references: [id])
+  domainId String
+  subTasks String[]
 }
 
-model SubTask {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model SubTask {
+//   id        String   @id @default(uuid())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  text String
-  done Boolean @default(false)
+//   text String
+//   done Boolean @default(false)
 
-  // relation
-  authorId     String
-  author       User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parentTaskId String
-  parentTask   Task   @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
-}
+//   // relation
+//   authorId     String
+//   author       User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+//   parentTaskId String
+//   parentTask   Task   @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
+// }
 
 model Announcement {
   id        String   @id @default(uuid())

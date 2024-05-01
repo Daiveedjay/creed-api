@@ -1,7 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { DomainService } from './domain.service';
-import { User } from 'src/user/user.decorator';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { CreateDomainDTO, UpdateDefaultDomainDTO } from './domain.dto';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -12,31 +20,41 @@ export class DomainController {
 
   @Get()
   @UseGuards(AuthGuard)
-  getDomains(@User() user) {
-    return this.domainService.getUserDomains(user.id);
+  getDomains(@CurrentUser('id') id: string) {
+    return this.domainService.getUserDomains(id);
   }
 
-  @Get("/:domainID")
+  @Get('/:domainID')
   @UseGuards(AuthGuard)
-  getDomain(@User() user, @Param("domainID") domainID: string) {
-    return this.domainService.getUserDomain(user.id, domainID);
+  async getDomain(
+    @CurrentUser('id') id: string,
+    @Param('domainID') domainID: string,
+  ) {
+    return await this.domainService.getUserDomain(id, domainID);
   }
 
-  @Patch("/:domainID")
+  @Patch('/:domainID')
   @UseGuards(AuthGuard)
-  updateDomain(@User() user, @Body() dto: CreateDomainDTO, @Param("domainID") domainID: string) {
-    return this.domainService.update(user.id, dto, domainID);
+  async updateDomain(
+    @CurrentUser('id') id: string,
+    @Body() dto: CreateDomainDTO,
+    @Param('domainID') domainID: string,
+  ) {
+    return await this.domainService.update(id, dto, domainID);
   }
 
   @Post()
   @UseGuards(AuthGuard)
-  createDomain(@User() user, @Body() dto: CreateDomainDTO) {
-    return this.domainService.create(user.id, dto);
+  async createDomain(
+    @CurrentUser('id') id: string,
+    @Body() dto: CreateDomainDTO,
+  ) {
+    return await this.domainService.create(id, dto);
   }
 
-  @Delete("/:domainID")
+  @Delete('/:domainID')
   @UseGuards(AuthGuard)
-  deletePanel(@Param("domainID") domainID) {
-    return this.domainService.deleteDomain(domainID);
+  async deletePanel(@Param('domainID') domainID: string) {
+    return await this.domainService.deleteDomain(domainID);
   }
 }

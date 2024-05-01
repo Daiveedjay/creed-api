@@ -1,41 +1,68 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { CreatePanelDTO } from 'src/panel/panel.dto';
+import { CreateTaskDTO } from './task.dto';
 
 @ApiTags('Tasks')
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) { }
+  constructor(private readonly taskService: TaskService) {}
 
-  @Get("/:panelID")
+  @Get('/:panelID')
   @UseGuards(AuthGuard)
-  getPanels(@Param("panelID") panelID) {
+  getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string) {
     return this.taskService.getTasks(panelID);
   }
 
-  @Get("/:domainID/:panelID")
+  @Get('/:domainID/:panelID/:taskID')
   @UseGuards(AuthGuard)
-  getPanel(@Param("domainID") domainID, @Param("panelID") panelID) {
-    return this.taskService.getTask(domainID, panelID);
+  getParticularTask(
+    @Param('domainID', ParseUUIDPipe) domainID: string,
+    @Param('panelID', ParseUUIDPipe) panelID: string,
+    @Param('taskID') taskID: string,
+  ) {
+    return this.taskService.getTask(domainID, panelID, taskID);
   }
 
-  @Post("/:domainID")
+  @Post('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  createPanel(@Param("domainID") domainID, @Body() dto: CreatePanelDTO) {
-    return this.taskService.createTask(domainID, dto);
+  createATask(
+    @Param('domainID', ParseUUIDPipe) domainID: string,
+    @Param('panelID', ParseUUIDPipe) panelID: string,
+    @CurrentUser('id') id: string,
+    @Body() dto: CreateTaskDTO,
+  ) {
+    return this.taskService.createTask(domainID, panelID, id, dto);
   }
 
-  @Patch("/:domainID/:panelID")
+  @Patch('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  editPanel(@Param("domainID") domainID, @Param("panelID") panelID, @Body() dto: CreatePanelDTO) {
+  editATask(
+    @Param('domainID', ParseUUIDPipe) domainID: string,
+    @Param('panelID', ParseUUIDPipe) panelID: string,
+    @Body() dto: CreatePanelDTO,
+  ) {
     return this.taskService.editTask(domainID, panelID, dto);
   }
 
-  @Delete("/:domainID/:panelID")
+  @Delete('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  deletePanel(@Param("domainID") domainID, @Param("panelID") panelID) {
+  deleteATask(
+    @Param('domainID', ParseUUIDPipe) domainID: string,
+    @Param('panelID', ParseUUIDPipe) panelID: string,
+  ) {
     return this.taskService.deleteTask(domainID, panelID);
   }
 }

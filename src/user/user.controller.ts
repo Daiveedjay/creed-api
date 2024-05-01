@@ -3,7 +3,7 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserUpdateDTOType } from './user.dto';
 import { AuthRequest } from 'src/types';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { User } from './user.decorator';
 
 @ApiTags('User')
@@ -19,7 +19,7 @@ export class UserController {
   @ApiSecurity('bearerAuth')
   @UseGuards(AuthGuard)
   public async getProfile(@User() user): Promise<any> {
-    return this.userService.getProfile(user.id);
+    return await this.userService.getProfile(user.id);
   }
 
   /**
@@ -29,9 +29,10 @@ export class UserController {
   @Put('/')
   @ApiSecurity('bearerAuth')
   public async editProfile(
+    @CurrentUser('id') id: string,
     @Req() req: AuthRequest,
     @Body() body: UserUpdateDTOType,
   ) {
-    return this.userService.editProfile(req.auth?.uid as string, body);
+    return await this.userService.editProfile(id, body);
   }
 }

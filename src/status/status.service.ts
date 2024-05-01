@@ -1,24 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateStatusDTO } from './status.dto';
 
 @Injectable()
 export class StatusService {
-  constructor(private readonly dbService: DbService) { }
+  constructor(private readonly dbService: DbService) {}
 
   async getStatus(domainID: string) {
-    const status = await this.dbService.status.findMany({ where: { domainId: domainID } });
-    return status;
+    try {
+      const status = await this.dbService.status.findMany({ where: { domainId: domainID } });
+      return status;
+    } catch (error) {
+      throw new InternalServerErrorException('Cannot get status')
+    }
   }
 
   async createStatus(domainID: string, dto: CreateStatusDTO) {
-    const status = await this.dbService.status.create({
-      data: {
-        name: dto.name,
-        domainId: domainID
-      }
-    });
-    return status;
+    try {
+      const status = await this.dbService.status.create({
+        data: {
+          name: dto.name,
+          domainId: domainID
+        }
+      });
+      return status;
+    } catch (error) {
+      throw new InternalServerErrorException('Status cannot be created!')
+    }
   }
 
   async editStatus(statusID: string, domainId: string, dto: CreateStatusDTO) {
