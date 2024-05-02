@@ -67,7 +67,7 @@ model DomainMembership {
   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   panelId  String?
-  panels   Panel?  @relation(fields: [panelId], references: [id])
+  panel    Panel?  @relation(fields: [panelId], references: [id], onDelete: Cascade)
   domainId String
   domain   Domain  @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }

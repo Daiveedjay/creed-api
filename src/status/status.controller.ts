@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -20,29 +21,29 @@ export class StatusController {
 
   @Get()
   @UseGuards(AuthGuard)
-  getPanels(@Param('domainID') domainID) {
-    return this.statusService.getStatus(domainID);
+  async getStatusAssociatedWithDomain(@Param('domainID') domainID: string) {
+    return await this.statusService.getStatus(domainID);
   }
 
   @Post()
   @UseGuards(AuthGuard)
-  createStatus(@Param('domainID') domainID, @Body() dto: CreateStatusDTO) {
-    return this.statusService.createStatus(domainID, dto);
+  async createStatus(@Param('domainID') domainID, @Body() dto: CreateStatusDTO) {
+    return await this.statusService.createStatus(domainID, dto);
   }
 
   @Patch('/:statusID')
   @UseGuards(AuthGuard)
-  editStatus(
+  async editStatus(
     @Param('statusID') statusID,
     @Param('domainID') domainID,
     @Body() dto: CreateStatusDTO,
   ) {
-    return this.statusService.editStatus(statusID, domainID, dto);
+    return await this.statusService.editStatus(statusID, domainID, dto);
   }
 
   @Delete('/:statusID')
   @UseGuards(AuthGuard)
-  deleteStatus(@Param('domainID') domainID, @Param('statusID') statusID) {
-    return this.statusService.deleteStatus(statusID, domainID);
+  async deleteStatus(@Param('domainID') domainID, @Param('statusID') statusID) {
+    return await this.statusService.deleteStatus(statusID, domainID);
   }
 }

@@ -22,47 +22,47 @@ export class TaskController {
 
   @Get('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string, @Param('domainID', ParseUUIDPipe) domainID: string) {
-    return this.taskService.getTasks(domainID, panelID);
+  async getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string, @Param('domainID', ParseUUIDPipe) domainID: string) {
+    return await this.taskService.getTasks(domainID, panelID);
   }
 
   @Get('/:domainID/:panelID/:taskID')
   @UseGuards(AuthGuard)
-  getParticularTask(
+  async getParticularTask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
     @Param('taskID') taskID: string,
   ) {
-    return this.taskService.getTask(domainID, panelID, taskID);
+    return await this.taskService.getTask(domainID, panelID, taskID);
   }
 
   @Post('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  createATask(
+  async createATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
     @CurrentUser('id') id: string,
     @Body() dto: CreateTaskDTO,
   ) {
-    return this.taskService.createTask(domainID, panelID, id, dto);
+    return await this.taskService.createTask(domainID, panelID, id, dto);
   }
 
   @Patch('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  editATask(
+  async editATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
     @Body() dto: UpdateTaskDto,
   ) {
-    return this.taskService.editTask(domainID, panelID, dto);
+    return await this.taskService.editTask(domainID, panelID, dto);
   }
 
   @Delete('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  deleteATask(
+  async deleteATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
   ) {
-    return this.taskService.deleteTask(domainID, panelID);
+    return await this.taskService.deleteTask(domainID, panelID);
   }
 }
