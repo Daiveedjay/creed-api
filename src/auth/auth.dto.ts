@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -8,6 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { CreateDomainDTO } from 'src/domain/domain.dto';
 
 export class UserSignupDTOType {
   @ApiProperty()
@@ -33,10 +35,11 @@ export class UserSignupDTOType {
   // @IsNotEmpty()
   phone: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsNotEmpty()
-  @IsString()
-  domainName: string;
+  domainInfo: CreateDomainDTO;
 }
 
 export class UserSigninDTOType {

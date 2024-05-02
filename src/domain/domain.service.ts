@@ -1,6 +1,7 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
-import { CreateDomainDTO, UpdateDefaultDomainDTO } from './domain.dto';
+import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
 
 @Injectable()
@@ -38,26 +39,65 @@ export class DomainService {
     }
   }
 
-  async update(userID, dto: CreateDomainDTO, domainID: string) {
+  async update(userID: string, dto: CreateDomainDTO, domainID: string) {
     try {
-      const domain = await this.dbService.domain.update({
-        where: { id: domainID, ownerId: userID },
-        data: { ...dto },
+      const currentUser = await this.dbService.user.findUnique({
+        where: {
+          id: userID
+        }
+      })
+
+      if(!currentUser) throw new NotFoundException('User not found')
+
+      const avaliableDomain = await this.dbService.domain.findUnique({
+        where: {
+          id: domainID,
+          ownerId: currentUser.id
+        }
+      })
+
+      if(!avaliableDomain) throw new NotFoundException('Domain not found')
+
+      await this.dbService.domain.update({
+        where: { id: domainID, ownerId: currentUser.id },
+        data: { 
+          ...dto,
+          // domainMembers: {
+          //   updateMany: {
+          //     where: {
+          //       domainId: domainID
+          //     },
+          //     data: dto.domainMembers.map(member => ({
+          //       userId: member
+          //     }))
+          //   }
+          // }
+        },
       });
 
-      return {
-        message: 'Updated',
-      };
+      return new HttpException('Updated', HttpStatus.ACCEPTED)
+
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
 
-  async create(userID, dto: CreateDomainDTO) {
+  async create(userID: string, dto: CreateDomainDTO) {
     try {
       const domain = await this.dbService.domain.create({
-        data: { ...dto, ownerId: userID },
+        data: {
+          ...dto,
+          // domainMembers: {
+          //   createMany: {
+          //     data: dto.domainMembers.map((member) => ({
+          //       userId: member
+          //     }))
+          //   }
+          // },
+          ownerId: userID
+        },
       });
+
       await this.dbService.domainMembership.create({
         data: {
           domainId: domain.id,
@@ -65,9 +105,8 @@ export class DomainService {
           memberRole: Roles.Owner,
         },
       });
-      return {
-        message: 'Created',
-      };
+      
+      return new HttpException('Created', HttpStatus.CREATED)
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
