@@ -106,7 +106,7 @@ export class DomainService {
         },
       });
       
-      return new HttpException('Created', HttpStatus.CREATED)
+      return domain
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

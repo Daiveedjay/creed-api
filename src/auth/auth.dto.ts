@@ -9,7 +9,6 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { CreateDomainDTO } from 'src/domain/domain.dto';
 
 export class UserSignupDTOType {
   @ApiProperty()
@@ -39,7 +38,8 @@ export class UserSignupDTOType {
     required: true,
   })
   @IsNotEmpty()
-  domainInfo: CreateDomainDTO;
+  @IsString()
+  domainName: string;
 }
 
 export class UserSigninDTOType {

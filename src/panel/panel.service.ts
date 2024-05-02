@@ -56,6 +56,7 @@ export class PanelService {
 
       return panels;
     } catch (error) {
+      console.log(error)
       throw new InternalServerErrorException('Panels cannot be created!');
     }
   }

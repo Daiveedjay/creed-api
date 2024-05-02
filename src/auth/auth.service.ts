@@ -46,7 +46,20 @@ export class AuthService {
       });
 
       // Setup default domain
-      const newDomain = await this.domainService.create(user.id, dto.domainInfo)
+      const newDomain = await this.dbService.domain.create({
+        data: {
+          ownerId: user.id,
+          name: dto.domainName
+        }
+      })
+
+      await this.dbService.domainMembership.create({
+        data: {
+          memberRole: 'Owner',
+          domainId: newDomain.id,
+          userId: user.id
+        }
+      })
 
       // TODO: Send welcome email
 

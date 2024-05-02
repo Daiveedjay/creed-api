@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateStatusDTO } from './status.dto';
@@ -23,6 +24,14 @@ export class StatusService {
           domainId: domainID
         }
       });
+
+      await this.dbService.status.create({
+        data: {
+          name: 'Completed',
+          domainId: domainID
+        }
+      })
+
       return status;
     } catch (error) {
       throw new InternalServerErrorException('Status cannot be created!')
