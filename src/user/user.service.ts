@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { UserUpdateDTOType } from './user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly dbService: DbService) { }
+  constructor(private readonly dbService: DbService) {}
 
   async getProfile(userId: string) {
-    return this.dbService.user.findUnique({
+    return await this.dbService.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -28,5 +34,28 @@ export class UserService {
     });
   }
 
-  async editProfile(userId: string, body: UserUpdateDTOType) { }
+  async editProfile(userId: string, body: UserUpdateDTOType) {
+    try {
+      const currentUser = await this.dbService.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!currentUser) throw new UnauthorizedException('No access');
+
+      await this.dbService.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          ...body,
+        },
+      });
+
+      throw new HttpException('Profile updated', HttpStatus.ACCEPTED);
+    } catch (error) {
+      throw new InternalServerErrorException('Profile info cannot be changed');
+    }
+  }
 }

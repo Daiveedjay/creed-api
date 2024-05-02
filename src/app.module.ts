@@ -1,17 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UtilsModule } from './utils/utils.module';
-import { UserController } from './user/user.controller';
-import { UserService } from './user/user.service';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { DomainModule } from './domain/domain.module';
 import { PanelModule } from './panel/panel.module';
 import { StatusModule } from './status/status.module';
 import { TaskModule } from './task/task.module';
-
 @Module({
   imports: [
     AuthModule,
@@ -23,7 +19,7 @@ import { TaskModule } from './task/task.module';
     StatusModule,
     TaskModule,
   ],
-  controllers: [AppController, UserController],
-  providers: [AppService, UserService],
+  controllers: [AppController],
+  providers: [],
 })
 export class AppModule {}

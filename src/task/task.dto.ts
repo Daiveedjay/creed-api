@@ -1,9 +1,20 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { MinLength } from "class-validator";
-
-
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, MinLength } from 'class-validator';
 export class CreateTaskDTO {
   @ApiProperty()
+  @IsString()
   @MinLength(3)
-  name: string;
+  text: string;
+
+  @ApiProperty()
+  @MinLength(5)
+  @IsString()
+  description: string;
+
+  @ApiProperty()
+  subTasks: string[];
+
+  @ApiProperty()
+  @IsString()
+  statusId: string;
 }
