@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   ForbiddenException,
   Injectable,
@@ -14,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
+import { DomainService } from 'src/domain/domain.service';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,7 @@ export class AuthService {
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly domainService: DomainService,
   ) { }
 
   async signUp(dto: UserSignupDTOType) {
@@ -43,19 +46,7 @@ export class AuthService {
       });
 
       // Setup default domain
-      const newDomain = await this.dbService.domain.create({
-        data: {
-          name: dto.domainName,
-          ownerId: user.id,
-
-          domainMembers: {
-            create: {
-              memberRole: Roles.Owner,
-              userId: user.id
-            }
-          }
-        },
-      });
+      const newDomain = await this.domainService.create(user.id, dto.domainInfo)
 
       // TODO: Send welcome email
 

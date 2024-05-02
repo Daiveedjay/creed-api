@@ -25,10 +25,10 @@ model User {
   department         String?
   location           String?
   language           String?
-  availableHoursFrom String?
-  availableHoursTo   String?
+  availableHoursFrom DateTime?
+  availableHoursTo   DateTime?
   profilePicture     String?
-  emailVerified      Boolean @default(false)
+  emailVerified      Boolean   @default(false)
 
   // extras
   otp               String?
@@ -66,8 +66,10 @@ model DomainMembership {
   memberRole Roles  @default(Member)
   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  panelId  String?
+  panels   Panel?  @relation(fields: [panelId], references: [id])
   domainId String
-  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domain   Domain  @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }
 
 // TODO: Should be called Panel instead
@@ -80,9 +82,10 @@ model Panel {
   // statusOrder String? // TODO: Write code to handle this
 
   // Relations
-  Tasks    Task[]
-  domainId String
-  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  tasks        Task[]
+  panelMembers DomainMembership[]
+  domainId     String
+  domain       Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }
 
 model Status {

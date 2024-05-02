@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -8,7 +9,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { PanelService } from './panel.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreatePanelDTO } from './panel.dto';
@@ -32,8 +33,12 @@ export class PanelController {
 
   @Post('/:domainID')
   @UseGuards(AuthGuard)
-  createPanel(@Param('domainID') domainID, @Body() dto: CreatePanelDTO) {
-    return this.panelService.createPanel(domainID, dto);
+  createPanel(
+    @Param('domainID') domainID,
+    @CurrentUser('id') id: string,
+    @Body() dto: CreatePanelDTO,
+  ) {
+    return this.panelService.createPanel(domainID, id, dto);
   }
 
   @Patch('/:domainID/:panelID')

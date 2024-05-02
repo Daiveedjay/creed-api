@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -10,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { DomainService } from './domain.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { CreateDomainDTO, UpdateDefaultDomainDTO } from './domain.dto';
+import { CreateDomainDTO } from './domain.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Domains')

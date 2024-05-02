@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -12,18 +13,17 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { CreatePanelDTO } from 'src/panel/panel.dto';
-import { CreateTaskDTO } from './task.dto';
+import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
 
 @ApiTags('Tasks')
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @Get('/:panelID')
+  @Get('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string) {
-    return this.taskService.getTasks(panelID);
+  getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string, @Param('domainID', ParseUUIDPipe) domainID: string) {
+    return this.taskService.getTasks(domainID, panelID);
   }
 
   @Get('/:domainID/:panelID/:taskID')
@@ -52,7 +52,7 @@ export class TaskController {
   editATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
-    @Body() dto: CreatePanelDTO,
+    @Body() dto: UpdateTaskDto,
   ) {
     return this.taskService.editTask(domainID, panelID, dto);
   }
