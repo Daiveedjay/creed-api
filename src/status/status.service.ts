@@ -25,12 +25,21 @@ export class StatusService {
         }
       });
 
-      await this.dbService.status.create({
-        data: {
+      const existingCompletedStatus = await this.dbService.status.findFirst({
+        where: {
           name: 'Completed',
           domainId: domainID
         }
       })
+
+      if(!existingCompletedStatus) {
+        await this.dbService.status.create({
+          data: {
+            name: 'Completed',
+            domainId: domainID
+          }
+        })
+      }
 
       return status;
     } catch (error) {

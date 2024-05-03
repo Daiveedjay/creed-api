@@ -31,7 +31,7 @@ export class TaskController {
   async getParticularTask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
-    @Param('taskID') taskID: string,
+    @Param('taskID', ParseUUIDPipe) taskID: string,
   ) {
     return await this.taskService.getTask(domainID, panelID, taskID);
   }
@@ -47,22 +47,25 @@ export class TaskController {
     return await this.taskService.createTask(domainID, panelID, id, dto);
   }
 
-  @Patch('/:domainID/:panelID')
+  @Patch('/:domainID/:panelID/:taskID')
   @UseGuards(AuthGuard)
   async editATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
+    @Param('taskID', ParseUUIDPipe) taskID: string,
+    @CurrentUser('id') id: string,
     @Body() dto: UpdateTaskDto,
   ) {
-    return await this.taskService.editTask(domainID, panelID, dto);
+    return await this.taskService.editTask(domainID, panelID, taskID, id, dto);
   }
 
-  @Delete('/:domainID/:panelID')
+  @Delete('/:domainID/:panelID/:taskID')
   @UseGuards(AuthGuard)
   async deleteATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
+    @Param('taskID', ParseUUIDPipe) taskID: string,
   ) {
-    return await this.taskService.deleteTask(domainID, panelID);
+    return await this.taskService.deleteTask(domainID, taskID, panelID);
   }
 }
