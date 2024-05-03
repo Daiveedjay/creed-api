@@ -15,7 +15,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
-import { DomainService } from 'src/domain/domain.service';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +22,6 @@ export class AuthService {
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-    private readonly domainService: DomainService,
   ) { }
 
   async signUp(dto: UserSignupDTOType) {
@@ -48,18 +46,17 @@ export class AuthService {
       // Setup default domain
       const newDomain = await this.dbService.domain.create({
         data: {
+          name: dto.domainName,
           ownerId: user.id,
-          name: dto.domainName
-        }
-      })
 
-      await this.dbService.domainMembership.create({
-        data: {
-          memberRole: 'Owner',
-          domainId: newDomain.id,
-          userId: user.id
-        }
-      })
+          domainMembers: {
+            create: {
+              memberRole: Roles.Owner,
+              userId: user.id
+            }
+          }
+        },
+      });
 
       // TODO: Send welcome email
 
@@ -69,10 +66,27 @@ export class AuthService {
           expiresIn: '24h',
         },
       );
+
+      const userObj = {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        username: user.username,
+        jobTitle: user.jobTitle,
+        department: user.department,
+        location: user.location,
+        language: user.language,
+        availableHoursFrom: user.availableHoursFrom,
+        availableHoursTo: user.availableHoursTo,
+        profilePicture: user.profilePicture,
+        emailVerified: user.emailVerified,
+      };
+
       return {
         message: 'Signup successful',
         access_token: token,
-        default_domain: newDomain,
+        user_data: userObj,
+        domains: newDomain,
       };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -132,6 +146,7 @@ export class AuthService {
       };
   
       const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
+  
       return {
         message: 'Access Token',
         access_token: token,
@@ -250,8 +265,7 @@ export class AuthService {
         data: authorizedUrl,
       };
     } catch (err) {
-      console.log(err.message)
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException();
     }
   }
 
