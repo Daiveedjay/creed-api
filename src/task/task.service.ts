@@ -14,6 +14,17 @@ export class TaskService {
           domainId: domainID,
           panelId: panelID,
         },
+        select: {
+          id: true,
+          text: true,
+          description: true,
+          createdAt: true,
+          subTasks: true,
+          authorId: true,
+          domainId: true,
+          panelId: true,
+          statusId: true,
+        }
       });
 
       return tasks;
@@ -31,6 +42,17 @@ export class TaskService {
           domainId: domainID,
           panelId: panelID,
         },
+        select: {
+          id: true,
+          text: true,
+          description: true,
+          createdAt: true,
+          subTasks: true,
+          authorId: true,
+          domainId: true,
+          panelId: true,
+          statusId: true,
+        }
       });
 
       return task;
@@ -60,7 +82,15 @@ export class TaskService {
           description: dto.description,
           text: dto.text,
           statusId: dto.statusId,
-          subTasks: dto.subTasks,
+          subTasks: {
+            createMany: {
+              data: dto.subTasks.map(task => ({
+                text: task.content,
+                done: false,
+                authorId: currentUser.id
+              }))
+            }
+          },
           authorId: currentUser.id,
           panelId: panelID,
           domainId: domainID,
@@ -75,7 +105,19 @@ export class TaskService {
   }
 
   async editTask(domainID: string, taskID: string, dto: UpdateTaskDto) {
-    await this.dbService.task.update({ where: { domainId: domainID, id: taskID }, data: { ...dto } });
+    await this.dbService.task.update({ where: { domainId: domainID, id: taskID }, data: {
+      ...dto,
+      subTasks: {
+        updateMany: {
+          where: {
+            id: dto.subTasksId
+          },
+          data: dto.subTasks.map((task) => ({
+            text: task.content
+          }))
+        }
+      }
+    } });
     return {
       message: 'Updated',
     };
