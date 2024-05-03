@@ -20,10 +20,10 @@ export class CreateTaskDTO {
 
   @ApiProperty({
     required: true,
-    isArray: true,
+    type: Array<SubTasks>
   })
   @IsArray()
-  subTasks: string[];
+  subTasks: SubTasks[];
 
   @ApiProperty({
     required: true,
@@ -32,6 +32,12 @@ export class CreateTaskDTO {
   statusId: string;
 }
 
+type SubTasks = {
+  id: string;
+  content: string
+}
 
 
-export class UpdateTaskDto extends PartialType(CreateTaskDTO) {}
+export class UpdateTaskDto extends PartialType(CreateTaskDTO) {
+  subTasksId: string
+}

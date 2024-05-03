@@ -38,6 +38,7 @@ model User {
   // Relations
   announcement     Announcement[]
   tasks            Task[]
+  subTasks         SubTask[]
   domainMembership DomainMembership[]
   domains          Domain[]
 }
@@ -111,30 +112,30 @@ model Task {
 
   // relations
   authorId String
-  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Status   Status   @relation(fields: [statusId], references: [id])
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Status   Status    @relation(fields: [statusId], references: [id])
   statusId String
-  panel    Panel    @relation(fields: [panelId], references: [id])
+  panel    Panel     @relation(fields: [panelId], references: [id])
   panelId  String
-  domain   Domain   @relation(fields: [domainId], references: [id])
+  domain   Domain    @relation(fields: [domainId], references: [id])
   domainId String
-  subTasks String[]
+  subTasks SubTask[]
 }
 
-// model SubTask {
-//   id        String   @id @default(uuid())
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
+model SubTask {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   text String
-//   done Boolean @default(false)
+  text String
+  done Boolean @default(false)
 
-//   // relation
-//   authorId     String
-//   author       User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-//   parentTaskId String
-//   parentTask   Task   @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
-// }
+  // relation
+  authorId     String
+  author       User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentTaskId String
+  parentTask   Task   @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
+}
 
 model Announcement {
   id        String   @id @default(uuid())
