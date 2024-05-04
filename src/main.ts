@@ -12,9 +12,7 @@ async function bootstrap() {
   const theme = new SwaggerTheme();
 
   // Enable cors
-  app.enableCors({
-    origin: [process.env.CLIENT_APP_URL as string, process.env.PRODUCTION_APP_URL as string]
-  });
+  app.enableCors();
 
   // API input validation
   app.useGlobalPipes(
