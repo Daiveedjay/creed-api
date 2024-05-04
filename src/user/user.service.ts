@@ -1,8 +1,10 @@
+/* eslint-disable prettier/prettier */
 import {
   HttpException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
@@ -13,25 +15,33 @@ export class UserService {
   constructor(private readonly dbService: DbService) {}
 
   async getProfile(userId: string) {
-    return await this.dbService.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        email: true,
-        fullName: true,
-        username: true,
-        jobTitle: true,
-        department: true,
-        location: true,
-        language: true,
-        availableHoursFrom: true,
-        availableHoursTo: true,
-        profilePicture: true,
-        emailVerified: true,
-      },
-    });
+    try {
+      const profile = await this.dbService.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          email: true,
+          fullName: true,
+          username: true,
+          jobTitle: true,
+          department: true,
+          location: true,
+          language: true,
+          availableHoursFrom: true,
+          availableHoursTo: true,
+          profilePicture: true,
+          emailVerified: true,
+        },
+      });
+  
+      if(!profile) throw new NotFoundException('No profile like this')
+  
+      return profile
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
   }
 
   async editProfile(userId: string, body: UserUpdateDTOType) {

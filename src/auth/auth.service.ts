@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   PasswordResetDTO,
@@ -15,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
@@ -232,12 +234,11 @@ export class AuthService {
     credentials: Record<string, any>,
   ) {
     try {
-      const response = await fetch(
+      const {data} = await axios.get(
         `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
       );
   
-      if (!response.ok) null;
-      const data = await response.json();
+      if (!data) throw new NotFoundException('User nor found!');
 
       return {
         googleId: data.sub,
@@ -292,6 +293,7 @@ export class AuthService {
       );
 
       if (!cred) throw new InternalServerErrorException();
+
       const oldUser = await this.dbService.user.findUnique({
         where: { googleId: cred.googleId },
       });
@@ -324,6 +326,7 @@ export class AuthService {
       // Make sure to set the credentials on the OAuth2 client.
       oAuth2Client.setCredentials(r.tokens);
       const user = oAuth2Client.credentials;
+
       const cred = await this.getUserData(
         oAuth2Client.credentials.access_token!,
         user,
