@@ -55,7 +55,7 @@ export class DomainController {
 
   @Delete('/:domainID')
   @UseGuards(AuthGuard)
-  async deletePanel(@Param('domainID') domainID: string) {
-    return await this.domainService.deleteDomain(domainID);
+  async deletePanel(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
+    return await this.domainService.deleteDomain(domainID, id);
   }
 }

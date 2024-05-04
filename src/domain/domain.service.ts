@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
@@ -17,6 +17,10 @@ export class DomainService {
             { domainMembers: { some: { userId: userID } } },
           ],
         },
+        // include: {
+        //   panels: true,
+        //   status: true,
+        // }
       });
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -25,7 +29,7 @@ export class DomainService {
 
   async getUserDomain(userID: string, doaminID: string) {
     try {
-      return await this.dbService.domain.findFirst({
+      const domain = await this.dbService.domain.findUnique({
         where: {
           id: doaminID,
           OR: [
@@ -33,7 +37,15 @@ export class DomainService {
             { domainMembers: { some: { userId: userID } } },
           ],
         },
+        // include: {
+        //   panels: true,
+        //   status: true
+        // }
       });
+
+      if(!domain) return new NotFoundException('No domain like this exists!');
+
+      return domain
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -87,13 +99,12 @@ export class DomainService {
       const domain = await this.dbService.domain.create({
         data: {
           ...dto,
-          // domainMembers: {
-          //   createMany: {
-          //     data: dto.domainMembers.map((member) => ({
-          //       userId: member
-          //     }))
-          //   }
-          // },
+          domainMembers: {
+            create: {
+              memberRole: Roles.Owner,
+              userId: userID
+            }
+          },
           ownerId: userID
         },
       });
@@ -112,10 +123,75 @@ export class DomainService {
     }
   }
 
-  async deleteDomain(domainID: string) {
-    await this.dbService.domain.delete({ where: { id: domainID } });
-    return {
-      message: 'Deleted',
-    };
+  async deleteDomain(domainID: string, userId: string) {
+    try {
+      const allDomains = await this.getUserDomains(userId)
+      const domainToBeDeleted = await this.dbService.domain.findUnique({
+        where: {
+          id: domainID
+        },
+        include: {
+          panels: true,
+          status: true,
+          tasks: true,
+          announcements: true
+        }
+      });
+
+      if(!domainToBeDeleted) {
+        return new NotFoundException();
+      } else if (allDomains.length <= 1) {
+        return new ConflictException('You need at least one domain to be available');
+      }
+
+      for(const task of domainToBeDeleted.tasks) {
+        await this.dbService.task.delete({
+          where: {
+            id: task.id
+          }
+        })
+      }
+
+      for(const status of domainToBeDeleted.status) {
+        await this.dbService.status.delete({
+          where: {
+            id: status.id
+          }
+        })
+      }
+
+      for(const panel of domainToBeDeleted.panels) {
+        await this.dbService.panel.delete({
+          where: {
+            id: panel.id
+          }
+        })
+      }
+
+      for(const announcement of domainToBeDeleted.announcements) {
+        await this.dbService.announcement.delete({
+          where: {
+            id: announcement.id
+          }
+        })
+      }
+
+      await this.dbService.domain.delete({
+        where: {
+          id: domainID
+        },
+        include: {
+          panels: true,
+          status: true,
+          tasks: true,
+          announcements: true
+        }
+      });
+
+      return new HttpException('Deleted', HttpStatus.ACCEPTED)
+    } catch (error) {
+      console.log(error)
+      throw new InternalServerErrorException(error.message)
+    }
   }
 }
