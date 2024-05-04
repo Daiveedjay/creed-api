@@ -158,7 +158,7 @@ export class TaskService {
       },
     });
 
-    return new HttpException('Updated', HttpStatus.ACCEPTED);
+    throw new HttpException('Updated', HttpStatus.ACCEPTED);
   }
 
   async deleteTask(doaminID: string, taskID: string, panelID: string) {
@@ -172,7 +172,7 @@ export class TaskService {
       await this.dbService.task.delete({
         where: { domainId: doaminID, id: taskID, panelId: panelID },
       });
-      return new HttpException('Deleted', HttpStatus.ACCEPTED)
+      throw new HttpException('Deleted', HttpStatus.ACCEPTED)
     } catch (error) {
       throw new InternalServerErrorException()
     }

@@ -43,7 +43,7 @@ export class DomainService {
         // }
       });
 
-      if(!domain) return new NotFoundException('No domain like this exists!');
+      if(!domain) throw new NotFoundException('No domain like this exists!');
 
       return domain
     } catch (error) {
@@ -87,7 +87,7 @@ export class DomainService {
         },
       });
 
-      return new HttpException('Updated', HttpStatus.ACCEPTED)
+      throw new HttpException('Updated', HttpStatus.ACCEPTED)
 
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -139,9 +139,9 @@ export class DomainService {
       });
 
       if(!domainToBeDeleted) {
-        return new NotFoundException();
+        throw new NotFoundException();
       } else if (allDomains.length <= 1) {
-        return new ConflictException('You need at least one domain to be available');
+        throw new ConflictException('You need at least one domain to be available');
       }
 
       for(const task of domainToBeDeleted.tasks) {
@@ -188,7 +188,7 @@ export class DomainService {
         }
       });
 
-      return new HttpException('Deleted', HttpStatus.ACCEPTED)
+      throw new HttpException('Deleted', HttpStatus.ACCEPTED)
     } catch (error) {
       console.log(error)
       throw new InternalServerErrorException(error.message)
