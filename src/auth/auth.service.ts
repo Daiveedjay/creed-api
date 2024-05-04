@@ -16,7 +16,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
-import axios from 'axios';
 
 @Injectable()
 export class AuthService {
@@ -234,12 +233,13 @@ export class AuthService {
     credentials: Record<string, any>,
   ) {
     try {
-      const {data} = await axios.get(
+      const response = await fetch(
         `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
       );
   
-      if (!data) throw new NotFoundException('User nor found!');
+      if (!response.ok) throw new NotFoundException('User nor found!');
 
+      const data = await response.json()
       return {
         googleId: data.sub,
         name: data.name,
