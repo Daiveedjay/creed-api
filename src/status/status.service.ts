@@ -28,7 +28,7 @@ export class StatusService {
       const existingCompletedStatus = await this.dbService.status.findFirst({
         where: {
           name: 'Completed',
-          domainId: domainID
+          domainId: domainID,
         }
       })
 
@@ -39,9 +39,12 @@ export class StatusService {
             domainId: domainID
           }
         })
+
+        return status;
+      } else {
+        return status;
       }
 
-      return status;
     } catch (error) {
       throw new InternalServerErrorException('Status cannot be created!')
     }
