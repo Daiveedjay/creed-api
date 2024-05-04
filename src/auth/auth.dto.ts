@@ -11,15 +11,28 @@ import {
 } from 'class-validator';
 
 export class UserSignupDTOType {
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    minLength: 3,
+    required: true
+  })
   @MinLength(3)
   fullName: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    example: 'john@gmail.com'
+  })
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    minLength: 6,
+    maxLength: 30,
+    required: true
+  })
   @MinLength(6)
   @MaxLength(30)
   password: string;
@@ -43,12 +56,19 @@ export class UserSignupDTOType {
 }
 
 export class UserSigninDTOType {
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    example: 'john@gmail.com'
+  })
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: true
+  })
   @IsNotEmpty()
   password: string;
 
@@ -59,12 +79,17 @@ export class UserSigninDTOType {
 }
 
 export class PasswordResetDTO {
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+    type: String
+  })
   @IsNotEmpty()
   password: string;
 
-
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+    type: String
+  })
   @IsNotEmpty()
   otp: string;
 }

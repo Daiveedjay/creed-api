@@ -56,6 +56,10 @@ export class AuthService {
             }
           }
         },
+        include: {
+          panels: true,
+          status: true,
+        }
       });
 
       // TODO: Send welcome email
@@ -102,7 +106,8 @@ export class AuthService {
             select: {
               domain: {
                 include: {
-                  panels: true
+                  panels: true,
+                  status: true,
                 }
               },
   
@@ -233,6 +238,7 @@ export class AuthService {
   
       if (!response.ok) null;
       const data = await response.json();
+
       return {
         googleId: data.sub,
         name: data.name,

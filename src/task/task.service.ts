@@ -1,5 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
 
@@ -24,7 +30,7 @@ export class TaskService {
           domainId: true,
           panelId: true,
           statusId: true,
-        }
+        },
       });
 
       return tasks;
@@ -37,7 +43,7 @@ export class TaskService {
   async getTask(domainID: string, panelID: string, taskID: string) {
     try {
       const task = await this.dbService.task.findFirst({
-        where: { 
+        where: {
           id: taskID,
           domainId: domainID,
           panelId: panelID,
@@ -52,7 +58,7 @@ export class TaskService {
           domainId: true,
           panelId: true,
           statusId: true,
-        }
+        },
       });
 
       return task;
@@ -71,25 +77,25 @@ export class TaskService {
     try {
       const currentUser = await this.dbService.user.findUnique({
         where: {
-          id: userId
-        }
-      })
+          id: userId,
+        },
+      });
 
-      if(!currentUser) throw new NotFoundException('No user found!')
+      if (!currentUser) throw new NotFoundException('No user found!');
 
       const tasks = await this.dbService.task.create({
         data: {
           description: dto.description,
-          text: dto.text,
+          text: dto.title,
           statusId: dto.statusId,
           subTasks: {
             createMany: {
-              data: dto.subTasks.map(task => ({
+              data: dto.subTasks.map((task) => ({
                 text: task.content,
                 done: false,
-                authorId: currentUser.id
-              }))
-            }
+                authorId: currentUser.id,
+              })),
+            },
           },
           authorId: currentUser.id,
           panelId: panelID,
@@ -104,29 +110,72 @@ export class TaskService {
     }
   }
 
-  async editTask(domainID: string, taskID: string, dto: UpdateTaskDto) {
-    await this.dbService.task.update({ where: { domainId: domainID, id: taskID }, data: {
-      ...dto,
-      subTasks: {
-        updateMany: {
-          where: {
-            id: dto.subTasksId
-          },
-          data: dto.subTasks.map((task) => ({
-            text: task.content
-          }))
-        }
-      }
-    } });
-    return {
-      message: 'Updated',
-    };
+  async editTask(
+    domainID: string,
+    panelID: string,
+    taskID: string,
+    userId: string,
+    dto: UpdateTaskDto,
+  ) {
+    const thereIsATask = await this.dbService.task.findUnique({
+      where: {
+        id: taskID,
+        panelId: panelID,
+        domainId: domainID,
+      },
+      select: {
+        subTasks: true,
+        id: true,
+      },
+    });
+
+    if (!thereIsATask) throw new NotFoundException('Task not found');
+
+    await this.dbService.task.update({
+      where: {
+        id: taskID,
+        domainId: domainID,
+        panelId: panelID,
+      },
+      data: {
+        ...dto,
+        subTasks: {
+          upsert: dto.subTasks.map((subtask) => ({
+            where: {
+              id: subtask.id,
+            },
+            update: {
+              done: subtask.done,
+              text: subtask.content,
+            },
+            create: {
+              done: subtask.done,
+              text: subtask.content,
+              authorId: userId,
+            },
+          })),
+        },
+      },
+    });
+
+    return new HttpException('Updated', HttpStatus.ACCEPTED);
   }
 
-  async deleteTask(doaminID: string, taskID: string) {
-    await this.dbService.task.delete({ where: { domainId: doaminID, id: taskID } });
-    return {
-      message: 'Deleted',
-    };
+  async deleteTask(doaminID: string, taskID: string, panelID: string) {
+    try {
+      const existingTask = await this.dbService.task.findUnique({
+        where: { domainId: doaminID, id: taskID, panelId: panelID },
+      });
+
+      if(!existingTask) throw new NotFoundException('Task not found!')
+
+      await this.dbService.task.delete({
+        where: { domainId: doaminID, id: taskID, panelId: panelID },
+      });
+      return new HttpException('Deleted', HttpStatus.ACCEPTED)
+    } catch (error) {
+      throw new InternalServerErrorException()
+    }
+    
   }
 }

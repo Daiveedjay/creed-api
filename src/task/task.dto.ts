@@ -8,7 +8,7 @@ export class CreateTaskDTO {
   })
   @IsString()
   @MinLength(3)
-  text: string;
+  title: string;
 
   @ApiProperty({
     required: true,
@@ -34,7 +34,8 @@ export class CreateTaskDTO {
 
 type SubTasks = {
   id: string;
-  content: string
+  content: string;
+  done: boolean
 }
 
 
