@@ -17,6 +17,7 @@ export class UserController {
    */
   @Get('/profile')
   @ApiSecurity('bearerAuth')
+  @UseGuards(AuthGuard)
   public async getProfile(@User() user): Promise<any> {
     return await this.userService.getProfile(user.id);
   }
@@ -27,6 +28,7 @@ export class UserController {
    */
   @Patch('/')
   @ApiSecurity('bearerAuth')
+  @UseGuards(AuthGuard)
   public async editProfile(
     @CurrentUser('id') id: string,
     @Body() body: UserUpdateDTOType,

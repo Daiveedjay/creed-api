@@ -8,10 +8,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
-import { CurrentUser } from 'src/auth/auth.guard';
+import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
 
 @ApiTags('Tasks')
@@ -20,11 +21,13 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Get('/:domainID/:panelID')
+  @UseGuards(AuthGuard)
   async getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string, @Param('domainID', ParseUUIDPipe) domainID: string) {
     return await this.taskService.getTasks(domainID, panelID);
   }
 
   @Get('/:domainID/:panelID/:taskID')
+  @UseGuards(AuthGuard)
   async getParticularTask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
@@ -34,6 +37,7 @@ export class TaskController {
   }
 
   @Post('/:domainID/:panelID')
+  @UseGuards(AuthGuard)
   async createATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
@@ -44,6 +48,7 @@ export class TaskController {
   }
 
   @Patch('/:domainID/:panelID/:taskID')
+  @UseGuards(AuthGuard)
   async editATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
@@ -55,6 +60,7 @@ export class TaskController {
   }
 
   @Delete('/:domainID/:panelID/:taskID')
+  @UseGuards(AuthGuard)
   async deleteATask(
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
