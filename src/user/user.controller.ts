@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserUpdateDTOType } from './user.dto';
-import { AuthRequest } from 'src/types';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { User } from './user.decorator';
 
@@ -17,7 +17,6 @@ export class UserController {
    */
   @Get('/profile')
   @ApiSecurity('bearerAuth')
-  @UseGuards(AuthGuard)
   public async getProfile(@User() user): Promise<any> {
     return await this.userService.getProfile(user.id);
   }
@@ -26,11 +25,10 @@ export class UserController {
    * Updates the details of an existing user.
    * Provided the user is logged in this endpoint accepts primary values for change except email and password.
    */
-  @Put('/')
+  @Patch('/')
   @ApiSecurity('bearerAuth')
   public async editProfile(
     @CurrentUser('id') id: string,
-    @Req() req: AuthRequest,
     @Body() body: UserUpdateDTOType,
   ) {
     return await this.userService.editProfile(id, body);
