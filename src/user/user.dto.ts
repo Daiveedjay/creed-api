@@ -1,50 +1,68 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
-
+/* eslint-disable prettier/prettier */
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsOptional, IsString } from 'class-validator';
 export class UserUpdateDTOType {
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
   fullName?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  domainName?: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
   username?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
   jobTitle?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
   department?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
   location?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
   language?: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  availableHoursFrom?: string;
+  @ApiProperty({
+    type: Date,
+    required: false,
+  })
+  @IsOptional()
+  @IsDate()
+  availableHoursFrom?: Date;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  availableHoursTo?: string;
-
+  @ApiProperty({
+    type: Date,
+    required: false,
+  })
+  @IsOptional()
+  @IsDate()
+  availableHoursTo?: Date;
 }
