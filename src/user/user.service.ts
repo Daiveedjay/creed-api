@@ -59,11 +59,18 @@ export class UserService {
           id: userId,
         },
         data: {
-          ...body,
+          username: body.username,
+          location: body.location,
+          language: body.language,
+          jobTitle: body.jobTitle,
+          fullName: body.fullName,
+          department: body.department,
+          availableHoursTo: body.availableHoursTo,
+          availableHoursFrom: body.availableHoursFrom
         },
       });
 
-      throw new HttpException('Profile updated', HttpStatus.ACCEPTED);
+      return new HttpException('Profile updated', HttpStatus.ACCEPTED);
     } catch (error) {
       throw new InternalServerErrorException('Profile info cannot be changed');
     }

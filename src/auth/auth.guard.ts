@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Injectable,
   CanActivate,
@@ -12,6 +13,7 @@ import { Observable } from 'rxjs';
 import { DbService } from '../utils/db.service';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,7 +30,7 @@ export class AuthGuard implements CanActivate {
     return this.validateRequest(request);
   }
 
-  async validateRequest(req: any) {
+  async validateRequest(req: Request) {
     const authHeader = req.headers.authorization;
     if (!authHeader) throw new ForbiddenException('Please provide auth token');
     const token: string | undefined = authHeader.split(' ').pop();
@@ -66,10 +68,12 @@ export class AuthGuard implements CanActivate {
 
 export const CurrentUser = createParamDecorator(
   (data: any, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = <Request>ctx.switchToHttp().getRequest();
+
     if (!!request.user) {
       return !!data ? request.user[data] : request.user;
     }
-    throw new UnauthorizedException();
+
+    throw new UnauthorizedException('Not allowed!');
   }
 );

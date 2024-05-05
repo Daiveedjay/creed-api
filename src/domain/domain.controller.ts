@@ -7,10 +7,9 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { DomainService } from './domain.service';
-import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
+import { CurrentUser } from 'src/auth/auth.guard';
 import { CreateDomainDTO } from './domain.dto';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -20,13 +19,11 @@ export class DomainController {
   constructor(private readonly domainService: DomainService) {}
 
   @Get()
-  @UseGuards(AuthGuard)
   getDomains(@CurrentUser('id') id: string) {
     return this.domainService.getUserDomains(id);
   }
 
   @Get('/:domainID')
-  @UseGuards(AuthGuard)
   async getDomain(
     @CurrentUser('id') id: string,
     @Param('domainID') domainID: string,
@@ -35,7 +32,6 @@ export class DomainController {
   }
 
   @Patch('/:domainID')
-  @UseGuards(AuthGuard)
   async updateDomain(
     @CurrentUser('id') id: string,
     @Body() dto: CreateDomainDTO,
@@ -45,7 +41,6 @@ export class DomainController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
   async createDomain(
     @CurrentUser('id') id: string,
     @Body() dto: CreateDomainDTO,
@@ -54,7 +49,6 @@ export class DomainController {
   }
 
   @Delete('/:domainID')
-  @UseGuards(AuthGuard)
   async deletePanel(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
     return await this.domainService.deleteDomain(domainID, id);
   }
