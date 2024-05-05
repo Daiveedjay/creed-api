@@ -8,8 +8,6 @@ import { DomainModule } from './domain/domain.module';
 import { PanelModule } from './panel/panel.module';
 import { StatusModule } from './status/status.module';
 import { TaskModule } from './task/task.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth/auth.guard';
 @Module({
   imports: [
     AuthModule,
@@ -22,11 +20,6 @@ import { AuthGuard } from './auth/auth.guard';
     TaskModule,
   ],
   controllers: [AppController],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard
-    }
-  ],
+  providers: [],
 })
 export class AppModule {}
