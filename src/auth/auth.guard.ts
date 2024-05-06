@@ -13,8 +13,6 @@ import { Observable } from 'rxjs';
 import { DbService } from '../utils/db.service';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-// import { type Request } from 'express';
-import { AuthRequest } from 'src/types';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -31,7 +29,7 @@ export class AuthGuard implements CanActivate {
     return this.validateRequest(request);
   }
 
-  async validateRequest(req: AuthRequest) {
+  async validateRequest(req: any) {
     const authHeader = req.headers.authorization;
     if (!authHeader) throw new ForbiddenException('Please provide auth token');
     const token: string | undefined = authHeader.split(' ').pop();
@@ -69,7 +67,7 @@ export class AuthGuard implements CanActivate {
 
 export const CurrentUser = createParamDecorator(
   (data: any, ctx: ExecutionContext) => {
-    const request = <AuthRequest>ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest();
 
     if (!!request.user) {
       return !!data ? request.user[data] : request.user;
