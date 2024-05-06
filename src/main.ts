@@ -6,14 +6,24 @@ import { AppModule } from './app.module';
 import { SwaggerThemeNameEnum } from 'swagger-themes/build/enums/swagger-theme-name';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
   const theme = new SwaggerTheme();
 
   // Enable cors
-  // app.enableCors();
+  app.enableCors({
+    origin: "http://127.0.0.1:5173",
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: [
+      // 'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+    ],
+    credentials: true,
+  });
 
   // API input validation
   app.useGlobalPipes(
