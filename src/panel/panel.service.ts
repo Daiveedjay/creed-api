@@ -1,7 +1,10 @@
 /* eslint-disable prettier/prettier */
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
@@ -17,18 +20,18 @@ export class PanelService {
       });
       return panels;
     } catch (error) {
-      throw new InternalServerErrorException('Panels cannot be created!');
+      throw new InternalServerErrorException('Panels have misplaced!!');
     }
   }
 
   async getPanel(domainID: string, panelID: string) {
     try {
-      const panels = await this.dbService.panel.findFirst({
+      const panels = await this.dbService.panel.findUnique({
         where: { domainId: domainID, id: panelID },
       });
       return panels;
     } catch (error) {
-      throw new InternalServerErrorException('Panels cannot be created!');
+      throw new InternalServerErrorException('Panels no dey available!');
     }
   }
 
@@ -45,7 +48,7 @@ export class PanelService {
         currentUser.memberRole === 'Member' ||
         currentUser.memberRole === 'Admin'
       )
-        throw new UnauthorizedException();
+        throw new UnauthorizedException('No access!');
 
       const panels = await this.dbService.panel.create({
         data: {
@@ -62,21 +65,48 @@ export class PanelService {
   }
 
   async editPanel(domainID: string, panelID: string, dto: CreatePanelDTO) {
-    await this.dbService.panel.update({
-      where: { domainId: domainID, id: panelID },
-      data: { ...dto },
-    });
-    return {
-      message: 'Updated',
-    };
+    try {
+      const existingPanel = await this.dbService.panel.findUnique({
+        where: {
+          domainId: domainID, id: panelID
+        }
+      })
+
+      if(!existingPanel) throw new NotFoundException('Panel not found!')
+
+      await this.dbService.panel.update({
+        where: {
+          id: panelID,
+          domainId: domainID
+        },
+        data: {
+          ...dto
+        }
+      });
+  
+      return new HttpException('Updated', HttpStatus.ACCEPTED);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
   }
 
   async deletePanel(doaminID: string, panelID: string) {
-    await this.dbService.panel.delete({
-      where: { domainId: doaminID, id: panelID },
-    });
-    return {
-      message: 'Deleted',
-    };
+    try {
+      const existingPanel = await this.dbService.panel.findUnique({
+        where: {
+          domainId: doaminID, id: panelID
+        }
+      })
+
+      if(!existingPanel) throw new NotFoundException('Panel not found!')
+
+      await this.dbService.panel.delete({
+        where: { domainId: doaminID, id: panelID },
+      });
+      
+      return new HttpException('Deleted', HttpStatus.ACCEPTED);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
   }
 }
