@@ -94,11 +94,24 @@ export class PanelService {
     try {
       const existingPanel = await this.dbService.panel.findUnique({
         where: {
-          domainId: doaminID, id: panelID
+          id: panelID,
+          domainId: doaminID, 
+        },
+        include: {
+          panelMembers: true,
+          tasks: true,
         }
       })
 
       if(!existingPanel) throw new NotFoundException('Panel not found!')
+
+      for(const task of existingPanel.tasks) {
+        await this.dbService.task.delete({
+          where: {
+            id: task.id
+          }
+        })
+      }
 
       await this.dbService.panel.delete({
         where: { domainId: doaminID, id: panelID },
