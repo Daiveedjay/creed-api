@@ -3,7 +3,6 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
   createParamDecorator,
@@ -31,10 +30,10 @@ export class AuthGuard implements CanActivate {
 
   async validateRequest(req: any) {
     const authHeader = req.headers.authorization;
-    if (!authHeader) throw new ForbiddenException('Please provide auth token');
+    if (!authHeader) throw new UnauthorizedException('Please provide auth token');
     const token: string | undefined = authHeader.split(' ').pop();
     if (!token) {
-      throw new ForbiddenException('Invalid token');
+      throw new UnauthorizedException('Invalid token');
     }
 
     try {
@@ -60,7 +59,7 @@ export class AuthGuard implements CanActivate {
       req.user = user;
       return true;
     } catch (err) {
-      throw new ForbiddenException('Invalid token');
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

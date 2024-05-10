@@ -19,7 +19,7 @@ export class CreateTaskDTO {
   description: string;
 
   @ApiProperty({
-    required: true,
+    required: false,
     type: Array<SubTasks>
   })
   @IsArray()
