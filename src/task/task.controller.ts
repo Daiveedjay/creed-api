@@ -65,7 +65,8 @@ export class TaskController {
     @Param('domainID', ParseUUIDPipe) domainID: string,
     @Param('panelID', ParseUUIDPipe) panelID: string,
     @Param('taskID', ParseUUIDPipe) taskID: string,
+    @CurrentUser('id') id: string,
   ) {
-    return await this.taskService.deleteTask(domainID, taskID, panelID);
+    return await this.taskService.deleteTask(domainID, taskID, panelID, id);
   }
 }

@@ -107,10 +107,21 @@ export class StatusService {
         where: {
           id: statusID,
           domainId,
+        },
+        include: {
+          tasks: true
         }
       })
 
       if(!existingStatus) throw new NotFoundException('Status not found')
+
+      for(const task of existingStatus.tasks) {
+        await this.dbService.task.delete({
+          where: {
+            id: task.id,
+          }
+        })
+      }
 
       await this.dbService.status.delete({ where: { id: statusID, domainId, } });
       return new HttpException('Deleted', HttpStatus.ACCEPTED)
