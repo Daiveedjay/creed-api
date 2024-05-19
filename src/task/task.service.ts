@@ -92,7 +92,7 @@ export class TaskService {
           subTasks: {
             createMany: {
               data: dto.subTasks.map((task) => ({
-                text: task.content,
+                title: task.content,
                 done: false,
                 authorId: currentUser.id,
               })),
@@ -125,7 +125,7 @@ export class TaskService {
           domainMembers: {
             some: {
               id: userId,
-              memberRole: 'Admin',
+              memberRole: 'admin',
             },
           },
         },
@@ -169,7 +169,7 @@ export class TaskService {
           if (!existingSubtask) {
             await this.dbService.subTask.create({
               data: {
-                text: subtaskData.content,
+                title: subtaskData.content,
                 done: false,
                 authorId: userId,
                 parentTaskId: existingTask.id,
@@ -179,21 +179,24 @@ export class TaskService {
             await this.dbService.subTask.update({
               where: { id: existingSubtask.id },
               data: {
-                text: subtaskData.content,
+                title: subtaskData.content,
               },
             });
           } else if (subtaskData.done) {
             if (subtaskData.done === true) {
-              await this.dbService.subTask.delete({
+              await this.dbService.subTask.update({
                 where: {
                   id: existingSubtask.id,
                 },
+                data: {
+                  done: true
+                }
               });
             } else {
               await this.dbService.subTask.update({
                 where: { id: existingSubtask.id },
                 data: {
-                  done: subtaskData.done,
+                  done: false,
                 },
               });
             }
@@ -230,9 +233,20 @@ export class TaskService {
     try {
       const existingTask = await this.dbService.task.findUnique({
         where: { domainId: doaminID, id: taskID, panelId: panelID },
+        include: {
+          subTasks: true
+        }
       });
 
       if (!existingTask) throw new NotFoundException('Task not found!');
+
+      for (const subTasks of existingTask.subTasks) {
+        await this.dbService.subTask.delete({
+          where: {
+            id: subTasks.id
+          }
+        })
+      }
 
       await this.dbService.task.delete({
         where: {

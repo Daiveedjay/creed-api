@@ -64,7 +64,7 @@ model DomainMembership {
   updatedAt DateTime @updatedAt
 
   userId     String
-  memberRole Roles  @default(Member)
+  memberRole Roles  @default(member)
   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   panelId  String?
@@ -127,8 +127,8 @@ model SubTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  text String
-  done Boolean @default(false)
+  title String
+  done  Boolean @default(false)
 
   // relation
   authorId     String
@@ -150,9 +150,9 @@ model Announcement {
 }
 
 enum Roles {
-  Owner
-  Admin
-  Member
+  owner
+  admin
+  member
 }
 
 enum OTPReason {

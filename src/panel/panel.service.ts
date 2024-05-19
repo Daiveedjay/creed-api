@@ -45,8 +45,8 @@ export class PanelService {
 
       if (
         !currentUser ||
-        currentUser.memberRole === 'Member' ||
-        currentUser.memberRole === 'Admin'
+        currentUser.memberRole === 'member' ||
+        currentUser.memberRole === 'admin'
       )
         throw new UnauthorizedException('No access!');
 

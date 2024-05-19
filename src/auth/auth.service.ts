@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -16,17 +17,19 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
-
+import { EmailService } from 'src/utils/email.service';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService
   ) { }
 
   async signUp(dto: UserSignupDTOType) {
     try {
+      const firstName = dto.fullName.split(' ')
       const oldUser = await this.dbService.user.findUnique({
         where: { email: dto.email },
       });
@@ -36,6 +39,9 @@ export class AuthService {
       }
 
       const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+      await this.emailService.sendWelcomeEmail(dto.email, firstName[0])
+
       const user = await this.dbService.user.create({
         data: {
           email: dto.email,
@@ -52,7 +58,7 @@ export class AuthService {
 
           domainMembers: {
             create: {
-              memberRole: Roles.Owner,
+              memberRole: Roles.owner,
               userId: user.id
             }
           }
@@ -359,7 +365,7 @@ export class AuthService {
 
           domainMembers: {
             create: {
-              memberRole: Roles.Owner,
+              memberRole: Roles.owner,
               userId: newUser.id
             }
           }
