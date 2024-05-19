@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { InternalServerErrorException, Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { SESClient, SendEmailCommand, SendEmailRequest } from '@aws-sdk/client-ses';
+import { InternalServerErrorException, Injectable } from '@nestjs/common';
+import { SESClient } from '@aws-sdk/client-ses';
 import {createTransport, Transporter} from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer';
 
