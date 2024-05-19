@@ -16,14 +16,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
-import { EmailService } from 'src/utils/email.service';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-    private readonly emailService: EmailService
   ) { }
 
   async signUp(dto: UserSignupDTOType) {
