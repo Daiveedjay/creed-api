@@ -28,31 +28,4 @@ export class CollaboratorsController {
   async createLinkForJoining(@Body() addCollaboratorDto: AddCollaboratorDto) {
     return await this.collaboratorsService.createLinkForJoining(addCollaboratorDto);
   }
-
-  @Get()
-  @UseGuards(AuthGuard)
-  findAll() {
-    return this.collaboratorsService.findAll();
-  }
-
-  @Get(':id')
-  @UseGuards(AuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.collaboratorsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  @UseGuards(AuthGuard)
-  update(
-    @Param('id') id: string,
-    @Body() updateCollaboratorDto: UpdateCollaboratorDto,
-  ) {
-    return this.collaboratorsService.update(+id, updateCollaboratorDto);
-  }
-
-  @Delete(':id')
-  @UseGuards(AuthGuard)
-  remove(@Param('id') id: string) {
-    return this.collaboratorsService.remove(+id);
-  }
 }
