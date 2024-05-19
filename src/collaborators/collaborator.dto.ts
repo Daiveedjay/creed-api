@@ -2,7 +2,9 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateCollaboratorDto {};
+export class CreateCollaboratorDto {
+    name: string
+};
 
 export class UpdateCollaboratorDto extends PartialType(CreateCollaboratorDto) {}
 

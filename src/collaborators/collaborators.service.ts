@@ -29,23 +29,4 @@ export class CollaboratorsService {
       throw new InternalServerErrorException(error.message);
     }
   }
-
-  findAll() {
-    return `This action returns all collaborators`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} collaborator`;
-  }
-
-  update(id: number, updateCollaboratorDto: UpdateCollaboratorDto) {
-    return `This action updates a #${updateCollaboratorDto} collaborator`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} collaborator`;
-  }
 }
-
-
-//domain=8691275c-2159-405e-a7c9-a8e49a621f26
