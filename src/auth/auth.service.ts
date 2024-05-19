@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import {
-  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -29,7 +28,7 @@ export class AuthService {
 
   async signUp(dto: UserSignupDTOType) {
     try {
-      const firstName = dto.fullName.split(' ')
+      // const firstName = dto.fullName.split(' ')
       const oldUser = await this.dbService.user.findUnique({
         where: { email: dto.email },
       });
@@ -40,7 +39,7 @@ export class AuthService {
 
       const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-      await this.emailService.sendWelcomeEmail(dto.email, firstName[0])
+      // await this.emailService.sendWelcomeEmail(dto.email, firstName[0])
 
       const user = await this.dbService.user.create({
         data: {
