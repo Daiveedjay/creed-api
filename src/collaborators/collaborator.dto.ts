@@ -16,7 +16,7 @@ export class AddCollaboratorDto {
     domainId: string
 
     @ApiProperty({
-        enum: ['Admin', 'Member', 'Owner'],
+        enum: ['admin', 'member', 'owner'],
         enumName: 'Roles',
         required: true
     })
@@ -25,7 +25,7 @@ export class AddCollaboratorDto {
 }
 
 export enum Role {
-    Admin = 'Admin',
-    Member = 'Member',
-    Owner = 'Owner'
+    Admin = 'admin',
+    Member = 'member',
+    Owner = 'owner'
 }
