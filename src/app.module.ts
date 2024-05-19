@@ -8,7 +8,6 @@ import { DomainModule } from './domain/domain.module';
 import { PanelModule } from './panel/panel.module';
 import { StatusModule } from './status/status.module';
 import { TaskModule } from './task/task.module';
-import { CollaboratorsModule } from './collaborators/collaborators.module';
 @Module({
   imports: [
     AuthModule,
@@ -19,7 +18,6 @@ import { CollaboratorsModule } from './collaborators/collaborators.module';
     PanelModule,
     StatusModule,
     TaskModule,
-    CollaboratorsModule,
   ],
   controllers: [AppController],
   providers: [],
