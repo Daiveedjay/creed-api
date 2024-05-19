@@ -2,7 +2,7 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { AddCollaboratorDto, UpdateCollaboratorDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
-import {hash} from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class CollaboratorsService {
@@ -22,7 +22,7 @@ export class CollaboratorsService {
 
       if(!existingDomain) throw new NotFoundException('Domain not found!')
 
-      const hashedExpiredAt = await hash(String(expiresAt), 10)
+      const hashedExpiredAt = await bcrypt.hash(String(expiresAt), 10)
 
       return `https://yourdomain.com?domain=${addCollaboratorDto.domainId}&role=${addCollaboratorDto.role}&expires=${hashedExpiredAt}`; 
     } catch (error) {
