@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Roles" AS ENUM ('Owner', 'Admin', 'Member');
+CREATE TYPE "Roles" AS ENUM ('owner', 'admin', 'member');
 
 -- CreateEnum
 CREATE TYPE "OTPReason" AS ENUM ('PasswordReset');
@@ -46,7 +46,7 @@ CREATE TABLE "DomainMembership" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" TEXT NOT NULL,
-    "memberRole" "Roles" NOT NULL DEFAULT 'Member',
+    "memberRole" "Roles" NOT NULL DEFAULT 'member',
     "panelId" TEXT,
     "domainId" TEXT NOT NULL,
 
@@ -95,7 +95,7 @@ CREATE TABLE "SubTask" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "text" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
     "done" BOOLEAN NOT NULL DEFAULT false,
     "authorId" TEXT NOT NULL,
     "parentTaskId" TEXT NOT NULL,

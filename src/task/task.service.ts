@@ -5,6 +5,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
@@ -91,7 +92,7 @@ export class TaskService {
           subTasks: {
             createMany: {
               data: dto.subTasks.map((task) => ({
-                text: task.content,
+                title: task.content,
                 done: false,
                 authorId: currentUser.id,
               })),
@@ -117,66 +118,148 @@ export class TaskService {
     userId: string,
     dto: UpdateTaskDto,
   ) {
-    const thereIsATask = await this.dbService.task.findUnique({
-      where: {
-        id: taskID,
-        panelId: panelID,
-        domainId: domainID,
-      },
-      select: {
-        subTasks: true,
-        id: true,
-      },
-    });
-
-    if (!thereIsATask) throw new NotFoundException('Task not found');
-
-    await this.dbService.task.update({
-      where: {
-        id: taskID,
-        domainId: domainID,
-        panelId: panelID,
-      },
-      data: {
-        ...dto,
-        subTasks: {
-          upsert: dto.subTasks.map((subtask) => ({
-            where: {
-              id: subtask.id,
+    try {
+      const adminInDomain = await this.dbService.domain.findUnique({
+        where: {
+          id: domainID,
+          domainMembers: {
+            some: {
+              id: userId,
+              memberRole: 'admin',
             },
-            update: {
-              done: subtask.done,
-              text: subtask.content,
-            },
-            create: {
-              done: subtask.done,
-              text: subtask.content,
-              authorId: userId,
-            },
-          })),
+          },
         },
-      },
-    });
+      });
 
-    return new HttpException('Updated', HttpStatus.ACCEPTED);
+      console.log(adminInDomain);
+
+      const existingTask = await this.dbService.task.findUnique({
+        where: {
+          id: taskID,
+          panelId: panelID,
+          domainId: domainID,
+          // authorId: userId
+        },
+        include: {
+          subTasks: true,
+        },
+      });
+
+      if (!existingTask) {
+        throw new NotFoundException('Task not found');
+      }
+
+      if (existingTask.authorId !== userId) {
+        throw new UnauthorizedException('You do not have this access');
+      }
+
+      if (dto.title) {
+        existingTask.text = dto.title;
+      }
+      if (dto.description) {
+        existingTask.description = dto.description;
+      }
+
+      if (dto.subTasks) {
+        for (const subtaskData of dto.subTasks) {
+          const existingSubtask = existingTask.subTasks.find(
+            (subtask) => subtask.id === subtaskData.id,
+          );
+
+          if (!existingSubtask) {
+            await this.dbService.subTask.create({
+              data: {
+                title: subtaskData.content,
+                done: false,
+                authorId: userId,
+                parentTaskId: existingTask.id,
+              },
+            });
+          } else if (subtaskData.content) {
+            await this.dbService.subTask.update({
+              where: { id: existingSubtask.id },
+              data: {
+                title: subtaskData.content,
+              },
+            });
+          } else if (subtaskData.done) {
+            if (subtaskData.done === true) {
+              await this.dbService.subTask.update({
+                where: {
+                  id: existingSubtask.id,
+                },
+                data: {
+                  done: true
+                }
+              });
+            } else {
+              await this.dbService.subTask.update({
+                where: { id: existingSubtask.id },
+                data: {
+                  done: false,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      await this.dbService.task.update({
+        where: {
+          id: taskID,
+          panelId: panelID,
+          domainId: domainID,
+          // authorId: userId
+        },
+        data: {
+          text: existingTask.text,
+          description: existingTask.description,
+        },
+      });
+
+      return new HttpException('Updated', HttpStatus.ACCEPTED);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
   }
 
-  async deleteTask(doaminID: string, taskID: string, panelID: string) {
+  async deleteTask(
+    doaminID: string,
+    taskID: string,
+    panelID: string,
+    userId: string,
+  ) {
     try {
       const existingTask = await this.dbService.task.findUnique({
         where: { domainId: doaminID, id: taskID, panelId: panelID },
+        include: {
+          subTasks: true
+        }
       });
 
-      if(!existingTask) throw new NotFoundException('Task not found!')
+      if (!existingTask) throw new NotFoundException('Task not found!');
+
+      for (const subTasks of existingTask.subTasks) {
+        await this.dbService.subTask.delete({
+          where: {
+            id: subTasks.id
+          }
+        })
+      }
 
       await this.dbService.task.delete({
-        where: { domainId: doaminID, id: taskID, panelId: panelID },
+        where: {
+          domainId: doaminID,
+          id: taskID,
+          panelId: panelID,
+          authorId: userId,
+        },
       });
-      
-      return new HttpException('Deleted', HttpStatus.ACCEPTED)
+
+      return new HttpException('Deleted', HttpStatus.ACCEPTED);
     } catch (error) {
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException();
     }
-    
   }
 }

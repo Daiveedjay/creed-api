@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 export class UserUpdateDTOType {
   @ApiProperty({
     type: String,
@@ -55,7 +55,7 @@ export class UserUpdateDTOType {
     required: false,
   })
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   availableHoursFrom?: Date;
 
   @ApiProperty({
@@ -63,6 +63,6 @@ export class UserUpdateDTOType {
     required: false,
   })
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   availableHoursTo?: Date;
 }

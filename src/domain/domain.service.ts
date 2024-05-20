@@ -101,7 +101,7 @@ export class DomainService {
           ...dto,
           domainMembers: {
             create: {
-              memberRole: Roles.Owner,
+              memberRole: Roles.owner,
               userId: userID
             }
           },
@@ -113,7 +113,7 @@ export class DomainService {
         data: {
           domainId: domain.id,
           userId: userID,
-          memberRole: Roles.Owner,
+          memberRole: Roles.owner,
         },
       });
       

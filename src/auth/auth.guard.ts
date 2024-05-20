@@ -3,7 +3,6 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
   createParamDecorator,
@@ -13,7 +12,6 @@ import { Observable } from 'rxjs';
 import { DbService } from '../utils/db.service';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -30,12 +28,12 @@ export class AuthGuard implements CanActivate {
     return this.validateRequest(request);
   }
 
-  async validateRequest(req: Request) {
+  async validateRequest(req: any) {
     const authHeader = req.headers.authorization;
-    if (!authHeader) throw new ForbiddenException('Please provide auth token');
+    if (!authHeader) throw new UnauthorizedException('Please provide auth token');
     const token: string | undefined = authHeader.split(' ').pop();
     if (!token) {
-      throw new ForbiddenException('Invalid token');
+      throw new UnauthorizedException('Invalid token');
     }
 
     try {
@@ -61,14 +59,14 @@ export class AuthGuard implements CanActivate {
       req.user = user;
       return true;
     } catch (err) {
-      throw new ForbiddenException('Invalid token');
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }
 
 export const CurrentUser = createParamDecorator(
   (data: any, ctx: ExecutionContext) => {
-    const request = <Request>ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest();
 
     if (!!request.user) {
       return !!data ? request.user[data] : request.user;
