@@ -39,4 +39,5 @@ async function bootstrap() {
   );
   Logger.log('Application started on: ' + 'http://localhost:' + 3000);
 }
+
 bootstrap();
