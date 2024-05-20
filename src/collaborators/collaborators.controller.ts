@@ -12,13 +12,13 @@ import {
 import { CollaboratorsService } from './collaborators.service';
 import {
   AddCollaboratorDto,
-  // CreateCollaboratorDto,
-  // UpdateCollaboratorDto,
+  CreateCollaboratorDto,
+  UpdateCollaboratorDto,
 } from './collaborator.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('collaborators')
+@ApiTags('Collaborators')
 @Controller('collaborators')
 export class CollaboratorsController {
   constructor(private readonly collaboratorsService: CollaboratorsService) {}
