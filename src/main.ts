@@ -11,9 +11,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const theme = new SwaggerTheme();
 
-  // Enable cors
-  app.enableCors();
-
   // API input validation
   app.useGlobalPipes(
     new ValidationPipe({
@@ -32,6 +29,9 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document, {
     customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
   });
+
+  // Enable cors
+  app.enableCors();
 
   await app.listen(3000);
   Logger.log(
