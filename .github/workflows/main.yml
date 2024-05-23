@@ -41,16 +41,19 @@ jobs:
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
+        env: # Or as an environment variable
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: ec2-23-20-204-140.compute-1.amazonaws.com
           REMOTE_USER: ec2-user
           # REMOTE_HOST: ${{ secrets.HOST_DNS }}
           # REMOTE_USER: ${{ secrets.USERNAME }}
+
           SCRIPT_AFTER: |
             touch .env
             echo "PORT=3000" >> ".env"
-            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
+            echo "DATABASE_URL=$DATABASE_URL" >> ".env"
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
             echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
             echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
@@ -58,10 +61,10 @@ jobs:
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
 
             # Build Docker image
-            docker build -t kreed_api:latest .
+            sudo docker build --no-cahe -t kreed_api:latest .
 
             # Stop and remove existing container
-            docker ps -q --filter "name=kreed_api" | grep -q . && docker stop kreed_api && docker rm kreed_api || true
+            sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
 
             # Run the newly built Docker image
-            docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
+            sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
