@@ -51,7 +51,7 @@ jobs:
           # REMOTE_USER: ${{ secrets.USERNAME }}
 
           SCRIPT_AFTER: |
-            touch .env
+            rm .env && touch .env
             echo "PORT=3000" >> ".env"
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
@@ -61,7 +61,7 @@ jobs:
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
 
             # Build Docker image
-            sudo docker build --no-cahe -t kreed_api:latest .
+            sudo docker build --no-cache -t kreed_api:latest .
 
             # Stop and remove existing container
             sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
