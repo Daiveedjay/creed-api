@@ -48,4 +48,4 @@ jobs:
             # Run the newly built Docker image
             sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
 
-            caddy
+            # may be restart caddy (needless)
