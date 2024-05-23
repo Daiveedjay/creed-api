@@ -45,8 +45,8 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          REMOTE_HOST: ec2-23-20-204-140.compute-1.amazonaws.com
-          REMOTE_USER: ec2-user
+          REMOTE_HOST: ec2-3-89-73-28.compute-1.amazonaws.com
+          REMOTE_USER: ubuntu
           # REMOTE_HOST: ${{ secrets.HOST_DNS }}
           # REMOTE_USER: ${{ secrets.USERNAME }}
 
@@ -68,3 +68,5 @@ jobs:
 
             # Run the newly built Docker image
             sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
+
+            caddy
