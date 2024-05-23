@@ -6,9 +6,29 @@ on:
       - main
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code from branch
+        uses: actions/checkout@v2
+
+      - name: Set environment variables
+        run: |
+          echo "NODE_ENV=${{ vars.NODE_ENV }}" >> $GITHUB_ENV
+          echo "SERVICE=${{ vars.SERVICE }}" >> $GITHUB_ENV
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.15
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -16,24 +36,32 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: '18'
           cache: 'npm'
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.HOST_DNS }}
-          REMOTE_USER: ${{ secrets.USERNAME }}
+          REMOTE_HOST: ec2-23-20-204-140.compute-1.amazonaws.com
+          REMOTE_USER: ec2-user
+          # REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          # REMOTE_USER: ${{ secrets.USERNAME }}
           SCRIPT_AFTER: |
-            # touch .env
-            # echo "PORT=3000" > ".env"
-            # echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
-            # echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-            # echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-            # echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-            # echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-            # echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
-            npx prisma generate
-            npm run build
-            pm2 restart all --update-env
+            touch .env
+            echo "PORT=3000" >> ".env"
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+            echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+            echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+
+            # Build Docker image
+            docker build -t kreed_api:latest .
+
+            # Stop and remove existing container
+            docker ps -q --filter "name=kreed_api" | grep -q . && docker stop kreed_api && docker rm kreed_api || true
+
+            # Run the newly built Docker image
+            docker run -d --name kreed_api -p 3000:3000 kreed_api:latest

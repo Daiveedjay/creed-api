@@ -1,0 +1,8 @@
+yourdomain.com {
+    reverse_proxy localhost:3000
+}
+
+# Optional: To add www redirection
+www.yourdomain.com {
+    redir https://api.kreed.tech{uri}
+}
