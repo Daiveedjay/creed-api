@@ -6,27 +6,6 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code from branch
-        uses: actions/checkout@v2
-
-      - name: Set environment variables
-        run: |
-          echo "NODE_ENV=${{ vars.NODE_ENV }}" >> $GITHUB_ENV
-          echo "SERVICE=${{ vars.SERVICE }}" >> $GITHUB_ENV
-
-      - name: Install Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16.15
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
   deploy:
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +25,7 @@ jobs:
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: ec2-3-89-73-28.compute-1.amazonaws.com
-          REMOTE_USER: ubuntu
+          REMOTE_USER: ec2-user
           # REMOTE_HOST: ${{ secrets.HOST_DNS }}
           # REMOTE_USER: ${{ secrets.USERNAME }}
 
