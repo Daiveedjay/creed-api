@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -16,24 +15,37 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: '18'
           cache: 'npm'
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
+        env: # Or as an environment variable
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.HOST_DNS }}
-          REMOTE_USER: ${{ secrets.USERNAME }}
+          REMOTE_HOST: ec2-54-88-192-45.compute-1.amazonaws.com
+          REMOTE_USER: ubuntu
+          # REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          # REMOTE_USER: ${{ secrets.USERNAME }}
+
           SCRIPT_AFTER: |
-            # touch .env
-            # echo "PORT=3000" > ".env"
-            # echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
-            # echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-            # echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-            # echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-            # echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-            # echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
-            npx prisma generate
-            npm run build
-            pm2 restart all --update-env
+            rm .env && touch .env
+            echo "PORT=3000" >> ".env"
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ".env"
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+            echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+            echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+
+            # Build Docker image
+            sudo docker build --no-cache -t kreed_api:latest .
+
+            # Stop and remove existing container
+            sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
+
+            # Run the newly built Docker image
+            sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
+
+            # may be restart caddy (needless)

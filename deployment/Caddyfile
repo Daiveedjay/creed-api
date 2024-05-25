@@ -1,0 +1,3 @@
+api.kreed.tech
+
+reverse_proxy :3000
