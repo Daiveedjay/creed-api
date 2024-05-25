@@ -26,7 +26,11 @@ export class TaskService {
           text: true,
           description: true,
           createdAt: true,
-          subTasks: true,
+          subTasks: {
+            orderBy: {
+              createdAt: 'asc'
+            }
+          },
           authorId: true,
           domainId: true,
           panelId: true,
@@ -54,7 +58,11 @@ export class TaskService {
           text: true,
           description: true,
           createdAt: true,
-          subTasks: true,
+          subTasks: {
+            orderBy: {
+              createdAt: 'asc'
+            }
+          },
           authorId: true,
           domainId: true,
           panelId: true,
@@ -92,7 +100,7 @@ export class TaskService {
           subTasks: {
             createMany: {
               data: dto.subTasks.map((task) => ({
-                title: task.content,
+                title: task.title,
                 done: false,
                 authorId: currentUser.id,
               })),
@@ -153,11 +161,10 @@ export class TaskService {
         throw new UnauthorizedException('You do not have this access');
       }
 
-      if (dto.title) {
+      if (dto.title || dto.description || dto.statusId) {
         existingTask.text = dto.title;
-      }
-      if (dto.description) {
         existingTask.description = dto.description;
+        existingTask.statusId = dto.statusId
       }
 
       if (dto.subTasks) {
@@ -169,42 +176,28 @@ export class TaskService {
           if (!existingSubtask) {
             await this.dbService.subTask.create({
               data: {
-                title: subtaskData.content,
+                title: subtaskData.title,
                 done: false,
                 authorId: userId,
                 parentTaskId: existingTask.id,
               },
             });
-          } else if (subtaskData.content) {
-            await this.dbService.subTask.update({
-              where: { id: existingSubtask.id },
-              data: {
-                title: subtaskData.content,
-              },
-            });
-          } else if (subtaskData.done) {
-            if (subtaskData.done === true) {
-              await this.dbService.subTask.update({
-                where: {
-                  id: existingSubtask.id,
-                },
-                data: {
-                  done: true
-                }
-              });
-            } else {
-              await this.dbService.subTask.update({
-                where: { id: existingSubtask.id },
-                data: {
-                  done: false,
-                },
-              });
+          } 
+
+          await this.dbService.subTask.update({
+            where: {
+              id: existingSubtask.id,
+              parentTaskId: existingTask.id
+            },
+            data: {
+              done: subtaskData.done,
+              title: subtaskData.title
             }
-          }
+          })
         }
       }
 
-      await this.dbService.task.update({
+      const updatedTask = await this.dbService.task.update({
         where: {
           id: taskID,
           panelId: panelID,
@@ -214,10 +207,19 @@ export class TaskService {
         data: {
           text: existingTask.text,
           description: existingTask.description,
+          statusId: existingTask.statusId
         },
+        include: {
+          subTasks: {
+            orderBy: {
+              createdAt: 'asc'
+            }
+          },
+          Status: true
+        }
       });
 
-      return new HttpException('Updated', HttpStatus.ACCEPTED);
+      return updatedTask;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException();
