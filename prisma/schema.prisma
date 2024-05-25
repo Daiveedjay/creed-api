@@ -41,6 +41,7 @@ model User {
   subTasks         SubTask[]
   domainMembership DomainMembership[]
   domains          Domain[]
+  
 }
 
 model Domain {

@@ -24,7 +24,7 @@ export class CollaboratorsService {
 
       const hashedExpiredAt = await bcrypt.hash(String(expiresAt), 10)
 
-      return `https://yourdomain.com?domain=${addCollaboratorDto.domainId}&role=${addCollaboratorDto.role}&expires=${hashedExpiredAt}`; 
+      return `https://kreed.tech?domain=${addCollaboratorDto.domainId}&role=${addCollaboratorDto.role}&expires=${hashedExpiredAt}`; 
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

@@ -9,7 +9,6 @@ import { PanelModule } from './panel/panel.module';
 import { StatusModule } from './status/status.module';
 import { TaskModule } from './task/task.module';
 import { CollaboratorsModule } from './collaborators/collaborators.module';
-import { CollaboratorModule } from './collaborator/collaborator.module';
 @Module({
   imports: [
     AuthModule,
@@ -21,7 +20,6 @@ import { CollaboratorModule } from './collaborator/collaborator.module';
     StatusModule,
     TaskModule,
     CollaboratorsModule,
-    CollaboratorModule,
   ],
   controllers: [AppController],
   providers: [],

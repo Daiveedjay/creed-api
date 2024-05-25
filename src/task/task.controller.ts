@@ -59,6 +59,18 @@ export class TaskController {
     return await this.taskService.editTask(domainID, panelID, taskID, id, dto);
   }
 
+  // @Patch('/:domainID/:panelID/:taskID')
+  // @UseGuards(AuthGuard)
+  // async editATaskStatus(
+  //   @Param('domainID', ParseUUIDPipe) domainID: string,
+  //   @Param('panelID', ParseUUIDPipe) panelID: string,
+  //   @Param('taskID', ParseUUIDPipe) taskID: string,
+  //   @CurrentUser('id') id: string,
+  //   @Body() dto: UpdateTaskDto,
+  // ) {
+  //   return await this.taskService.editTask(domainID, panelID, taskID, id, dto);
+  // }
+
   @Delete('/:domainID/:panelID/:taskID')
   @UseGuards(AuthGuard)
   async deleteATask(
