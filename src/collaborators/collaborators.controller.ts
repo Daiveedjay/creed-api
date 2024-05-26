@@ -5,16 +5,14 @@ import {
   Body,
   Patch,
   UseGuards,
-  Req,
-  Res,
 } from '@nestjs/common';
 import { CollaboratorsService } from './collaborators.service';
 import {
-  AddCollaboratorDto
+  AddCollaboratorDto,
+  JoinCollaboratorDto
 } from './collaborator.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 
 @ApiTags('Collaborators')
 @Controller('collaborators')
@@ -29,7 +27,7 @@ export class CollaboratorsController {
 
   @Patch('/join-through-link')
   @UseGuards(AuthGuard)
-  async joinDomainThroughLink(@Req() req: any, @Res() res: Response, @Body() joinCollaboratorDto: AddCollaboratorDto) {
-    return await this.collaboratorsService.joinThroughLink(req, res, joinCollaboratorDto)
+  async joinDomainThroughLink(@Body() joinCollaboratorDto: JoinCollaboratorDto) {
+    return await this.collaboratorsService.joinThroughLink(joinCollaboratorDto)
   }
 }

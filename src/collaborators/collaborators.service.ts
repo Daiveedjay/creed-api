@@ -1,14 +1,16 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { AddCollaboratorDto } from './collaborator.dto';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { AddCollaboratorDto, JoinCollaboratorDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
 import * as bcrypt from 'bcrypt';
-import { Response } from 'express';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CollaboratorsService {
   constructor(
-    private readonly dbService: DbService
+    private readonly dbService: DbService,
+    private readonly configService: ConfigService
   ) {}
 
   async createLinkForJoining(addCollaboratorDto: AddCollaboratorDto) {
@@ -32,37 +34,34 @@ export class CollaboratorsService {
     }
   }
 
-  async joinThroughLink(req: any, res: Response, joinCollaboratorDto: AddCollaboratorDto) {
+  async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
     try {
       const thereIsDomain = await this.dbService.domain.findUnique({
         where: {
           id: joinCollaboratorDto.domainId
         }
       })
+
+      const decodedToken = new JwtService().verify(joinCollaboratorDto.token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      if(!decodedToken) throw new UnauthorizedException('You need to log in!');
       
       const hasAccount = await this.dbService.user.findUnique({
-        where: {
-          email: req.user.email
-        },
+        where: { id: decodedToken.uid },
         select: {
           id: true,
           email: true,
-          fullName: true
-        }
-      })
-      const isAuthenticated = await this.isAuthenticated(req);
+          fullName: true,
+        },
+      });
   
       if(!thereIsDomain) {
         throw new NotFoundException('No domain')
       }
-  
-      if (!isAuthenticated) {
-        return res.redirect('/login');
-      }
-  
-      if (!hasAccount) {
-        return res.redirect('/create-account');
-      }
+
+      if (!hasAccount) throw new UnauthorizedException('You need to log in!');
   
       const alreadyInDomain = await this.dbService.domainMembership.findFirst({
         where: {
@@ -91,13 +90,11 @@ export class CollaboratorsService {
           }
         }
       })
+
+      return new HttpException(`You have successfully joined a domain: ${thereIsDomain.name}`, HttpStatus.ACCEPTED)
     } catch (error) {
       console.log(error)
       throw new InternalServerErrorException('Cannot join bros!')
     }
-  }
-
-  async isAuthenticated(req: any): Promise<boolean> {
-    return !!req.user; 
   }
 }
