@@ -1,22 +1,20 @@
 /* eslint-disable prettier/prettier */
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
-  Param,
-  Delete,
   UseGuards,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { CollaboratorsService } from './collaborators.service';
 import {
-  AddCollaboratorDto,
-  CreateCollaboratorDto,
-  UpdateCollaboratorDto,
+  AddCollaboratorDto
 } from './collaborator.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
 @ApiTags('Collaborators')
 @Controller('collaborators')
@@ -27,5 +25,11 @@ export class CollaboratorsController {
   @UseGuards(AuthGuard)
   async createLinkForJoining(@Body() addCollaboratorDto: AddCollaboratorDto) {
     return await this.collaboratorsService.createLinkForJoining(addCollaboratorDto);
+  }
+
+  @Patch('/join-through-link')
+  @UseGuards(AuthGuard)
+  async joinDomainThroughLink(@Req() req: any, @Res() res: Response, @Body() joinCollaboratorDto: AddCollaboratorDto) {
+    return await this.collaboratorsService.joinThroughLink(req, res, joinCollaboratorDto)
   }
 }
