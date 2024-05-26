@@ -26,11 +26,7 @@ export class TaskService {
           text: true,
           description: true,
           createdAt: true,
-          subTasks: {
-            orderBy: {
-              createdAt: 'asc'
-            }
-          },
+          subTasks: true,
           authorId: true,
           domainId: true,
           panelId: true,
@@ -58,11 +54,7 @@ export class TaskService {
           text: true,
           description: true,
           createdAt: true,
-          subTasks: {
-            orderBy: {
-              createdAt: 'asc'
-            }
-          },
+          subTasks: true,
           authorId: true,
           domainId: true,
           panelId: true,
@@ -210,11 +202,7 @@ export class TaskService {
           statusId: existingTask.statusId
         },
         include: {
-          subTasks: {
-            orderBy: {
-              createdAt: 'asc'
-            }
-          },
+          subTasks: true,
           Status: true
         }
       });
