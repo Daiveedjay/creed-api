@@ -53,11 +53,13 @@ export class CollaboratorsService {
         secret: this.configService.get('JWT_SECRET'),
       })
 
-      return `https://kreed.tech/auth/invite?invite_code=${hashedPayload}`; 
+      return `https://kreed.tech/invite?invite_code=${hashedPayload}`; 
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+  //`https://kreed.tech/invite?invite_code=${hashedPayload}`
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
     try {
