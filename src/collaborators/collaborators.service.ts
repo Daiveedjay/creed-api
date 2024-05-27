@@ -1,10 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AddCollaboratorDto, JoinCollaboratorDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { generateOTP } from "otp-agent";
+import { InvitePayload } from 'src/types';
 
 @Injectable()
 export class CollaboratorsService {
@@ -13,10 +14,19 @@ export class CollaboratorsService {
     private readonly configService: ConfigService
   ) {}
 
-  async createLinkForJoining(addCollaboratorDto: AddCollaboratorDto) {
+  async createLinkForJoining(addCollaboratorDto: AddCollaboratorDto, email: string) {
     try {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 1)
+      const otp = generateOTP({ length: 4, numbers: true, alphabets: true });
+
+      const currentUser = await this.dbService.user.findUnique({
+        where: {
+          email,
+        }
+      })
+
+      if(!currentUser) throw new UnauthorizedException('No access')
 
       const existingDomain = await this.dbService.domain.findUnique({
         where: {
@@ -26,9 +36,24 @@ export class CollaboratorsService {
 
       if(!existingDomain) throw new NotFoundException('Domain not found!')
 
-      const hashedExpiredAt = await bcrypt.hash(String(expiresAt), 10)
+      const payload: InvitePayload = {
+        otp,
+        domainName: existingDomain.name,
+        domainId: existingDomain.id,
+        createdAt: new Date(),
+        role: addCollaboratorDto.role,
+        expiredAt: expiresAt,
+        invitedBy: {
+          id: currentUser.id,
+          name: currentUser.fullName
+        }
+      }
 
-      return `https://kreed.tech?domain=${addCollaboratorDto.domainId}&role=${addCollaboratorDto.role}&expires=${hashedExpiredAt}`; 
+      const hashedPayload = new JwtService().sign(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+      })
+
+      return `https://kreed.tech/auth/invite?invite_code=${hashedPayload}`; 
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -36,36 +61,36 @@ export class CollaboratorsService {
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
     try {
-      const thereIsDomain = await this.dbService.domain.findUnique({
+      const inviteeUser = await this.dbService.user.findUnique({
         where: {
-          id: joinCollaboratorDto.domainId
-        }
-      })
-
-      const decodedToken = new JwtService().verify(joinCollaboratorDto.token, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
-
-      if(!decodedToken) throw new UnauthorizedException('You need to log in!');
-      
-      const hasAccount = await this.dbService.user.findUnique({
-        where: { id: decodedToken.uid },
+          email: joinCollaboratorDto.email
+        },
         select: {
           id: true,
           email: true,
-          fullName: true,
-        },
-      });
-  
-      if(!thereIsDomain) {
-        throw new NotFoundException('No domain')
-      }
+          fullName: true
+        }
+      })
 
-      if (!hasAccount) throw new UnauthorizedException('You need to log in!');
-  
+      if(!inviteeUser) throw new NotFoundException('No user found') 
+
+      const decodedPayload: InvitePayload = new JwtService().verify(joinCollaboratorDto.inviteCode, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      if(!decodedPayload) throw new UnauthorizedException('No access!');
+
+      if(decodedPayload.expiredAt < new Date()) throw new ConflictException('Link has been expired!')
+
+      const thereIsDomain = await this.dbService.domain.findUnique({
+        where: {
+          id: decodedPayload.domainId
+        }
+      })
+      
       const alreadyInDomain = await this.dbService.domainMembership.findFirst({
         where: {
-          userId: hasAccount.id,
+          userId: inviteeUser.id,
           domainId: thereIsDomain.id,
           memberRole: {
             in: ['admin', 'member']
@@ -84,8 +109,8 @@ export class CollaboratorsService {
         data: {
           domainMembers: {
             create: {
-              userId: hasAccount.id,
-              memberRole: joinCollaboratorDto.role
+              userId: inviteeUser.id,
+              memberRole: decodedPayload.role
             }
           }
         }
