@@ -26,7 +26,6 @@ export class CollaboratorsController {
   }
 
   @Patch('/join-through-link')
-  @UseGuards(AuthGuard)
   async joinDomainThroughLink(@Body() joinCollaboratorDto: JoinCollaboratorDto) {
     return await this.collaboratorsService.joinThroughLink(joinCollaboratorDto)
   }
