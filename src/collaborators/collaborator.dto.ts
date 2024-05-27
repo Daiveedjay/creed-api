@@ -26,18 +26,25 @@ export class AddCollaboratorDto {
     role: Role
 }
 
-export class JoinCollaboratorDto extends PartialType(AddCollaboratorDto) {
+export class JoinCollaboratorDto {
     @ApiProperty({
         type: String,
         required: true
     })
     @IsNotEmpty()
     @IsString()
-    token: string
+    inviteCode: string
+
+    @ApiProperty({
+        type: String,
+        required: true
+    })
+    @IsNotEmpty()
+    @IsString()
+    email: string
 }
 
 export enum Role {
     Admin = 'admin',
     Member = 'member',
-    Owner = 'owner'
 }

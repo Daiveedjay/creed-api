@@ -11,7 +11,7 @@ import {
   AddCollaboratorDto,
   JoinCollaboratorDto
 } from './collaborator.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Collaborators')
@@ -21,8 +21,8 @@ export class CollaboratorsController {
 
   @Post('/create-link')
   @UseGuards(AuthGuard)
-  async createLinkForJoining(@Body() addCollaboratorDto: AddCollaboratorDto) {
-    return await this.collaboratorsService.createLinkForJoining(addCollaboratorDto);
+  async createLinkForJoining(@Body() addCollaboratorDto: AddCollaboratorDto, @CurrentUser('email') email: string) {
+    return await this.collaboratorsService.createLinkForJoining(addCollaboratorDto, email);
   }
 
   @Patch('/join-through-link')
