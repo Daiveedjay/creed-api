@@ -26,7 +26,9 @@ export class CollaboratorsService {
         }
       })
 
-      if(!currentUser) throw new UnauthorizedException('No access')
+      if(!currentUser) {
+        throw new UnauthorizedException('No access')
+      }
 
       const existingDomain = await this.dbService.domain.findUnique({
         where: {
@@ -34,7 +36,9 @@ export class CollaboratorsService {
         }
       })
 
-      if(!existingDomain) throw new NotFoundException('Domain not found!')
+      if(!existingDomain) {
+        throw new NotFoundException('Domain not found!')
+      }
 
       const payload: InvitePayload = {
         otp,
@@ -62,66 +66,67 @@ export class CollaboratorsService {
   //`https://kreed.tech/invite?invite_code=${hashedPayload}`
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
-    try {
-      const inviteeUser = await this.dbService.user.findUnique({
-        where: {
-          email: joinCollaboratorDto.email
-        },
-        select: {
-          id: true,
-          email: true,
-          fullName: true
-        }
-      })
-
-      if(!inviteeUser) throw new NotFoundException('No user found') 
-
-      const decodedPayload: InvitePayload = new JwtService().verify(joinCollaboratorDto.inviteCode, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
-
-      if(!decodedPayload) throw new UnauthorizedException('No access!');
-
-      if(decodedPayload.expiredAt < new Date()) throw new ConflictException('Link has been expired!')
-
-      const thereIsDomain = await this.dbService.domain.findUnique({
-        where: {
-          id: decodedPayload.domainId
-        }
-      })
+    // try {
       
-      const alreadyInDomain = await this.dbService.domainMembership.findFirst({
-        where: {
-          userId: inviteeUser.id,
-          domainId: thereIsDomain.id,
-          memberRole: {
-            in: ['admin', 'member']
-          }
-        }
-      });
-  
-      if(alreadyInDomain) {
-        return new HttpException('Already in domain', HttpStatus.FOUND)
+    // } catch (error) {
+    //   console.log(error)
+    //   throw new InternalServerErrorException('Cannot join bros!')
+    // }
+    const inviteeUser = await this.dbService.user.findUnique({
+      where: {
+        email: joinCollaboratorDto.email
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true
       }
-  
-      await this.dbService.domain.update({
-        where: {
-          id: thereIsDomain.id
-        },
-        data: {
-          domainMembers: {
-            create: {
-              userId: inviteeUser.id,
-              memberRole: decodedPayload.role
-            }
+    })
+
+    if(!inviteeUser) throw new NotFoundException('No user found');
+
+    const decodedPayload: InvitePayload = new JwtService().verify(joinCollaboratorDto.inviteCode, {
+      secret: this.configService.get('JWT_SECRET'),
+    });
+
+    if(!decodedPayload) throw new UnauthorizedException('No access!');
+
+    if(decodedPayload.expiredAt < new Date()) throw new ConflictException('Link has been expired!');
+
+    const thereIsDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: decodedPayload.domainId
+      }
+    })
+    
+    const alreadyInDomain = await this.dbService.domainMembership.findFirst({
+      where: {
+        userId: inviteeUser.id,
+        domainId: thereIsDomain.id,
+        memberRole: {
+          in: ['admin', 'member']
+        }
+      }
+    });
+
+    if(alreadyInDomain) {
+      return new HttpException('Already in domain', HttpStatus.FOUND)
+    }
+
+    await this.dbService.domain.update({
+      where: {
+        id: thereIsDomain.id
+      },
+      data: {
+        domainMembers: {
+          create: {
+            userId: inviteeUser.id,
+            memberRole: decodedPayload.role
           }
         }
-      })
+      }
+    })
 
-      return new HttpException(`You have successfully joined a domain: ${thereIsDomain.name}`, HttpStatus.ACCEPTED)
-    } catch (error) {
-      console.log(error)
-      throw new InternalServerErrorException('Cannot join bros!')
-    }
+    return new HttpException(`You have successfully joined a domain: ${thereIsDomain.name}`, HttpStatus.ACCEPTED)
   }
 }
