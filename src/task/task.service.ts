@@ -19,48 +19,60 @@ export class TaskService {
   ) {}
 
   async getTasks(domainID: string, panelID: string) {
-    return await this.dbService.task.findMany({
-      where: {
-        domainId: domainID,
-        panelId: panelID,
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        createdAt: true,
-        subTasks: true,
-        authorId: true,
-        domainId: true,
-        panelId: true,
-        statusId: true,
-      },
-    });
+    try {
+      const tasks = await this.dbService.task.findMany({
+        where: {
+          domainId: domainID,
+          panelId: panelID,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          createdAt: true,
+          subTasks: true,
+          authorId: true,
+          domainId: true,
+          panelId: true,
+          statusId: true,
+        },
+      });
+
+      return tasks;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   async getTask(domainID: string, panelID: string, taskID: string) {
-    const task = await this.dbService.task.findFirst({
-      where: {
-        id: taskID,
-        domainId: domainID,
-        panelId: panelID,
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        createdAt: true,
-        subTasks: true,
-        authorId: true,
-        domainId: true,
-        panelId: true,
-        statusId: true,
-      },
-    });
+    try {
+      const task = await this.dbService.task.findFirst({
+        where: {
+          id: taskID,
+          domainId: domainID,
+          panelId: panelID,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          createdAt: true,
+          subTasks: true,
+          authorId: true,
+          domainId: true,
+          panelId: true,
+          statusId: true,
+        },
+      });
 
-    if(!task) throw new NotFoundException('Task not found!')
+      if(!task) throw new NotFoundException('No task like this!')
 
-    return task;
+      return task;
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
   }
 
   async createTask(
@@ -101,7 +113,7 @@ export class TaskService {
       return tasks;
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException(error.message);
     }
   }
 
