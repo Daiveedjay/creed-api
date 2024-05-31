@@ -19,58 +19,48 @@ export class TaskService {
   ) {}
 
   async getTasks(domainID: string, panelID: string) {
-    try {
-      const tasks = await this.dbService.task.findMany({
-        where: {
-          domainId: domainID,
-          panelId: panelID,
-        },
-        select: {
-          id: true,
-          text: true,
-          description: true,
-          createdAt: true,
-          subTasks: true,
-          authorId: true,
-          domainId: true,
-          panelId: true,
-          statusId: true,
-        },
-      });
-
-      return tasks;
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
-    }
+    return await this.dbService.task.findMany({
+      where: {
+        domainId: domainID,
+        panelId: panelID,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        subTasks: true,
+        authorId: true,
+        domainId: true,
+        panelId: true,
+        statusId: true,
+      },
+    });
   }
 
   async getTask(domainID: string, panelID: string, taskID: string) {
-    try {
-      const task = await this.dbService.task.findFirst({
-        where: {
-          id: taskID,
-          domainId: domainID,
-          panelId: panelID,
-        },
-        select: {
-          id: true,
-          text: true,
-          description: true,
-          createdAt: true,
-          subTasks: true,
-          authorId: true,
-          domainId: true,
-          panelId: true,
-          statusId: true,
-        },
-      });
+    const task = await this.dbService.task.findFirst({
+      where: {
+        id: taskID,
+        domainId: domainID,
+        panelId: panelID,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        subTasks: true,
+        authorId: true,
+        domainId: true,
+        panelId: true,
+        statusId: true,
+      },
+    });
 
-      return task;
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
-    }
+    if(!task) throw new NotFoundException('Task not found!')
+
+    return task;
   }
 
   async createTask(
@@ -91,7 +81,7 @@ export class TaskService {
       const tasks = await this.dbService.task.create({
         data: {
           description: dto.description,
-          text: dto.title,
+          title: dto.title,
           statusId: dto.statusId,
           subTasks: {
             createMany: {
@@ -158,7 +148,7 @@ export class TaskService {
       }
 
       if (dto.title || dto.description || dto.statusId) {
-        existingTask.text = dto.title;
+        existingTask.title = dto.title;
         existingTask.description = dto.description;
         existingTask.statusId = dto.statusId
       }
@@ -201,7 +191,7 @@ export class TaskService {
           // authorId: userId
         },
         data: {
-          text: existingTask.text,
+          title: existingTask.title,
           description: existingTask.description,
           statusId: existingTask.statusId
         },
