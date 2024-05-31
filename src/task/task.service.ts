@@ -2,6 +2,7 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,7 +13,10 @@ import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @Inject(DbService)
+    private readonly dbService: DbService
+  ) {}
 
   async getTasks(domainID: string, panelID: string) {
     try {

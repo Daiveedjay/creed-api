@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AddCollaboratorDto, JoinCollaboratorDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
 import { JwtService } from '@nestjs/jwt';
@@ -10,7 +10,9 @@ import { InvitePayload } from 'src/types';
 @Injectable()
 export class CollaboratorsService {
   constructor(
+    @Inject(DbService)
     private readonly dbService: DbService,
+    @Inject(ConfigService)
     private readonly configService: ConfigService
   ) {}
 

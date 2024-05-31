@@ -6,12 +6,16 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreatePanelDTO } from './panel.dto';
 @Injectable()
 export class PanelService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @Inject(DbService)
+    private readonly dbService: DbService
+  ) {}
 
   async getPanels(domainID: string) {
     try {
