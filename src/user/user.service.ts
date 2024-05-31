@@ -2,6 +2,7 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,7 +13,10 @@ import { UserUpdateDTOType } from './user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @Inject(DbService)
+    private readonly dbService: DbService
+  ) {}
 
   async getProfile(userId: string) {
     try {

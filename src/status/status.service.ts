@@ -1,11 +1,14 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException, Inject } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateStatusDTO } from './status.dto';
 
 @Injectable()
 export class StatusService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @Inject(DbService)
+    private readonly dbService: DbService
+  ) {}
 
   async getStatus(domainID: string) {
     try {

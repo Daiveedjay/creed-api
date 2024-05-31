@@ -1,12 +1,15 @@
 /* eslint-disable prettier/prettier */
-import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException, Inject } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
 
 @Injectable()
 export class DomainService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @Inject(DbService)
+    private readonly dbService: DbService
+  ) {}
 
   async getUserDomains(userID: string) {
     try {
