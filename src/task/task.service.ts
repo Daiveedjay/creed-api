@@ -2,7 +2,6 @@
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -14,35 +13,27 @@ import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
 @Injectable()
 export class TaskService {
   constructor(
-    @Inject(DbService)
     private readonly dbService: DbService
   ) {}
 
   async getTasks(domainID: string, panelID: string) {
-    try {
-      const tasks = await this.dbService.task.findMany({
-        where: {
-          domainId: domainID,
-          panelId: panelID,
-        },
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          createdAt: true,
-          subTasks: true,
-          authorId: true,
-          domainId: true,
-          panelId: true,
-          statusId: true,
-        },
-      });
-
-      return tasks;
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(error.message);
-    }
+    return await this.dbService.task.findMany({
+      where: {
+        domainId: domainID,
+        panelId: panelID,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+        subTasks: true,
+        authorId: true,
+        domainId: true,
+        panelId: true,
+        statusId: true,
+      },
+    });
   }
 
   async getTask(domainID: string, panelID: string, taskID: string) {

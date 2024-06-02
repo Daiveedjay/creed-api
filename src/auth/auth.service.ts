@@ -20,7 +20,6 @@ import { OAuth2Client } from 'google-auth-library';
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(DbService)
     private readonly dbService: DbService,
     @Inject(ConfigService)
     private readonly configService: ConfigService,

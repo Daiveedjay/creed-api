@@ -14,7 +14,6 @@ import { UserUpdateDTOType } from './user.dto';
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(DbService)
     private readonly dbService: DbService
   ) {}
 
