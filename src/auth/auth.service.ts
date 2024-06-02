@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -21,9 +20,7 @@ import { OAuth2Client } from 'google-auth-library';
 export class AuthService {
   constructor(
     private readonly dbService: DbService,
-    @Inject(ConfigService)
     private readonly configService: ConfigService,
-    @Inject(JwtService)
     private readonly jwtService: JwtService,
   ) { }
 
