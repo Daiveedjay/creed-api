@@ -22,7 +22,7 @@ export class TaskController {
 
   @Get('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  async getAllTasks(@Param('panelID', ParseUUIDPipe) panelID: string, @Param('domainID', ParseUUIDPipe) domainID: string) {
+  async getAllTasks(@Param('domainID', ParseUUIDPipe) domainID: string, @Param('panelID', ParseUUIDPipe) panelID: string) {
     return await this.taskService.getTasks(domainID, panelID);
   }
 

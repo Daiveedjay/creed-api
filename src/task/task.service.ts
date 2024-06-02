@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -17,23 +18,29 @@ export class TaskService {
   ) {}
 
   async getTasks(domainID: string, panelID: string) {
-    return await this.dbService.task.findMany({
-      where: {
-        domainId: domainID,
-        panelId: panelID,
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        createdAt: true,
-        subTasks: true,
-        authorId: true,
-        domainId: true,
-        panelId: true,
-        statusId: true,
-      },
-    });
+    try {
+      const tasks = await this.dbService.task.findMany({
+        where: {
+          domainId: domainID,
+          panelId: panelID,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          createdAt: true,
+          subTasks: true,
+          authorId: true,
+          domainId: true,
+          panelId: true,
+          statusId: true,
+        },
+      });
+  
+      return tasks;
+    } catch (error) {
+      throw new ConflictException(error.message)
+    }
   }
 
   async getTask(domainID: string, panelID: string, taskID: string) {
