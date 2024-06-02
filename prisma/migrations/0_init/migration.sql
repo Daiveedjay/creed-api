@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "Testing" AS ENUM ('help', 'cry', 'weep');
+
+-- CreateEnum
 CREATE TYPE "Roles" AS ENUM ('owner', 'admin', 'member');
 
 -- CreateEnum

@@ -10,6 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Testing {
+  help
+  cry
+  weep
+}
+
 model User {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -44,6 +50,7 @@ model User {
   
 }
 
+//Domain
 model Domain {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
