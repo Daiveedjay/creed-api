@@ -10,7 +10,6 @@ import { InvitePayload } from 'src/types';
 @Injectable()
 export class CollaboratorsService {
   constructor(
-    @Inject(DbService)
     private readonly dbService: DbService,
     @Inject(ConfigService)
     private readonly configService: ConfigService
