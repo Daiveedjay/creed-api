@@ -19,6 +19,9 @@ export class PanelService {
     try {
       const panels = await this.dbService.panel.findMany({
         where: { domainId: domainID },
+        orderBy: {
+          createdAt: 'desc'
+        }
       });
       return panels;
     } catch (error) {
