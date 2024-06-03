@@ -66,14 +66,12 @@ export class CollaboratorsService {
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
     try {
-      const inviteeUser = await this.dbService.user.findFirst({
-        where: {
-          email: joinCollaboratorDto.email
-        }
-      })
+      const inviteeUser = await this.dbService.user.findUnique({
+        where: { email: joinCollaboratorDto.email },
+      });
   
       if(!inviteeUser) {
-        throw new NotFoundException('No user found')
+        throw new NotFoundException('No user found');
       };
   
       const decodedPayload: InvitePayload = new JwtService().verify(joinCollaboratorDto.inviteCode, {
@@ -81,7 +79,7 @@ export class CollaboratorsService {
       });
   
       if(!decodedPayload) {
-        throw new UnauthorizedException('No access!')
+        throw new UnauthorizedException('No access!');
       };
   
       if(decodedPayload.expiredAt < new Date()) throw new ConflictException('Link has been expired!');
@@ -104,7 +102,7 @@ export class CollaboratorsService {
   
       if(alreadyInDomain) {
         return new HttpException('Already in domain', HttpStatus.FOUND)
-      }
+      };
   
       await this.dbService.domain.update({
         where: {
