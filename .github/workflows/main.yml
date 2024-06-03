@@ -39,11 +39,14 @@ jobs:
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
 
-            # Build Docker image
-            sudo docker build --no-cache -t kreed_api:latest .
-
             # Stop and remove existing container
             sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
+
+            # Remove old Docker image
+            sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
+
+            # Build Docker image
+            sudo docker build --no-cache -t kreed_api:latest .
 
             # Run the newly built Docker image
             sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
