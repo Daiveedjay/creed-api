@@ -66,24 +66,23 @@ export class CollaboratorsService {
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
     try {
-      const inviteeUser = await this.dbService.user.findUnique({
+      const inviteeUser = await this.dbService.user.findFirst({
         where: {
           email: joinCollaboratorDto.email
-        },
-        select: {
-          id: true,
-          email: true,
-          fullName: true
         }
       })
   
-      if(!inviteeUser) throw new NotFoundException('No user found');
+      if(!inviteeUser) {
+        throw new NotFoundException('No user found')
+      };
   
       const decodedPayload: InvitePayload = new JwtService().verify(joinCollaboratorDto.inviteCode, {
         secret: this.configService.get('JWT_SECRET'),
       });
   
-      if(!decodedPayload) throw new UnauthorizedException('No access!');
+      if(!decodedPayload) {
+        throw new UnauthorizedException('No access!')
+      };
   
       if(decodedPayload.expiredAt < new Date()) throw new ConflictException('Link has been expired!');
   

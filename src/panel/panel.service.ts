@@ -20,7 +20,7 @@ export class PanelService {
       const panels = await this.dbService.panel.findMany({
         where: { domainId: domainID },
         orderBy: {
-          createdAt: 'desc'
+          createdAt: 'asc'
         }
       });
       return panels;
