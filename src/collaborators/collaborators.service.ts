@@ -115,7 +115,7 @@ export class CollaboratorsService {
       return new HttpException(`You have successfully joined a domain: ${thereIsDomain.name}`, HttpStatus.ACCEPTED)
     } catch (error) {
       console.log(error)
-      throw new InternalServerErrorException('Cannot join bros!')
+      throw new InternalServerErrorException(error.message)
     }
   }
 }
