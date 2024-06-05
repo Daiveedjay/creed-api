@@ -77,4 +77,26 @@ export class UserService {
       throw new InternalServerErrorException('Profile info cannot be changed');
     }
   }
+
+  async getProfileThroughEmail(email: string) {
+    try {
+      const profile = await this.dbService.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          username: true,
+          jobTitle: true,
+          department: true,
+        },
+      });
+  
+      if(!profile) throw new NotFoundException('No profile like this')
+  
+      return profile
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
+  }
 }

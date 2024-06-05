@@ -25,7 +25,7 @@ export class CollaboratorsController {
     return await this.collaboratorsService.createLinkForJoining(addCollaboratorDto, email);
   }
 
-  @Patch('/join-through-link')
+  @Post('/join-through-link')
   async joinDomainThroughLink(@Body() joinCollaboratorDto: JoinCollaboratorDto) {
     return await this.collaboratorsService.joinThroughLink(joinCollaboratorDto)
   }
