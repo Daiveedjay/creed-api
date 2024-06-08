@@ -44,6 +44,16 @@ export class JoinCollaboratorDto {
     email: string
 }
 
+export class CollaboratorsDto {
+    @ApiProperty({
+        type: String,
+        required: true
+    })
+    @IsNotEmpty()
+    @IsString()
+    domainId: string
+}
+
 export enum Role {
     Admin = 'admin',
     Member = 'member',

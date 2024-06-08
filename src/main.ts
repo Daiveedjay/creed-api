@@ -7,10 +7,12 @@ import { AppModule } from './app.module';
 import { SwaggerThemeNameEnum } from 'swagger-themes/build/enums/swagger-theme-name';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
+import { WebsocketAdapter } from './notify/notify-adapter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const theme = new SwaggerTheme();
+  const webSocketAdapter = new WebsocketAdapter(app)
 
   // API input validation
   app.useGlobalPipes(
@@ -33,6 +35,9 @@ async function bootstrap() {
 
   // Enable cors
   app.enableCors();
+
+  //Enable auth in websockets
+  app.useWebSocketAdapter(webSocketAdapter)
 
   await app.listen(3000);
   Logger.log(

@@ -19,10 +19,10 @@ export class DomainService {
             { domainMembers: { some: { userId: userID } } },
           ],
         },
-        // include: {
-        //   panels: true,
-        //   status: true,
-        // }
+        include: {
+          announcements: true,
+          domainMembers: true
+        }
       });
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -39,10 +39,10 @@ export class DomainService {
             { domainMembers: { some: { userId: userID } } },
           ],
         },
-        // include: {
-        //   panels: true,
-        //   status: true
-        // }
+        include: {
+          domainMembers: true,
+          announcements: true,
+        }
       });
 
       if(!domain) throw new NotFoundException('No domain like this exists!');
@@ -51,6 +51,24 @@ export class DomainService {
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  async getUserDomainButLimitedAccess(domainID: string, userId: string) {
+    const domain = await this.dbService.domain.findUnique({
+      where: {
+        id: domainID,
+        domainMembers: {
+          some: {
+            memberRole: 'admin' || 'owner',
+            userId: userId,
+          }
+        }
+      }
+    });
+
+    if(!domain) throw new NotFoundException('No domain like this exists!');
+
+    return domain
   }
 
   async update(userID: string, dto: CreateDomainDTO, domainID: string) {
