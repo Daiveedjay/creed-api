@@ -3,8 +3,9 @@ import {
   Controller,
   Post,
   Body,
-  Patch,
   UseGuards,
+  Param,
+  Get
 } from '@nestjs/common';
 import { CollaboratorsService } from './collaborators.service';
 import {
@@ -28,5 +29,10 @@ export class CollaboratorsController {
   @Post('/join-through-link')
   async joinDomainThroughLink(@Body() joinCollaboratorDto: JoinCollaboratorDto) {
     return await this.collaboratorsService.joinThroughLink(joinCollaboratorDto)
+  }
+
+  @Get('/domainId')
+  async getAllCollaboratorsInADomain(@Param('domainId') domainId: string, @CurrentUser('email') email: string) {
+    return await this.collaboratorsService.getAllCollaboratorsInADomain(domainId, email)
   }
 }

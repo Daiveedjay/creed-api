@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { type Request } from "express";
 import { Role } from "./collaborators/collaborator.dto";
+import { Socket } from 'socket.io';
 export interface AuthRequest extends Request {
   auth?: { uid: string }; // Adjust with the properties you need from User
   user: {
@@ -11,6 +12,17 @@ export interface AuthRequest extends Request {
     fullName: string;
   };
 }
+
+export interface AuthenticatedSocket extends Socket {
+  user?: {
+    id: string,
+    createdAt: Date,
+    updatedAt: Date,
+    email: string,
+    fullName: string,
+  };
+}
+
 
 type InviterPayload = {
   id: string;
