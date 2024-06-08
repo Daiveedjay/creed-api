@@ -63,6 +63,7 @@ export class AuthService {
         include: {
           panels: true,
           status: true,
+          domainMembers: true,
         }
       });
 
@@ -112,6 +113,7 @@ export class AuthService {
                 include: {
                   panels: true,
                   status: true,
+                  domainMembers: true,
                 }
               },
   
