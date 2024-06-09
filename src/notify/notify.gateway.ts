@@ -10,7 +10,12 @@ import { AuthenticatedSocket } from '../types';
 import { Server } from 'socket.io';
 import {GatewaySessionManager} from './notify-sessions'
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: "*",
+    credentials: true
+  }
+})
 export class NotifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly sessions: GatewaySessionManager
