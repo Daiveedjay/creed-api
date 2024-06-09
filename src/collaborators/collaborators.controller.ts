@@ -32,6 +32,7 @@ export class CollaboratorsController {
   }
 
   @Get('/domainId')
+  @UseGuards(AuthGuard)
   async getAllCollaboratorsInADomain(@Param('domainId') domainId: string, @CurrentUser('email') email: string) {
     return await this.collaboratorsService.getAllCollaboratorsInADomain(domainId, email)
   }
