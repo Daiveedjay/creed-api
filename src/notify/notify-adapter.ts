@@ -10,28 +10,28 @@ export class WebsocketAdapter extends IoAdapter {
         const server = super.createIOServer(port, options);
         server.use(async (socket: AuthenticatedSocket, next) => {
         console.log('Inside Websocket Adapter');
-        const clientCookies = socket.handshake.auth.token;
+        const clientCookies = socket.handshake.auth.token as string;
         if (!clientCookies) {
             console.log('Client has no cookies');
             return next(new Error('Not Authenticated. No cookies were sent'));
         }
 
-        const decodedCookie = new JwtService().verify(clientCookies[1], {
+        const decodedCookie = new JwtService().verify(clientCookies, {
             secret: process.env.JWT_SECRET as string,
         });
         if (!decodedCookie) {
-            console.log('CHAT_APP_SESSION_ID DOES NOT EXIST');
+            console.log('Cookie needs to exist!');
             return next(new Error('Not Authenticated'));
         }
 
         const user = await new DbService().user.findUnique({
             where: { id: decodedCookie.uid },
             select: {
-            id: true,
-            createdAt: true,
-            updatedAt: true,
-            email: true,
-            fullName: true,
+                id: true,
+                createdAt: true,
+                updatedAt: true,
+                email: true,
+                fullName: true,
             },
         });
 
