@@ -137,6 +137,23 @@ export class CollaboratorsService {
           where: {
             domainId: currentDomainAndAccess.id,
           },
+          select: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                department: true,
+                location: true,
+                fullName: true,
+                username: true,
+                profilePicture: true,
+                jobTitle: true
+              }
+            },
+            domainId: true,
+            memberRole: true,
+            id: true,
+          }
         })
       } catch (error) {
         console.log(error)
