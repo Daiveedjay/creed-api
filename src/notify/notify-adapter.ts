@@ -10,7 +10,7 @@ export class WebsocketAdapter extends IoAdapter {
         const server = super.createIOServer(port, options);
         server.use(async (socket: AuthenticatedSocket, next) => {
         console.log('Inside Websocket Adapter');
-        const clientCookies = socket.handshake.headers.authorization?.split('');
+        const clientCookies = socket.handshake.auth.token;
         if (!clientCookies) {
             console.log('Client has no cookies');
             return next(new Error('Not Authenticated. No cookies were sent'));
