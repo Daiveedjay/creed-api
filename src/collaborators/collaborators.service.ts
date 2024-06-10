@@ -8,7 +8,6 @@ import { generateOTP } from "otp-agent";
 import { InvitePayload } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DomainService } from 'src/domain/domain.service';
-import { NotifyGateway } from 'src/notify/notify.gateway';
 
 @Injectable()
 export class CollaboratorsService {
@@ -17,7 +16,6 @@ export class CollaboratorsService {
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly domainService: DomainService,
-    private readonly notifyGateway: NotifyGateway,
   ) {}
 
   async createLinkForJoining(addCollaboratorDto: AddCollaboratorDto, email: string) {
@@ -114,8 +112,6 @@ export class CollaboratorsService {
         }
       })
 
-      this.notifyGateway.notifyUserJoinedDomain(inviteeUser.id, 'Refresh domains!')
-  
       return new HttpException(`You have successfully joined a domain: ${thereIsDomain.name}`, HttpStatus.ACCEPTED)
     } catch (error) {
       console.log(error)
