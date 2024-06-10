@@ -3,9 +3,8 @@ import { CollaboratorsService } from './collaborators.service';
 import { CollaboratorsController } from './collaborators.controller';
 import { UserModule } from 'src/user/user.module';
 import { DomainModule } from 'src/domain/domain.module';
-import { NotifyModule } from 'src/notify/notify.module';
 @Module({
-  imports: [UserModule, DomainModule, NotifyModule],
+  imports: [UserModule, DomainModule],
   controllers: [CollaboratorsController],
   providers: [CollaboratorsService],
 })

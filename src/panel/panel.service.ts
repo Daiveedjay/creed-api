@@ -9,12 +9,10 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreatePanelDTO } from './panel.dto';
-import { NotifyGateway } from 'src/notify/notify.gateway';
 @Injectable()
 export class PanelService {
   constructor(
     private readonly dbService: DbService,
-    private readonly notifyGateway: NotifyGateway
   ) {}
 
   async getPanels(domainID: string) {
@@ -62,8 +60,6 @@ export class PanelService {
           domainId: domainID,
         },
       });
-
-      this.notifyGateway.notifyPanelCreated(domainID, 'Refresh the panels please!')
 
       return panels;
     } catch (error) {
