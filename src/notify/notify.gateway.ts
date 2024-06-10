@@ -18,6 +18,7 @@ import {GatewaySessionManager} from './notify-sessions'
       "http://localhost:5174",
       "http://localhost:5175"
     ],
+    credentials: true
   }
 })
 export class NotifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
