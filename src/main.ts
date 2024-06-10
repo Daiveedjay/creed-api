@@ -34,7 +34,15 @@ async function bootstrap() {
   });
 
   // Enable cors
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      "https://kreed.tech/",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175"
+    ],
+    credentials: true
+  });
 
   //Enable auth in websockets
   app.useWebSocketAdapter(webSocketAdapter)
