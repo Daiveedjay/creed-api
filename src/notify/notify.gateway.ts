@@ -12,8 +12,12 @@ import {GatewaySessionManager} from './notify-sessions'
 
 @WebSocketGateway({
   cors: {
-    origin: "*",
-    credentials: true
+    origin: [
+      "https://kreed.tech/",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175"
+    ],
   }
 })
 export class NotifyGateway implements OnGatewayConnection, OnGatewayDisconnect {
