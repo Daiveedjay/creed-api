@@ -165,7 +165,25 @@ export class AuthService {
           }
         },
         include: {
-          domainMembers: true,
+          domainMembers: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  department: true,
+                  location: true,
+                  fullName: true,
+                  username: true,
+                  profilePicture: true,
+                  jobTitle: true
+                }
+              },
+              domainId: true,
+              memberRole: true,
+              id: true,
+            },
+          },
           panels: true,
           status: true,
           tasks: true,
