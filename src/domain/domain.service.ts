@@ -59,7 +59,6 @@ export class DomainService {
         id: domainID,
         domainMembers: {
           some: {
-            memberRole: 'admin' || 'owner',
             userId: userId,
           }
         }
