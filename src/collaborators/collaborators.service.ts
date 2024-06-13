@@ -129,7 +129,7 @@ export class CollaboratorsService {
     if(!currentDomainAndAccess) throw new UnauthorizedException('You do not have access!')
 
       try {
-        return await this.dbService.domainMembership.findMany({
+        const members = await this.dbService.domainMembership.findMany({
           where: {
             domainId: currentDomainAndAccess.id,
           },
@@ -149,8 +149,10 @@ export class CollaboratorsService {
             domainId: true,
             memberRole: true,
             id: true,
-          }
+          },
         })
+
+        return members;
       } catch (error) {
         console.log(error)
         throw new InternalServerErrorException('Cannot fetch the collaborators')
