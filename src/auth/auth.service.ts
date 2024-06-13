@@ -155,8 +155,25 @@ export class AuthService {
         profilePicture: user.profilePicture,
         emailVerified: user.emailVerified,
       };
+
+      const domainMembership = await this.dbService.domain.findMany({
+        where: {
+          domainMembers: {
+            some: {
+              userId: user.id,
+            }
+          }
+        },
+        include: {
+          domainMembers: true,
+          panels: true,
+          status: true,
+          tasks: true,
+          announcements: true
+        }
+      });
   
-      const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
+      // const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
   
       return {
         message: 'Access Token',
