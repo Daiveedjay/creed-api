@@ -22,6 +22,5 @@ import { CollaboratorsModule } from './collaborators/collaborators.module';
     CollaboratorsModule,
   ],
   controllers: [AppController],
-  providers: [],
 })
 export class AppModule {}
