@@ -156,49 +156,40 @@ export class AuthService {
         emailVerified: user.emailVerified,
       };
 
-      // const domainMembership = await this.dbService.domain.findMany({
-      //   where: {
-      //     domainMembers: {
-      //       some: {
-      //         userId: user.id,
-      //       }
-      //     }
-      //   },
-      //   include: {
-      //     domainMembers: {
-      //       select: {
-      //         user: {
-      //           select: {
-      //             id: true,
-      //             email: true,
-      //             department: true,
-      //             location: true,
-      //             fullName: true,
-      //             username: true,
-      //             profilePicture: true,
-      //             jobTitle: true
-      //           }
-      //         },
-      //         domainId: true,
-      //         memberRole: true,
-      //         id: true,
-      //       },
-      //     },
-      //     panels: true,
-      //     status: true,
-      //     tasks: true,
-      //     announcements: true
-      //   }
-      // });
-
-      const domainMembership = await this.dbService.user.findMany({
+      const domainMembership = await this.dbService.domain.findMany({
         where: {
-          id: userObj.id
+          domainMembers: {
+            some: {
+              userId: user.id,
+            }
+          }
         },
-        select: {
-          domains: true
+        include: {
+          domainMembers: {
+            select: {
+              createdAt: true,
+              memberRole: true,
+              id: true,
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  department: true,
+                  location: true,
+                  fullName: true,
+                  username: true,
+                  profilePicture: true,
+                  jobTitle: true,
+                }
+              },
+            },
+          },
+          panels: true,
+          status: true,
+          tasks: true,
+          announcements: true
         }
-      })
+      });
   
       return {
         message: 'Access Token',
