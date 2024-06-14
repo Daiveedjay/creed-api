@@ -155,42 +155,41 @@ export class AuthService {
         profilePicture: user.profilePicture,
         emailVerified: user.emailVerified,
       };
-
+  
+      // const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
       const domainMembership = await this.dbService.domain.findMany({
         where: {
-          domainMembers: {
-            some: {
-              userId: user.id,
-            }
-          }
+          OR: [
+            { ownerId: user.id },
+            { domainMembers: { some: { userId: user.id } } }
+          ]
         },
         include: {
+          announcements: true,
+          panels: true,
+          status: true,
           domainMembers: {
             select: {
               createdAt: true,
-              memberRole: true,
-              id: true,
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  department: true,
-                  location: true,
-                  fullName: true,
-                  username: true,
-                  profilePicture: true,
-                  jobTitle: true,
+                id: true,
+                memberRole: true,
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    fullName: true,
+                    username: true,
+                    jobTitle: true,
+                    department: true,
+                    location: true,
+                    profilePicture: true,
+                  }
                 }
-              },
-            },
-          },
-          panels: true,
-          status: true,
-          tasks: true,
-          announcements: true
+            }
+          }
         }
-      });
-  
+      })
+
       return {
         message: 'Access Token',
         access_token: token,
