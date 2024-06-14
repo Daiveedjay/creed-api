@@ -131,6 +131,7 @@ export class CollaboratorsService {
       try {
         const domains = await this.dbService.domain.findMany({
           where: {
+            id: currentDomainAndAccess.id,
             OR: [
               { ownerId: currentUser.id },  // Domains created by the user
               { domainMembers: { some: { userId: currentUser.id } } }  // Domains joined by the user
