@@ -5,7 +5,7 @@ import { DbService } from 'src/utils/db.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { generateOTP } from "otp-agent";
-import { InvitePayload } from 'src/types';
+import { InvitePayload, UserPayload } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DomainService } from 'src/domain/domain.service';
 
@@ -129,28 +129,56 @@ export class CollaboratorsService {
     if(!currentDomainAndAccess) throw new UnauthorizedException('You do not have access!')
 
       try {
-        return await this.dbService.domainMembership.findMany({
+        const domains = await this.dbService.domain.findMany({
           where: {
-            domainId: currentDomainAndAccess.id,
-          },
-          select: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                department: true,
-                location: true,
-                fullName: true,
-                username: true,
-                profilePicture: true,
-                jobTitle: true
+            OR: [
+              {
+                ownerId: currentUser.id
+              }, 
+              {
+                domainMembers: {
+                  some: {
+                    userId: currentUser.id,
+                  }
+                }
               }
+            ]
+          },
+          include: {
+            domainMembers: {
+              select: {
+                createdAt: true,
+                memberRole: true,
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    department: true,
+                    location: true,
+                    fullName: true,
+                    username: true,
+                    profilePicture: true,
+                    jobTitle: true,
+                  }
+                },
+              },
             },
-            domainId: true,
-            memberRole: true,
-            id: true,
+            panels: true,
+            status: true,
+            announcements: true
           }
-        })
+        });
+  
+        const membersMap = {};
+        for (const domain of domains) {
+          for (const members of domain.domainMembers) {
+            membersMap[members.user.id] = members.user;
+          }
+        }
+        const domainMembers: UserPayload[] = Object.values(membersMap);
+
+        return domainMembers;
       } catch (error) {
         console.log(error)
         throw new InternalServerErrorException('Cannot fetch the collaborators')

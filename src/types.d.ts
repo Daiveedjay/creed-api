@@ -38,3 +38,14 @@ export type InvitePayload = {
   expiredAt: Date;
   invitedBy: InviterPayload
 }
+
+export type UserPayload = {
+  id: string;
+  email: string;
+  fullName: string;
+  username: string;
+  jobTitle: string;
+  department: string;
+  location: string;
+  profilePicture: string;
+}
