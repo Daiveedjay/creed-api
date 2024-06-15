@@ -2,6 +2,7 @@
 import { type Request } from "express";
 import { Role } from "./collaborators/collaborator.dto";
 import { Socket } from 'socket.io';
+import { $Enums } from "@prisma/client";
 export interface AuthRequest extends Request {
   auth?: { uid: string }; // Adjust with the properties you need from User
   user: {
@@ -41,11 +42,16 @@ export type InvitePayload = {
 
 export type UserPayload = {
   id: string;
-  email: string;
-  fullName: string;
-  username: string;
-  jobTitle: string;
-  department: string;
-  location: string;
-  profilePicture: string;
+  createdAt: Date;
+  memberRole: $Enums.Roles;
+  user: {
+      id: string;
+      email: string;
+      fullName: string;
+      username: string;
+      jobTitle: string;
+      department: string;
+      location: string;
+      profilePicture: string;
+  };
 }
