@@ -172,29 +172,29 @@ export class CollaboratorsService {
             { domainMembers: { some: { userId: currentUser.id } } }, // Domains joined by the user
           ],
         },
-        include: {
-          domainMembers: {
-            select: {
-              createdAt: true,
-              id: true,
-              memberRole: true,
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  fullName: true,
-                  username: true,
-                  jobTitle: true,
-                  department: true,
-                  location: true,
-                  profilePicture: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
+          include: {
+            domainMembers: {
+              select: {
+                createdAt: true,
+                id: true,
+                memberRole: true,
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    fullName: true,
+                    username: true,
+                    jobTitle: true,
+                    department: true,
+                    location: true,
+                    profilePicture: true,
+                  }
+                }
+              }
+            }
+          }
+        });
+      
       // Extract unique members
       const membersMap = {};
       for (const domain of domains) {
