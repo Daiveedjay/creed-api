@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
+import { UserPayload } from 'src/types';
 @Injectable()
 export class AuthService {
   constructor(
@@ -156,7 +157,6 @@ export class AuthService {
         emailVerified: user.emailVerified,
       };
   
-      // const domainMembership = user.domainMembership.map(membership => ({ ...membership.domain }));
       const domainMembership = await this.dbService.domain.findMany({
         where: {
           OR: [
@@ -168,33 +168,56 @@ export class AuthService {
           announcements: true,
           panels: true,
           status: true,
+        }
+      })
+
+      const domains = await this.dbService.domain.findMany({
+        where: {
+          OR: [
+            { ownerId: user.id },
+            { domainMembers: { some: { userId: user.id } } }
+          ]
+        },
+        include: {
           domainMembers: {
             select: {
               createdAt: true,
-                id: true,
-                memberRole: true,
-                user: {
-                  select: {
-                    id: true,
-                    email: true,
-                    fullName: true,
-                    username: true,
-                    jobTitle: true,
-                    department: true,
-                    location: true,
-                    profilePicture: true,
-                  }
+              id: true,
+              memberRole: true,
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  fullName: true,
+                  username: true,
+                  jobTitle: true,
+                  department: true,
+                  location: true,
+                  profilePicture: true,
                 }
+              }
             }
           }
         }
-      })
+      });
+
+      // Extract unique members
+      const membersMap = {};
+      for (const domain of domains) {
+        for (const member of domain.domainMembers) {
+          membersMap[member.user.id] = member.user;
+        }
+      }
+      const uniqueMembers: UserPayload[] = Object.values(membersMap);
 
       return {
         message: 'Access Token',
         access_token: token,
         user_data: userObj,
-        domains: domainMembership,
+        domains: {
+          domains: domainMembership,
+          members: uniqueMembers,
+        },
       };
     } catch (error) {
       throw new InternalServerErrorException(error.message)
