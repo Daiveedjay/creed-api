@@ -164,7 +164,7 @@ export class CollaboratorsService {
         const membersMap = {};
         for (const domain of domains) {
           for (const member of domain.domainMembers) {
-            membersMap[member.user.id] = member.user;
+            membersMap[member.id] = member;
           }
         }
         const uniqueMembers: UserPayload[] = Object.values(membersMap);
