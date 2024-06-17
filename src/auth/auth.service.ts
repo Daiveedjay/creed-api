@@ -205,7 +205,7 @@ export class AuthService {
       const membersMap = {};
       for (const domain of domains) {
         for (const member of domain.domainMembers) {
-          membersMap[member.id] = member;
+          membersMap[member.user.id] = member;
         }
       }
       const uniqueMembers: UserPayload[] = Object.values(membersMap);
