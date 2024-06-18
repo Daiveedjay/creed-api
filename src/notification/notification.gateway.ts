@@ -30,8 +30,8 @@ export class NotificationGateway {
     }
 
     @SubscribeMessage(NotificationEvents.JOIN_DOMAIN)
-    sendNotification(message: INotification): void {
-        this.server.to(message.domain).emit('message', message);
+    sendNotification(message: string): void {
+        this.server.emit('message', message);
     }
 
     // actions

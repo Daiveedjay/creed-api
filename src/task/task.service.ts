@@ -110,7 +110,7 @@ export class TaskService {
         },
       });
 
-      this.notificationGateway.sendNotification({domain: domainID, message: 'You might wanna refresh though'})
+      this.notificationGateway.sendNotification('You might wanna refresh though')
       return tasks;
     } catch (error) {
       console.log(error);
@@ -214,7 +214,7 @@ export class TaskService {
         }
       });
 
-      this.notificationGateway.sendNotification({domain: domainID, message: 'You might wanna refresh though'})
+      this.notificationGateway.sendNotification('You might wanna refresh bro')
 
       return updatedTask;
     } catch (error) {
