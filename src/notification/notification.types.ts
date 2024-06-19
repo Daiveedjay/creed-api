@@ -1,32 +1,35 @@
 export interface INotification {
-    domain: string; // in sockets.io terms rooms
-    message: string;
+  domain: string; // in sockets.io terms rooms
+  message: string;
 }
 
 export interface INotificationAction {
-    domain: string; // in sockets.io terms rooms
-    message: string;
-    action: NotificationEvents;
+  domain: string; // in sockets.io terms rooms
+  message: string;
+  action: NotificationEvents;
 }
 
 export enum NotificationEvents {
-    GENERAL = "GENERAL",
+  GENERAL = 'GENERAL',
 
-    // Room - being the domain ID, for the idea of changing domain on ui i.e joining/leaving a socket room
-    JOIN_ROOM = "JOIN_ROOM",
-    LEAVE_ROOM = "LEAVE_ROOM",
+  // Notify the users
+  NOTIFY = 'NOTIFY',
 
-    // Domain - being the domain ID, for the idea of joining/leaving the domain as a member
-    JOIN_DOMAIN = "JOIN_DOMAIN",
-    LEAVE_DOMAIN = "LEAVE_DOMAIN",
+  // Room - being the domain ID, for the idea of changing domain on ui i.e joining/leaving a socket room
+  JOIN_ROOM = 'JOIN_ROOM',
+  LEAVE_ROOM = 'LEAVE_ROOM',
 
-    // Panel
-    CREATE_PANEL = "CREATE_PANEL",
-    EDIT_PANEL = "EDIT_PANEL",
-    DELETE_PANEL = "DELETE_PANEL",
+  // Domain - being the domain ID, for the idea of joining/leaving the domain as a member
+  JOIN_DOMAIN = 'JOIN_DOMAIN',
+  LEAVE_DOMAIN = 'LEAVE_DOMAIN',
 
-    // Task
-    CREATE_TASK = "CREATE_TASK",
-    EDIT_TASK = "EDIT_TASK",
-    DELETE_TASK = "DELETE_TASK",
+  // Panel
+  CREATE_PANEL = 'CREATE_PANEL',
+  EDIT_PANEL = 'EDIT_PANEL',
+  DELETE_PANEL = 'DELETE_PANEL',
+
+  // Task
+  CREATE_TASK = 'CREATE_TASK',
+  EDIT_TASK = 'EDIT_TASK',
+  DELETE_TASK = 'DELETE_TASK',
 }
