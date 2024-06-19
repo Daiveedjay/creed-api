@@ -132,7 +132,7 @@ export class CollaboratorsService {
         },
       });
 
-      this.notificationGateway.sendNotification('You might wanna refresh though')
+      this.notificationGateway.sendNotification({domain: thereIsDomain.id, message: 'You might wanna refresh though'})
 
       return new HttpException(
         `You have successfully joined a domain: ${thereIsDomain.name}`,
