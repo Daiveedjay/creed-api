@@ -10,11 +10,13 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
+import {NotificationGateway} from 'src/notification/notification.gateway';
 
 @Injectable()
 export class TaskService {
   constructor(
-    private readonly dbService: DbService,
+    private readonly notificationGateway: NotificationGateway,
+	private readonly dbService: DbService,
   ) {}
 
   async getTasks(domainID: string, panelID: string) {
@@ -108,6 +110,7 @@ export class TaskService {
         },
       });
 
+      this.notificationGateway.sendNotification('You might wanna refresh though')
       return tasks;
     } catch (error) {
       console.log(error);
@@ -210,6 +213,8 @@ export class TaskService {
           Status: true
         }
       });
+
+      this.notificationGateway.sendNotification('You might wanna refresh bro')
 
       return updatedTask;
     } catch (error) {

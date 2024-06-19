@@ -132,12 +132,7 @@ export class CollaboratorsService {
         },
       });
 
-      this.notificationGateway.sendAction({
-        action: NotificationEvents.JOIN_DOMAIN,
-        domain: thereIsDomain.id,
-        message:
-          '@Johnnie just joined the Company Domain, give him a warm welcome',
-      });
+      this.notificationGateway.sendNotification('You might wanna refresh though')
 
       return new HttpException(
         `You have successfully joined a domain: ${thereIsDomain.name}`,
