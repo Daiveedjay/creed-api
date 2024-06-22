@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { UserUpdateDTOType } from './user.dto';
+import { UserPayload } from 'src/types';
 
 @Injectable()
 export class UserService {
@@ -37,10 +38,76 @@ export class UserService {
           emailVerified: true,
         },
       });
-  
+      
       if(!profile) throw new NotFoundException('No profile like this')
-  
-      return profile
+      
+      const domainMembership = await this.dbService.domain.findMany({
+        where: {
+          OR: [
+            { ownerId: profile.id },
+            { domainMembers: { some: { userId: profile.id } } }
+          ]
+        },
+        include: {
+          announcements: true,
+          panels: true,
+          status: true,
+        }
+      })
+
+      const domains = await this.dbService.domain.findMany({
+        where: {
+          OR: [
+            { ownerId: profile.id },
+            { domainMembers: { some: { userId: profile.id } } }
+          ]
+        },
+        include: {
+          domainMembers: {
+            select: {
+              createdAt: true,
+              domain: {
+                select : {
+                  name: true,
+                  id: true
+                }
+              },
+              id: true,
+              memberRole: true,
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  fullName: true,
+                  username: true,
+                  jobTitle: true,
+                  department: true,
+                  location: true,
+                  profilePicture: true,
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Extract unique members
+      const membersMap = {};
+      for (const domain of domains) {
+        for (const member of domain.domainMembers) {
+          membersMap[member.user.id] = member;
+        }
+      }
+      const uniqueMembers: UserPayload[] = Object.values(membersMap);
+
+      return {
+        message: 'Access Token',
+        user_data: profile,
+        domains: {
+          domains: domainMembership,
+          members: uniqueMembers,
+        },
+      }
     } catch (error) {
       throw new InternalServerErrorException(error.message)
     }

@@ -49,7 +49,7 @@ export class AuthService {
       });
 
       // Setup default domain
-      const newDomain = await this.dbService.domain.create({
+      await this.dbService.domain.create({
         data: {
           name: dto.domainName,
           ownerId: user.id,
@@ -92,11 +92,65 @@ export class AuthService {
         emailVerified: user.emailVerified,
       };
 
+      const allDomains = await this.dbService.domain.findMany({
+        where: {
+          ownerId: user.id
+        }
+      })
+
+      const domains = await this.dbService.domain.findMany({
+        where: {
+          OR: [
+            { ownerId: user.id },
+            { domainMembers: { some: { userId: user.id } } }
+          ]
+        },
+        include: {
+          domainMembers: {
+            select: {
+              createdAt: true,
+              id: true,
+              memberRole: true,
+              domain: {
+                select: {
+                  id: true,
+                  name: true,
+                }
+              },
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  fullName: true,
+                  username: true,
+                  jobTitle: true,
+                  department: true,
+                  location: true,
+                  profilePicture: true,
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Extract unique members
+      const membersMap = {};
+      for (const domain of domains) {
+        for (const member of domain.domainMembers) {
+          membersMap[member.user.id] = member.user;
+        }
+      }
+      const uniqueMembers: UserPayload[] = Object.values(membersMap);
+
       return {
         message: 'Signup successful',
         access_token: token,
         user_data: userObj,
-        domains: newDomain,
+        domains: {
+          domains: allDomains,
+          members: uniqueMembers
+        }
       };
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -184,6 +238,12 @@ export class AuthService {
               createdAt: true,
               id: true,
               memberRole: true,
+              domain: {
+                select: {
+                  id: true,
+                  name: true
+                },
+              },
               user: {
                 select: {
                   id: true,
@@ -210,6 +270,7 @@ export class AuthService {
       }
       const uniqueMembers: UserPayload[] = Object.values(membersMap);
 
+      console.log(uniqueMembers)
       return {
         message: 'Access Token',
         access_token: token,
