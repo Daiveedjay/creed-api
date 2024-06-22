@@ -44,6 +44,10 @@ export type UserPayload = {
   id: string;
   createdAt: Date;
   memberRole: $Enums.Roles;
+  domain: {
+    id: string;
+    name: string
+  };
   user: {
       id: string;
       email: string;
