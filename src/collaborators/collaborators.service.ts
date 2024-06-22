@@ -173,6 +173,12 @@ export class CollaboratorsService {
                 createdAt: true,
                 id: true,
                 memberRole: true,
+                domain: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                },
                 user: {
                   select: {
                     id: true,
@@ -194,7 +200,7 @@ export class CollaboratorsService {
       const membersMap = {};
       for (const domain of domains) {
         for (const member of domain.domainMembers) {
-          membersMap[member.user.id] = member.user;
+          membersMap[member.user.id] = member;
         }
       }
       const uniqueMembers: UserPayload[] = Object.values(membersMap);
