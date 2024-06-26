@@ -1,7 +1,4 @@
 -- CreateEnum
-CREATE TYPE "Testing" AS ENUM ('help', 'cry', 'weep');
-
--- CreateEnum
 CREATE TYPE "Roles" AS ENUM ('owner', 'admin', 'member');
 
 -- CreateEnum
@@ -109,12 +106,22 @@ CREATE TABLE "SubTask" (
 -- CreateTable
 CREATE TABLE "Announcement" (
     "id" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "content" TEXT NOT NULL,
+    "sentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "authorId" TEXT NOT NULL,
     "domainId" TEXT NOT NULL,
 
     CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Mentions" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "announcementId" TEXT NOT NULL,
+
+    CONSTRAINT "Mentions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -164,4 +171,10 @@ ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_authorId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "Announcement" ADD CONSTRAINT "Announcement_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Mentions" ADD CONSTRAINT "Mentions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Mentions" ADD CONSTRAINT "Mentions_announcementId_fkey" FOREIGN KEY ("announcementId") REFERENCES "Announcement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

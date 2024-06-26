@@ -10,6 +10,9 @@ import { StatusModule } from './status/status.module';
 import { TaskModule } from './task/task.module';
 import { CollaboratorsModule } from './collaborators/collaborators.module';
 import { NotificationModule } from './notification/notification.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
+
+
 @Module({
   imports: [
     AuthModule,
@@ -22,7 +25,8 @@ import { NotificationModule } from './notification/notification.module';
     TaskModule,
     CollaboratorsModule,
     NotificationModule,
+    AnnouncementsModule,
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule { }

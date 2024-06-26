@@ -16,7 +16,6 @@ import { InvitePayload, UserPayload } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DomainService } from 'src/domain/domain.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
-import { NotificationEvents } from 'src/notification/notification.types';
 
 @Injectable()
 export class CollaboratorsService {
@@ -26,7 +25,7 @@ export class CollaboratorsService {
     private readonly userService: UserService,
     private readonly domainService: DomainService,
     private readonly notificationGateway: NotificationGateway,
-  ) {}
+  ) { }
 
   async createLinkForJoining(
     addCollaboratorDto: AddCollaboratorDto,
@@ -132,7 +131,7 @@ export class CollaboratorsService {
         },
       });
 
-      this.notificationGateway.sendNotification({domain: thereIsDomain.id, message: 'You might wanna refresh though'})
+      this.notificationGateway.sendNotification({ domain: thereIsDomain.id, message: 'You might wanna refresh though' })
 
       return new HttpException(
         `You have successfully joined a domain: ${thereIsDomain.name}`,
@@ -167,35 +166,35 @@ export class CollaboratorsService {
             { domainMembers: { some: { userId: currentUser.id } } }, // Domains joined by the user
           ],
         },
-          include: {
-            domainMembers: {
-              select: {
-                createdAt: true,
-                id: true,
-                memberRole: true,
-                domain: {
-                  select: {
-                    id: true,
-                    name: true
-                  }
-                },
-                user: {
-                  select: {
-                    id: true,
-                    email: true,
-                    fullName: true,
-                    username: true,
-                    jobTitle: true,
-                    department: true,
-                    location: true,
-                    profilePicture: true,
-                  }
+        include: {
+          domainMembers: {
+            select: {
+              createdAt: true,
+              id: true,
+              memberRole: true,
+              domain: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  fullName: true,
+                  username: true,
+                  jobTitle: true,
+                  department: true,
+                  location: true,
+                  profilePicture: true,
                 }
               }
             }
           }
-        });
-      
+        }
+      });
+
       // Extract unique members
       const membersMap = {};
       for (const domain of domains) {
