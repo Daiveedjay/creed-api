@@ -8,7 +8,7 @@ import { Roles } from '@prisma/client';
 export class DomainService {
   constructor(
     private readonly dbService: DbService
-  ) {}
+  ) { }
 
   async getUserDomains(userID: string) {
     try {
@@ -45,7 +45,7 @@ export class DomainService {
         }
       });
 
-      if(!domain) throw new NotFoundException('No domain like this exists!');
+      if (!domain) throw new NotFoundException('No domain like this exists!');
 
       return domain
     } catch (error) {
@@ -65,7 +65,7 @@ export class DomainService {
       }
     });
 
-    if(!domain) throw new NotFoundException('No domain like this exists!');
+    if (!domain) throw new NotFoundException('No domain like this exists!');
 
     return domain
   }
@@ -78,7 +78,7 @@ export class DomainService {
         }
       })
 
-      if(!currentUser) throw new NotFoundException('User not found')
+      if (!currentUser) throw new NotFoundException('User not found')
 
       const avaliableDomain = await this.dbService.domain.findUnique({
         where: {
@@ -87,11 +87,11 @@ export class DomainService {
         }
       })
 
-      if(!avaliableDomain) throw new NotFoundException('Domain not found')
+      if (!avaliableDomain) throw new NotFoundException('Domain not found')
 
       await this.dbService.domain.update({
         where: { id: domainID, ownerId: currentUser.id },
-        data: { 
+        data: {
           ...dto,
           // domainMembers: {
           //   updateMany: {
@@ -135,7 +135,7 @@ export class DomainService {
           memberRole: Roles.owner,
         },
       });
-      
+
       return domain
     } catch (error) {
       throw new InternalServerErrorException(error.message);
@@ -157,13 +157,13 @@ export class DomainService {
         }
       });
 
-      if(!domainToBeDeleted) {
+      if (!domainToBeDeleted) {
         throw new NotFoundException();
       } else if (allDomains.length <= 1) {
         throw new ConflictException('You need at least one domain to be available');
       }
 
-      for(const task of domainToBeDeleted.tasks) {
+      for (const task of domainToBeDeleted.tasks) {
         await this.dbService.task.delete({
           where: {
             id: task.id
@@ -171,7 +171,7 @@ export class DomainService {
         })
       }
 
-      for(const status of domainToBeDeleted.status) {
+      for (const status of domainToBeDeleted.status) {
         await this.dbService.status.delete({
           where: {
             id: status.id
@@ -179,7 +179,7 @@ export class DomainService {
         })
       }
 
-      for(const panel of domainToBeDeleted.panels) {
+      for (const panel of domainToBeDeleted.panels) {
         await this.dbService.panel.delete({
           where: {
             id: panel.id
@@ -187,7 +187,7 @@ export class DomainService {
         })
       }
 
-      for(const announcement of domainToBeDeleted.announcements) {
+      for (const announcement of domainToBeDeleted.announcements) {
         await this.dbService.announcement.delete({
           where: {
             id: announcement.id

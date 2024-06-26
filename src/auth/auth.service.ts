@@ -30,6 +30,7 @@ export class AuthService {
       // const firstName = dto.fullName.split(' ')
       const oldUser = await this.dbService.user.findUnique({
         where: { email: dto.email },
+
       });
 
       if (oldUser) {
@@ -138,7 +139,7 @@ export class AuthService {
       const membersMap = {};
       for (const domain of domains) {
         for (const member of domain.domainMembers) {
-          membersMap[member.user.id] = member.user;
+          membersMap[member.user.id] = member;
         }
       }
       const uniqueMembers: UserPayload[] = Object.values(membersMap);
@@ -171,31 +172,31 @@ export class AuthService {
                   domainMembers: true,
                 }
               },
-  
+
             }
           },
         }
       });
-  
+
       if (!user) {
         throw new ForbiddenException('Invalid credentials');
       }
-  
+
       const passwordMatch = await bcrypt.compare(dto.password, user.password);
-  
+
       if (!passwordMatch) {
         throw new ForbiddenException('Invalid credentials');
       }
-  
+
       // TODO: Send signin email
-  
+
       const token = this.jwtService.sign(
         { uid: user.id },
         {
           expiresIn: '24h',
         },
       );
-  
+
       const userObj = {
         id: user.id,
         email: user.email,
@@ -210,7 +211,7 @@ export class AuthService {
         profilePicture: user.profilePicture,
         emailVerified: user.emailVerified,
       };
-  
+
       const domainMembership = await this.dbService.domain.findMany({
         where: {
           OR: [
@@ -219,7 +220,6 @@ export class AuthService {
           ]
         },
         include: {
-          announcements: true,
           panels: true,
           status: true,
         }
@@ -270,7 +270,6 @@ export class AuthService {
       }
       const uniqueMembers: UserPayload[] = Object.values(membersMap);
 
-      console.log(uniqueMembers)
       return {
         message: 'Access Token',
         access_token: token,
@@ -357,7 +356,7 @@ export class AuthService {
       const response = await fetch(
         `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
       );
-  
+
       if (!response.ok) throw new NotFoundException('User nor found!');
 
       const data = await response.json()
