@@ -66,9 +66,6 @@ export class AnnouncementsService {
             in: createAnnouncementDto.mentions
           },
           domainId: domainId,
-          memberRole: {
-            in: ['admin', 'member', 'owner'],
-          },
         }
       })
 
@@ -78,10 +75,12 @@ export class AnnouncementsService {
 
       const newMentions = await this.dbService.mentions.createMany({
         data: users.map((user) => ({
-          userId: user.id,
-          announcementId: announcements.id,
-        })),
+          userId: user.userId,
+          announcementId: announcements.id
+        }))
       })
+
+      console.log(newMentions)
 
       if (newMentions.count === 0) throw new ConflictException('Could not add the mentions!')
 
@@ -130,7 +129,17 @@ export class AnnouncementsService {
         },
         sentAt: true,
         content: true,
-        mentions: true
+        mentions: {
+          select: {
+            user: {
+              select: {
+                fullName: true,
+                id: true,
+                profilePicture: true
+              }
+            }
+          }
+        }
       }
     })
 
