@@ -35,7 +35,7 @@ export class AnnouncementsService {
       }
     })
 
-    if (!domain) throw new NotFoundException('No domain found');
+    if (!domain) throw new UnauthorizedException('You are not allowed access!');
     const announcements = await this.dbService.announcement.create({
       data: {
         content: createAnnouncementDto.content,
@@ -59,7 +59,7 @@ export class AnnouncementsService {
 
     if (!announcements) throw new ConflictException('Error creating the announcements')
 
-    if (createAnnouncementDto.mentions) {
+    if (createAnnouncementDto.mentions.length !== 0) {
       const users = await this.dbService.domainMembership.findMany({
         where: {
           userId: {

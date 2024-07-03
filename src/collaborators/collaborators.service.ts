@@ -117,18 +117,12 @@ export class CollaboratorsService {
     }
 
     try {
-      await this.dbService.domain.update({
-        where: {
-          id: thereIsDomain.id,
-        },
+      await this.dbService.domainMembership.create({
         data: {
-          domainMembers: {
-            create: {
-              userId: inviteeUser.id,
-              memberRole: decodedPayload.role,
-            },
-          },
-        },
+          domainId: thereIsDomain.id,
+          userId: inviteeUser.id,
+          memberRole: decodedPayload.role,
+        }
       });
 
       this.notificationGateway.sendNotification({ domain: thereIsDomain.id, message: 'You might wanna refresh though' })
