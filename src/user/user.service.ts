@@ -15,7 +15,7 @@ import { UserPayload } from 'src/types';
 export class UserService {
   constructor(
     private readonly dbService: DbService
-  ) {}
+  ) { }
 
   async getProfile(userId: string) {
     try {
@@ -38,75 +38,11 @@ export class UserService {
           emailVerified: true,
         },
       });
-      
-      if(!profile) throw new NotFoundException('No profile like this')
-      
-      const domainMembership = await this.dbService.domain.findMany({
-        where: {
-          OR: [
-            { ownerId: profile.id },
-            { domainMembers: { some: { userId: profile.id } } }
-          ]
-        },
-        include: {
-          announcements: true,
-          panels: true,
-          status: true,
-        }
-      })
 
-      const domains = await this.dbService.domain.findMany({
-        where: {
-          OR: [
-            { ownerId: profile.id },
-            { domainMembers: { some: { userId: profile.id } } }
-          ]
-        },
-        include: {
-          domainMembers: {
-            select: {
-              createdAt: true,
-              domain: {
-                select : {
-                  name: true,
-                  id: true
-                }
-              },
-              id: true,
-              memberRole: true,
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  fullName: true,
-                  username: true,
-                  jobTitle: true,
-                  department: true,
-                  location: true,
-                  profilePicture: true,
-                }
-              }
-            }
-          }
-        }
-      });
-
-      // Extract unique members
-      const membersMap = {};
-      for (const domain of domains) {
-        for (const member of domain.domainMembers) {
-          membersMap[member.user.id] = member;
-        }
-      }
-      const uniqueMembers: UserPayload[] = Object.values(membersMap);
+      if (!profile) throw new NotFoundException('No profile like this');
 
       return {
-        message: 'Access Token',
         user_data: profile,
-        domains: {
-          domains: domainMembership,
-          members: uniqueMembers,
-        },
       }
     } catch (error) {
       throw new InternalServerErrorException(error.message)
@@ -151,16 +87,24 @@ export class UserService {
         where: { email },
         select: {
           id: true,
+          createdAt: true,
+          updatedAt: true,
           email: true,
           fullName: true,
           username: true,
           jobTitle: true,
           department: true,
+          location: true,
+          language: true,
+          availableHoursFrom: true,
+          availableHoursTo: true,
+          profilePicture: true,
+          emailVerified: true,
         },
       });
-  
-      if(!profile) throw new NotFoundException('No profile like this')
-  
+
+      if (!profile) throw new NotFoundException('No profile like this')
+
       return profile
     } catch (error) {
       throw new InternalServerErrorException(error.message)
