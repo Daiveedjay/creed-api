@@ -25,7 +25,7 @@ export class PanelController {
     return await this.panelService.getPanels(domainID, email);
   }
 
-  @Post('/:domainID/panelID')
+  @Post('/:domainID/:panelID')
   @UseGuards(AuthGuard)
   async addCollaboratorsToPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('email') email: string, @Body() addUsersDto: AddUsersDto) {
     return await this.panelService.addUsersToPanel(domainID, panelID, email, addUsersDto)
