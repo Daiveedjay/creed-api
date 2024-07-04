@@ -40,6 +40,7 @@ model User {
   tasks            Task[]
   subTasks         SubTask[]
   domainMembership DomainMembership[]
+  panelMembership  PanelMembership[]
   domains          Domain[]
   mentions         Mentions[]
 }
@@ -57,6 +58,7 @@ model Domain {
   tasks         Task[]
   panels        Panel[]
   domainMembers DomainMembership[]
+  panelMembers  PanelMembership[]
   status        Status[]
 }
 
@@ -69,10 +71,8 @@ model DomainMembership {
   memberRole Roles  @default(member)
   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  panelId  String?
-  panel    Panel?  @relation(fields: [panelId], references: [id], onDelete: Cascade)
   domainId String
-  domain   Domain  @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }
 
 // TODO 
@@ -86,9 +86,24 @@ model Panel {
 
   // Relations
   tasks        Task[]
-  panelMembers DomainMembership[]
+  panelMembers PanelMembership[]
   domainId     String
-  domain       Domain             @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domain       Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
+}
+
+model PanelMembership {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  domainId String
+  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
+  panelId String
+  panel   Panel  @relation(fields: [panelId], references: [id], onDelete: Cascade)
 }
 
 model Status {

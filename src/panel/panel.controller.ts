@@ -17,24 +17,30 @@ import { CreatePanelDTO } from './panel.dto';
 @ApiTags('Panels')
 @Controller('panels')
 export class PanelController {
-  constructor(private readonly panelService: PanelService) {}
+  constructor(private readonly panelService: PanelService) { }
 
   @Get('/:domainID')
   @UseGuards(AuthGuard)
-  async getPanels(@Param('domainID') domainID: string) {
-    return await this.panelService.getPanels(domainID);
+  async getPanels(@Param('domainID') domainID: string, @CurrentUser('email') email: string) {
+    return await this.panelService.getPanels(domainID, email);
+  }
+
+  @Post('/:domainID/panelID')
+  @UseGuards(AuthGuard)
+  async addCollaboratorsToPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('email') email: string) {
+    return await this.panelService.addUsersToPanel(domainID, panelID, email)
   }
 
   @Get('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  async getPanel(@Param('domainID') domainID, @Param('panelID') panelID) {
+  async getPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string) {
     return await this.panelService.getPanel(domainID, panelID);
   }
 
   @Post('/:domainID')
   @UseGuards(AuthGuard)
   async createPanel(
-    @Param('domainID') domainID,
+    @Param('domainID') domainID: string,
     @CurrentUser('id') id: string,
     @Body() dto: CreatePanelDTO,
   ) {
@@ -44,8 +50,8 @@ export class PanelController {
   @Patch('/:domainID/:panelID')
   @UseGuards(AuthGuard)
   async editPanel(
-    @Param('domainID') domainID,
-    @Param('panelID') panelID,
+    @Param('domainID') domainID: string,
+    @Param('panelID') panelID: string,
     @Body() dto: CreatePanelDTO,
   ) {
     return await this.panelService.editPanel(domainID, panelID, dto);
@@ -53,7 +59,7 @@ export class PanelController {
 
   @Delete('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  async deletePanel(@Param('domainID') domainID, @Param('panelID') panelID) {
+  async deletePanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string) {
     return await this.panelService.deletePanel(domainID, panelID);
   }
 }

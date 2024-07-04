@@ -47,7 +47,6 @@ CREATE TABLE "DomainMembership" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "userId" TEXT NOT NULL,
     "memberRole" "Roles" NOT NULL DEFAULT 'member',
-    "panelId" TEXT,
     "domainId" TEXT NOT NULL,
 
     CONSTRAINT "DomainMembership_pkey" PRIMARY KEY ("id")
@@ -62,6 +61,18 @@ CREATE TABLE "Panel" (
     "domainId" TEXT NOT NULL,
 
     CONSTRAINT "Panel_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PanelMembership" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "domainId" TEXT NOT NULL,
+    "panelId" TEXT NOT NULL,
+
+    CONSTRAINT "PanelMembership_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -137,13 +148,19 @@ ALTER TABLE "Domain" ADD CONSTRAINT "Domain_ownerId_fkey" FOREIGN KEY ("ownerId"
 ALTER TABLE "DomainMembership" ADD CONSTRAINT "DomainMembership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DomainMembership" ADD CONSTRAINT "DomainMembership_panelId_fkey" FOREIGN KEY ("panelId") REFERENCES "Panel"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "DomainMembership" ADD CONSTRAINT "DomainMembership_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Panel" ADD CONSTRAINT "Panel_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PanelMembership" ADD CONSTRAINT "PanelMembership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PanelMembership" ADD CONSTRAINT "PanelMembership_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PanelMembership" ADD CONSTRAINT "PanelMembership_panelId_fkey" FOREIGN KEY ("panelId") REFERENCES "Panel"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Status" ADD CONSTRAINT "Status_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
