@@ -12,7 +12,7 @@ import {
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { PanelService } from './panel.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CreatePanelDTO } from './panel.dto';
+import { AddUsersDto, CreatePanelDTO } from './panel.dto';
 
 @ApiTags('Panels')
 @Controller('panels')
@@ -27,8 +27,8 @@ export class PanelController {
 
   @Post('/:domainID/panelID')
   @UseGuards(AuthGuard)
-  async addCollaboratorsToPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('email') email: string) {
-    return await this.panelService.addUsersToPanel(domainID, panelID, email)
+  async addCollaboratorsToPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('email') email: string, @Body() addUsersDto: AddUsersDto) {
+    return await this.panelService.addUsersToPanel(domainID, panelID, email, addUsersDto)
   }
 
   @Get('/:domainID/:panelID')

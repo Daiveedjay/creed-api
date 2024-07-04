@@ -9,37 +9,35 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
-import { CreatePanelDTO } from './panel.dto';
+import { AddUsersDto, CreatePanelDTO } from './panel.dto';
 @Injectable()
 export class PanelService {
-  constructor(
-    private readonly dbService: DbService,
-  ) { }
+  constructor(private readonly dbService: DbService) {}
 
   async getPanels(domainID: string, email: string) {
     try {
       const currentUser = await this.dbService.user.findUnique({
         where: {
-          email
-        }
-      })
+          email,
+        },
+      });
 
-      if (!currentUser) throw new UnauthorizedException('No user!')
+      if (!currentUser) throw new UnauthorizedException('No user!');
 
       const domain = await this.dbService.domain.findUnique({
         where: {
           id: domainID,
-        }
-      })
+        },
+      });
 
-      if (!domain) throw new NotFoundException('Domain does not exist!')
+      if (!domain) throw new NotFoundException('Domain does not exist!');
 
       if (domain.ownerId === currentUser.id) {
         return await this.dbService.panel.findMany({
           where: {
             domainId: domainID,
-          }
-        })
+          },
+        });
       }
 
       const domainMembership = await this.dbService.domainMembership.findFirst({
@@ -47,26 +45,26 @@ export class PanelService {
           userId: currentUser.id,
           domainId: domainID,
           memberRole: {
-            in: ['member', 'admin']
-          }
-        }
-      })
+            in: ['member', 'admin'],
+          },
+        },
+      });
 
-      if (!domainMembership) throw new UnauthorizedException('No access to this domain!')
+      if (!domainMembership)
+        throw new UnauthorizedException('No access to this domain!');
 
       const panels = await this.dbService.panel.findMany({
         where: {
           domainId: domainID,
           panelMembers: {
             some: {
-              userId: currentUser.id
-            }
-          }
-        }
-      })
+              userId: currentUser.id,
+            },
+          },
+        },
+      });
 
       return panels;
-
     } catch (error) {
       throw new InternalServerErrorException('Panels have misplaced!!');
     }
@@ -89,8 +87,8 @@ export class PanelService {
         where: {
           userId,
           memberRole: {
-            in: ['admin', 'owner']
-          }
+            in: ['admin', 'owner'],
+          },
         },
       });
 
@@ -105,77 +103,84 @@ export class PanelService {
 
       return panels;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new InternalServerErrorException('Panels cannot be created!');
     }
   }
 
-  async addUsersToPanel(domainID: string, panelID: string, email: string) {
+  async addUsersToPanel(domainID: string, panelID: string, email: string, addUsersDto: AddUsersDto) {
     const currentDomain = await this.dbService.domain.findUnique({
       where: {
         id: domainID,
-      }
-    })
-
-    const existingPanel = await this.dbService.panel.findUnique({
-      where: {
-        domainId: domainID, id: panelID
-      }
-    })
-
-    const currentUser = await this.dbService.user.findUnique({
-      where: {
-        email
-      }
-    })
-
-    if (!existingPanel) throw new NotFoundException('Panel not found!')
-
-    const currentUserMembership = await this.dbService.domainMembership.findFirst({
-      where: {
-        userId: currentUser.id,
-        memberRole: {
-          in: ['admin', 'member']
-        }
       },
     });
 
-    if (!currentUser || !currentUserMembership) throw new UnauthorizedException('No access!');
-
-    if (currentDomain.ownerId === currentUser.id) throw new ConflictException('You wanna add senior man to the his own domain? Ment?');
-
-    await this.dbService.panelMembership.create({
-      data: {
-        panelId: panelID,
+    const existingPanel = await this.dbService.panel.findUnique({
+      where: {
         domainId: domainID,
-        userId: currentUser.id
-      }
-    })
+        id: panelID,
+      },
+    });
+
+    const currentUser = await this.dbService.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!existingPanel) throw new NotFoundException('Panel not found!');
+
+    const currentUserMembership =
+      await this.dbService.domainMembership.findFirst({
+        where: {
+          userId: currentUser.id,
+          memberRole: {
+            in: ['admin', 'member'],
+          },
+        },
+      });
+
+    if (!currentUser || !currentUserMembership)
+      throw new UnauthorizedException('No access!');
+
+    if (currentDomain.ownerId === currentUser.id)
+      throw new ConflictException(
+        'You wanna add senior man to the his own domain? Ment?',
+      );
+
+    await this.dbService.panelMembership.createMany({
+      data: addUsersDto.userIds.map((user) => ({
+        userId: user,
+        domainId: domainID,
+        panelId: panelID
+      })),
+    });
   }
 
   async editPanel(domainID: string, panelID: string, dto: CreatePanelDTO) {
     try {
       const existingPanel = await this.dbService.panel.findUnique({
         where: {
-          domainId: domainID, id: panelID
-        }
-      })
+          domainId: domainID,
+          id: panelID,
+        },
+      });
 
-      if (!existingPanel) throw new NotFoundException('Panel not found!')
+      if (!existingPanel) throw new NotFoundException('Panel not found!');
 
       await this.dbService.panel.update({
         where: {
           id: panelID,
-          domainId: domainID
+          domainId: domainID,
         },
         data: {
-          ...dto
-        }
+          ...dto,
+        },
       });
 
       return new HttpException('Updated', HttpStatus.ACCEPTED);
     } catch (error) {
-      throw new InternalServerErrorException(error.message)
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -189,17 +194,17 @@ export class PanelService {
         include: {
           panelMembers: true,
           tasks: true,
-        }
-      })
+        },
+      });
 
-      if (!existingPanel) throw new NotFoundException('Panel not found!')
+      if (!existingPanel) throw new NotFoundException('Panel not found!');
 
       for (const task of existingPanel.tasks) {
         await this.dbService.task.delete({
           where: {
-            id: task.id
-          }
-        })
+            id: task.id,
+          },
+        });
       }
 
       await this.dbService.panel.delete({
@@ -208,7 +213,7 @@ export class PanelService {
 
       return new HttpException('Deleted', HttpStatus.ACCEPTED);
     } catch (error) {
-      throw new InternalServerErrorException(error.message)
+      throw new InternalServerErrorException(error.message);
     }
   }
 }
