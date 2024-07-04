@@ -108,7 +108,12 @@ export class PanelService {
     }
   }
 
-  async addUsersToPanel(domainID: string, panelID: string, email: string, addUsersDto: AddUsersDto) {
+  async addUsersToPanel(
+    domainID: string,
+    panelID: string,
+    email: string,
+    addUsersDto: AddUsersDto,
+  ) {
     const currentDomain = await this.dbService.domain.findUnique({
       where: {
         id: domainID,
@@ -135,7 +140,7 @@ export class PanelService {
         where: {
           userId: currentUser.id,
           memberRole: {
-            in: ['admin', 'member'],
+            in: ['admin', 'owner'],
           },
         },
       });
@@ -143,16 +148,39 @@ export class PanelService {
     if (!currentUser || !currentUserMembership)
       throw new UnauthorizedException('No access!');
 
-    if (currentDomain.ownerId === currentUser.id)
-      throw new ConflictException(
-        'You wanna add senior man to the his own domain? Ment?',
-      );
+    for (const user in addUsersDto.userIds) {
+      const availableUser = await this.dbService.user.findUnique({
+        where: {
+          id: user,
+        },
+        select: {
+          id: true, 
+          username: true,
+          fullName: true,
+          profilePicture: true
+        }
+      });
+
+      if (!availableUser) throw new NotFoundException('No user like this');
+
+      const confirmations = await this.dbService.domainMembership.findFirst({
+        where: {
+          userId: availableUser.id,
+          memberRole: {
+            in: ['admin', 'member'],
+          },
+        },
+      });
+
+      if (!confirmations)
+        throw new NotFoundException('Some users are not his domain');
+    }
 
     await this.dbService.panelMembership.createMany({
       data: addUsersDto.userIds.map((user) => ({
         userId: user,
         domainId: domainID,
-        panelId: panelID
+        panelId: panelID,
       })),
     });
   }
