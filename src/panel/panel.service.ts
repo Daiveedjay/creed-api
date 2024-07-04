@@ -12,7 +12,7 @@ import { DbService } from 'src/utils/db.service';
 import { AddUsersDto, CreatePanelDTO } from './panel.dto';
 @Injectable()
 export class PanelService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(private readonly dbService: DbService) { }
 
   async getPanels(domainID: string, email: string) {
     try {
@@ -114,11 +114,6 @@ export class PanelService {
     email: string,
     addUsersDto: AddUsersDto,
   ) {
-    const currentDomain = await this.dbService.domain.findUnique({
-      where: {
-        id: domainID,
-      },
-    });
 
     const existingPanel = await this.dbService.panel.findUnique({
       where: {
@@ -154,7 +149,7 @@ export class PanelService {
           id: user,
         },
         select: {
-          id: true, 
+          id: true,
           username: true,
           fullName: true,
           profilePicture: true
