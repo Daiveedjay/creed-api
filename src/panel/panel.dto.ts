@@ -8,6 +8,5 @@ export class CreatePanelDTO {
 
 export class AddUsersDto {
   @ApiProperty()
-  @IsArray()
   userIds: Array<string>;
 }
