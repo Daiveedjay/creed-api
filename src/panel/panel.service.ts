@@ -14,11 +14,11 @@ import { AddUsersDto, CreatePanelDTO } from './panel.dto';
 export class PanelService {
   constructor(private readonly dbService: DbService) { }
 
-  async getPanels(domainID: string, email: string) {
+  async getPanels(domainID: string, id: string) {
     try {
       const currentUser = await this.dbService.user.findUnique({
         where: {
-          email,
+          id
         },
       });
 
@@ -66,6 +66,7 @@ export class PanelService {
 
       return panels;
     } catch (error) {
+      console.log(error)
       throw new InternalServerErrorException('Panels have misplaced!!');
     }
   }
