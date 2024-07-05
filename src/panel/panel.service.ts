@@ -161,7 +161,7 @@ export class PanelService {
 
       await this.dbService.panelMembership.create({
         data: {
-          userId: currentUser.id,
+          userId: currentUser.userId,
           domainId: domainID,
           panelId: panel.id,
         }
