@@ -182,11 +182,6 @@ enum Roles {
   member
 }
 
-enum Him {
-  jehovah
-  alphaOmega
-}
-
 enum OTPReason {
   PasswordReset
 }
