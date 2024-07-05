@@ -39,7 +39,6 @@ export class AnnouncementsService {
     const announcements = await this.dbService.announcement.create({
       data: {
         content: createAnnouncementDto.content,
-        mentions: null,
         authorId: currentUser.id,
         domainId
       },
@@ -88,6 +87,8 @@ export class AnnouncementsService {
       const announcementsWithMentions = await this.findOne(domainId, announcements.id)
 
       return announcementsWithMentions;
+    } else if (createAnnouncementDto.mentions === null) {
+      return announcements;
     }
 
     return announcements;
