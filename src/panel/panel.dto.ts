@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MinLength } from 'class-validator';
+import { IsArray, MinLength } from 'class-validator';
 export class CreatePanelDTO {
   @ApiProperty()
   @MinLength(3)
@@ -11,5 +11,6 @@ export class AddUsersDto {
     isArray: true,
     required: true
   })
+  @IsArray()
   userIds: string[];
 }

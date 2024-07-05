@@ -21,20 +21,20 @@ export class PanelController {
 
   @Get('/:domainID')
   @UseGuards(AuthGuard)
-  async getPanels(@Param('domainID') domainID: string, @CurrentUser('email') email: string) {
-    return await this.panelService.getPanels(domainID, email);
+  async getPanels(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
+    return await this.panelService.getPanels(domainID, id);
   }
 
   @Post('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  async addCollaboratorsToPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('email') email: string, @Body() addUsersDto: AddUsersDto) {
-    return await this.panelService.addUsersToPanel(domainID, panelID, email, addUsersDto)
+  async addCollaboratorsToPanel(@Body() addUsersDto: AddUsersDto, @Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('id') id: string,) {
+    return await this.panelService.addUsersToPanel(domainID, panelID, id, addUsersDto)
   }
 
   @Get('/:domainID/:panelID')
   @UseGuards(AuthGuard)
-  async getPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string) {
-    return await this.panelService.getPanel(domainID, panelID);
+  async getPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('id') id: string) {
+    return await this.panelService.getPanel(domainID, panelID, id);
   }
 
   @Post('/:domainID')

@@ -59,7 +59,7 @@ export class AnnouncementsService {
 
     if (!announcements) throw new ConflictException('Error creating the announcements')
 
-    if (createAnnouncementDto.mentions.length !== 0) {
+    if (createAnnouncementDto.mentions?.length !== 0) {
       const users = await this.dbService.domainMembership.findMany({
         where: {
           userId: {
@@ -87,10 +87,7 @@ export class AnnouncementsService {
       const announcementsWithMentions = await this.findOne(domainId, announcements.id)
 
       return announcementsWithMentions;
-    } else if (createAnnouncementDto.mentions === null) {
-      return announcements;
     }
-
     return announcements;
   }
 

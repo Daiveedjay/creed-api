@@ -2,6 +2,9 @@
 CREATE TYPE "Roles" AS ENUM ('owner', 'admin', 'member');
 
 -- CreateEnum
+CREATE TYPE "Him" AS ENUM ('jehovah', 'alphaOmega');
+
+-- CreateEnum
 CREATE TYPE "OTPReason" AS ENUM ('PasswordReset');
 
 -- CreateTable

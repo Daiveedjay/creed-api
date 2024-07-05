@@ -70,12 +70,70 @@ export class PanelService {
     }
   }
 
-  async getPanel(domainID: string, panelID: string) {
+  async getPanel(domainID: string, panelID: string, id: string) {
     try {
-      const panels = await this.dbService.panel.findUnique({
-        where: { domainId: domainID, id: panelID },
+      const currentUser = await this.dbService.user.findUnique({
+        where: {
+          id
+        },
       });
-      return panels;
+
+      if (!currentUser) throw new UnauthorizedException('No user!');
+
+      const domain = await this.dbService.domain.findUnique({
+        where: {
+          id: domainID,
+        },
+      });
+
+      if (!domain) throw new NotFoundException('Domain does not exist!');
+      const panel = await this.dbService.panel.findUnique({
+        where: {
+          id: panelID,
+          domainId: domainID,
+        },
+      });
+
+      const domainMembership = await this.dbService.domainMembership.findFirst({
+        where: {
+          userId: currentUser.id,
+          domainId: domainID,
+          memberRole: {
+            in: ['member', 'owner', 'admin'],
+          },
+        },
+      });
+
+      if (!domainMembership)
+        throw new UnauthorizedException('No access to this domain!');
+
+      const panelMembership = await this.dbService.panelMembership.findFirst({
+        where: {
+          userId: currentUser.id,
+          domainId: domainID,
+          panelId: panelID,
+        }
+      });
+
+      if (!panelMembership) throw new UnauthorizedException('No access to this panel!')
+
+
+      if (!panel) throw new NotFoundException('Thee did not find this request!')
+
+      const panelMembers = await this.dbService.panelMembership.findMany({
+        where: {
+          panelId: panelID,
+          domainId: domainID,
+        }
+      });
+
+      const payload = {
+        panel_data: panel,
+        panel_members: panelMembers
+      }
+
+      return payload;
+
     } catch (error) {
       throw new InternalServerErrorException('Panels no dey available!');
     }
@@ -94,14 +152,22 @@ export class PanelService {
 
       if (!currentUser) throw new UnauthorizedException('No access!');
 
-      const panels = await this.dbService.panel.create({
+      const panel = await this.dbService.panel.create({
         data: {
           name: dto.name,
           domainId: domainID,
         },
       });
 
-      return panels;
+      await this.dbService.panelMembership.create({
+        data: {
+          userId: currentUser.id,
+          domainId: domainID,
+          panelId: panel.id,
+        }
+      })
+
+      return panel;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Panels cannot be created!');
@@ -111,7 +177,7 @@ export class PanelService {
   async addUsersToPanel(
     domainID: string,
     panelID: string,
-    email: string,
+    id: string,
     addUsersDto: AddUsersDto,
   ) {
 
@@ -124,7 +190,7 @@ export class PanelService {
 
     const currentUser = await this.dbService.user.findUnique({
       where: {
-        email,
+        id,
       },
     });
 
@@ -143,10 +209,10 @@ export class PanelService {
     if (!currentUser || !currentUserMembership)
       throw new UnauthorizedException('No access!');
 
-    for (const user in addUsersDto.userIds) {
+    for (const id of addUsersDto.userIds) {
       const availableUser = await this.dbService.user.findUnique({
         where: {
-          id: user,
+          id,
         },
         select: {
           id: true,
@@ -155,6 +221,7 @@ export class PanelService {
           profilePicture: true
         }
       });
+      console.log({ availableUser, id })
 
       if (!availableUser) throw new NotFoundException('No user like this');
 
@@ -169,15 +236,27 @@ export class PanelService {
 
       if (!confirmations)
         throw new NotFoundException('Some users are not his domain');
+
+      const alreadyInPanel = await this.dbService.panelMembership.findFirst({
+        where: {
+          userId: availableUser.id,
+          panelId: panelID,
+          domainId: domainID,
+        }
+      })
+
+      if (alreadyInPanel) throw new ConflictException('Thee is already in thy panel, kind sir')
     }
 
     await this.dbService.panelMembership.createMany({
-      data: addUsersDto.userIds.map((user) => ({
+      data: addUsersDto.userIds?.map((user) => ({
         userId: user,
         domainId: domainID,
         panelId: panelID,
       })),
     });
+
+    return new HttpException('Success', HttpStatus.CREATED)
   }
 
   async editPanel(domainID: string, panelID: string, dto: CreatePanelDTO) {
