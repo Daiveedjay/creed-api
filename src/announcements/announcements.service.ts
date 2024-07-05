@@ -39,6 +39,7 @@ export class AnnouncementsService {
     const announcements = await this.dbService.announcement.create({
       data: {
         content: createAnnouncementDto.content,
+        mentions: null,
         authorId: currentUser.id,
         domainId
       },

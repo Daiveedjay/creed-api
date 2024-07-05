@@ -7,6 +7,9 @@ export class CreatePanelDTO {
 }
 
 export class AddUsersDto {
-  @ApiProperty()
+  @ApiProperty({
+    isArray: true,
+    required: true
+  })
   userIds: string[];
 }
