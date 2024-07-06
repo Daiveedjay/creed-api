@@ -38,33 +38,34 @@ export class PanelService {
             domainId: domainID,
           },
         });
-      }
-
-      const domainMembership = await this.dbService.domainMembership.findFirst({
-        where: {
-          userId: currentUser.id,
-          domainId: domainID,
-          memberRole: {
-            in: ['member', 'admin'],
-          },
-        },
-      });
-
-      if (!domainMembership)
-        throw new UnauthorizedException('No access to this domain!');
-
-      const panels = await this.dbService.panel.findMany({
-        where: {
-          domainId: domainID,
-          panelMembers: {
-            some: {
-              userId: currentUser.id,
+      } else {
+        const domainMembership = await this.dbService.domainMembership.findFirst({
+          where: {
+            userId: currentUser.id,
+            domainId: domainID,
+            memberRole: {
+              in: ['member', 'admin'],
             },
           },
-        },
-      });
+        });
 
-      return panels;
+        if (!domainMembership)
+          throw new UnauthorizedException('No access to this domain!');
+
+        const panels = await this.dbService.panel.findMany({
+          where: {
+            domainId: domainID,
+            panelMembers: {
+              some: {
+                userId: currentUser.id,
+              },
+            },
+          },
+        });
+
+        return panels;
+
+      }
     } catch (error) {
       console.log(error)
       throw new InternalServerErrorException('Panels have misplaced!!');

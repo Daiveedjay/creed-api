@@ -26,7 +26,7 @@ export class AnnouncementsService {
               some: {
                 userId: currentUser.id,
                 memberRole: {
-                  in: ['admin', 'owner']
+                  in: ['admin']
                 }
               }
             }
@@ -59,7 +59,7 @@ export class AnnouncementsService {
 
     if (!announcements) throw new ConflictException('Error creating the announcements')
 
-    if (createAnnouncementDto.mentions?.length !== 0) {
+    if (createAnnouncementDto.mentions.length !== 0) {
       const users = await this.dbService.domainMembership.findMany({
         where: {
           userId: {
@@ -88,6 +88,7 @@ export class AnnouncementsService {
 
       return announcementsWithMentions;
     }
+
     return announcements;
   }
 
