@@ -126,6 +126,19 @@ export class PanelService {
         where: {
           panelId: panelID,
           domainId: domainID,
+        },
+        select: {
+          createdAt: true,
+          domainId: true,
+          id: true,
+          panelId: true,
+          user: {
+            select: {
+              fullName: true,
+              profilePicture: true,
+              username: true,
+            }
+          }
         }
       });
 
