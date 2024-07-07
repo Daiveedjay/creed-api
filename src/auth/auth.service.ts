@@ -96,6 +96,9 @@ export class AuthService {
       const allDomains = await this.dbService.domain.findMany({
         where: {
           ownerId: user.id
+        },
+        include: {
+          status: true
         }
       })
 
@@ -150,7 +153,8 @@ export class AuthService {
         user_data: userObj,
         domains: {
           domains: allDomains,
-          members: uniqueMembers
+          members: uniqueMembers,
+          panels: []
         }
       };
     } catch (error) {
@@ -162,20 +166,6 @@ export class AuthService {
     try {
       const user = await this.dbService.user.findUnique({
         where: { email: dto.email },
-        include: {
-          domainMembership: {
-            select: {
-              domain: {
-                include: {
-                  panels: true,
-                  status: true,
-                  domainMembers: true,
-                }
-              },
-
-            }
-          },
-        }
       });
 
       if (!user) {
@@ -220,8 +210,36 @@ export class AuthService {
           ]
         },
         include: {
-          panels: true,
           status: true,
+        }
+      })
+
+      const panelMembership = await this.dbService.panelMembership.findMany({
+        where: {
+          OR: [
+            {
+              userId: user.id,
+            },
+            {
+              domain: {
+                ownerId: user.id
+              }
+            }
+          ]
+        },
+        select: {
+          panel: {
+            select: {
+              id: true,
+              name: true,
+            }
+          },
+          domain: {
+            select: {
+              id: true,
+              name: true,
+            }
+          },
         }
       })
 
@@ -277,6 +295,7 @@ export class AuthService {
         domains: {
           domains: domainMembership,
           members: uniqueMembers,
+          panels: panelMembership,
         },
       };
     } catch (error) {
