@@ -214,35 +214,6 @@ export class AuthService {
         }
       })
 
-      const panelMembership = await this.dbService.panelMembership.findMany({
-        where: {
-          OR: [
-            {
-              userId: user.id,
-            },
-            {
-              domain: {
-                ownerId: user.id
-              }
-            }
-          ]
-        },
-        select: {
-          panel: {
-            select: {
-              id: true,
-              name: true,
-            }
-          },
-          domain: {
-            select: {
-              id: true,
-              name: true,
-            }
-          },
-        }
-      })
-
       const domains = await this.dbService.domain.findMany({
         where: {
           OR: [
@@ -288,6 +259,28 @@ export class AuthService {
       }
       const uniqueMembers: UserPayload[] = Object.values(membersMap);
 
+      const panels = await this.dbService.panel.findMany({
+        where: {
+          OR: [
+            {
+              domain: {
+                id: domains[0].id,
+                ownerId: user.id
+              }
+            },
+            {
+              panelMembers: {
+                some: {
+                  domainId: domains[0].id,
+                  userId: user.id
+                }
+              }
+            }
+          ]
+        }
+      })
+
+
       return {
         message: 'Access Token',
         access_token: token,
@@ -295,7 +288,7 @@ export class AuthService {
         domains: {
           domains: domainMembership,
           members: uniqueMembers,
-          panels: panelMembership,
+          panels,
         },
       };
     } catch (error) {
