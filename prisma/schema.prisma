@@ -42,7 +42,6 @@ model User {
   domainMembership DomainMembership[]
   panelMembership  PanelMembership[]
   domains          Domain[]
-  panels            Panel[]
   mentions         Mentions[]
 }
 
@@ -87,8 +86,6 @@ model Panel {
   // Relations
   tasks        Task[]
   panelMembers PanelMembership[]
-  ownerId     String
-  owner         User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   domainId     String
   domain       Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
 }
@@ -99,7 +96,6 @@ model PanelMembership {
   updatedAt DateTime @updatedAt
 
   userId String
-  memberRole  Roles   @default(member)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   domainId String
@@ -129,7 +125,6 @@ model Task {
 
   title       String
   description String
-  order       Int
 
   // relations
   authorId String
