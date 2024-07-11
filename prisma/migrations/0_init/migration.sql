@@ -93,12 +93,24 @@ CREATE TABLE "Task" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "order" INTEGER NOT NULL,
     "authorId" TEXT NOT NULL,
     "statusId" TEXT NOT NULL,
     "panelId" TEXT NOT NULL,
     "domainId" TEXT NOT NULL,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AssignedCollaborators" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "taskId" TEXT NOT NULL,
+    "assignedFrom" TIMESTAMP(3),
+    "assignedTo" TIMESTAMP(3),
+
+    CONSTRAINT "AssignedCollaborators_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -176,6 +188,12 @@ ALTER TABLE "Task" ADD CONSTRAINT "Task_panelId_fkey" FOREIGN KEY ("panelId") RE
 
 -- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AssignedCollaborators" ADD CONSTRAINT "AssignedCollaborators_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AssignedCollaborators" ADD CONSTRAINT "AssignedCollaborators_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SubTask" ADD CONSTRAINT "SubTask_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

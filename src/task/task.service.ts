@@ -10,14 +10,14 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
-import {NotificationGateway} from 'src/notification/notification.gateway';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly notificationGateway: NotificationGateway,
-	private readonly dbService: DbService,
-  ) {}
+    private readonly dbService: DbService,
+  ) { }
 
   async getTasks(domainID: string, panelID: string) {
     try {
@@ -38,7 +38,7 @@ export class TaskService {
           statusId: true,
         },
       });
-  
+
       return tasks;
     } catch (error) {
       throw new ConflictException(error.message)
@@ -66,7 +66,7 @@ export class TaskService {
         },
       });
 
-      if(!task) throw new NotFoundException('No task like this!')
+      if (!task) throw new NotFoundException('No task like this!')
 
       return task;
     } catch (error) {
@@ -94,6 +94,7 @@ export class TaskService {
         data: {
           description: dto.description,
           title: dto.title,
+          order: dto.order,
           statusId: dto.statusId,
           subTasks: {
             createMany: {
@@ -110,7 +111,49 @@ export class TaskService {
         },
       });
 
-      this.notificationGateway.sendNotification({domain: domainID, message: 'You might wanna refresh though'})
+      if (dto.usersToAssignIds.length !== 0) {
+        const users = await this.dbService.domainMembership.findMany({
+          where: {
+            userId: {
+              in: dto.usersToAssignIds
+            },
+            domainId: domainID,
+          }
+        })
+
+        const inPanels = await this.dbService.panelMembership.findMany({
+          where: {
+            userId: {
+              in: dto.usersToAssignIds
+            },
+            domainId: domainID,
+            panelId: panelID,
+          }
+        })
+
+        if (users.length === 0 || inPanels.length === 0) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
+
+        const assignedUsers = await this.dbService.assignedCollaborators.createMany({
+          data: users.map((user) => ({
+            userId: user.userId,
+            taskId: tasks.id,
+            assignFrom: dto.assignedFrom,
+            assignedTo: dto.assignedTo,
+          }))
+        })
+
+        console.log(assignedUsers)
+
+        if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
+
+        const tasksWithMentions = await this.getTask(domainID, panelID, tasks.id)
+
+        this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
+
+        return tasksWithMentions;
+      }
+
+      this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
       return tasks;
     } catch (error) {
       console.log(error);
@@ -181,7 +224,7 @@ export class TaskService {
                 parentTaskId: existingTask.id,
               },
             });
-          } 
+          }
 
           await this.dbService.subTask.update({
             where: {
@@ -214,7 +257,7 @@ export class TaskService {
         }
       });
 
-      this.notificationGateway.sendNotification({domain: domainID, message: 'You might wanna refresh though'})
+      this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
 
       return updatedTask;
     } catch (error) {

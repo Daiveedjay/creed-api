@@ -36,13 +36,14 @@ model User {
   otpReason         OTPReason?
 
   // Relations
-  announcement     Announcement[]     @relation("Creator")
-  tasks            Task[]
-  subTasks         SubTask[]
-  domainMembership DomainMembership[]
-  panelMembership  PanelMembership[]
-  domains          Domain[]
-  mentions         Mentions[]
+  announcement          Announcement[]          @relation("Creator")
+  tasks                 Task[]
+  subTasks              SubTask[]
+  domainMembership      DomainMembership[]
+  panelMembership       PanelMembership[]
+  domains               Domain[]
+  mentions              Mentions[]
+  assignedCollaborators AssignedCollaborators[]
 }
 
 //Domain
@@ -125,17 +126,29 @@ model Task {
 
   title       String
   description String
+  order       Int
 
   // relations
-  authorId String
-  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Status   Status    @relation(fields: [statusId], references: [id])
-  statusId String
-  panel    Panel     @relation(fields: [panelId], references: [id])
-  panelId  String
-  domain   Domain    @relation(fields: [domainId], references: [id])
-  domainId String
-  subTasks SubTask[]
+  authorId              String
+  author                User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Status                Status                  @relation(fields: [statusId], references: [id])
+  statusId              String
+  panel                 Panel                   @relation(fields: [panelId], references: [id])
+  panelId               String
+  domain                Domain                  @relation(fields: [domainId], references: [id])
+  domainId              String
+  subTasks              SubTask[]
+  assignedCollaborators AssignedCollaborators[]
+}
+
+model AssignedCollaborators {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  task         Task      @relation(fields: [taskId], references: [id])
+  taskId       String
+  assignedFrom DateTime?
+  assignedTo   DateTime?
 }
 
 model SubTask {
