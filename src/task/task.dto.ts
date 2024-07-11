@@ -1,17 +1,18 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsArray, IsString, MinLength } from 'class-validator';
+import { IsArray, IsDate, IsString, MinLength } from 'class-validator';
 export class SubTasksDto {
-  
+
   @ApiProperty()
   id: string;
-  
+
   @ApiProperty()
   title: string;
-  
+
   @ApiProperty()
   done: boolean
 }
+
 export class CreateTaskDTO {
   @ApiProperty({
     required: false,
@@ -30,6 +31,33 @@ export class CreateTaskDTO {
   description: string;
 
   @ApiProperty({
+    required: true,
+    type: Number
+  })
+  order: number;
+
+  @ApiProperty({
+    type: [String],
+    required: false
+  })
+  @IsArray()
+  usersToAssignIds: string[]
+
+  @ApiProperty({
+    required: false,
+    type: Date
+  })
+  @IsDate()
+  assignedFrom: Date;
+
+  @ApiProperty({
+    required: false,
+    type: Date
+  })
+  @IsDate()
+  assignedTo: Date;
+
+  @ApiProperty({
     required: false,
     type: [SubTasksDto]
   })
@@ -44,4 +72,4 @@ export class CreateTaskDTO {
 }
 
 
-export class UpdateTaskDto extends PartialType(CreateTaskDTO) {}
+export class UpdateTaskDto extends PartialType(CreateTaskDTO) { }

@@ -61,6 +61,9 @@ export class PanelService {
               },
             },
           },
+          orderBy: {
+            createdAt: 'desc'
+          }
         });
 
         return panels;
