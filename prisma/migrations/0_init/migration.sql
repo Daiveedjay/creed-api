@@ -58,6 +58,7 @@ CREATE TABLE "Panel" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "name" TEXT NOT NULL,
+    "ownerId" TEXT NOT NULL,
     "domainId" TEXT NOT NULL,
 
     CONSTRAINT "Panel_pkey" PRIMARY KEY ("id")
@@ -161,6 +162,9 @@ ALTER TABLE "DomainMembership" ADD CONSTRAINT "DomainMembership_userId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "DomainMembership" ADD CONSTRAINT "DomainMembership_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Panel" ADD CONSTRAINT "Panel_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Panel" ADD CONSTRAINT "Panel_domainId_fkey" FOREIGN KEY ("domainId") REFERENCES "Domain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
