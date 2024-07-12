@@ -173,6 +173,7 @@ export class PanelService {
       const panel = await this.dbService.panel.create({
         data: {
           name: dto.name,
+          ownerId: currentUser.userId,
           domainId: domainID,
         },
       });
