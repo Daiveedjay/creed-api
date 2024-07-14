@@ -137,12 +137,10 @@ export class TaskService {
           data: users.map((user) => ({
             userId: user.userId,
             taskId: tasks.id,
-            assignFrom: dto.assignedFrom,
-            assignedTo: dto.assignedTo,
+            assignFrom: dto.assignedFrom ? dto.assignedFrom : '',
+            assignedTo: dto.assignedTo ? dto.assignedTo : '',
           }))
         })
-
-        console.log(assignedUsers)
 
         if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 

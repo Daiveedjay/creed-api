@@ -58,6 +58,7 @@ export class CreateTaskDTO {
     required: false,
     type: Date
   })
+  @IsOptional()
   assignedTo: Date;
 
   @ApiProperty({
