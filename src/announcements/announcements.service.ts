@@ -98,6 +98,7 @@ export class AnnouncementsService {
         domainId
       },
       select: {
+        id: true,
         author: {
           select: {
             id: true,
