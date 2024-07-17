@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
-import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
+import { CreateTaskDTO, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
@@ -29,6 +29,20 @@ export class TaskService {
         select: {
           id: true,
           title: true,
+          order: true,
+          assignedCollaborators: {
+            select: {
+              assignedTo: true,
+              assignedFrom: true,
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  profilePicture: true,
+                }
+              }
+            }
+          },
           description: true,
           createdAt: true,
           subTasks: true,
@@ -57,6 +71,20 @@ export class TaskService {
           id: true,
           title: true,
           description: true,
+          order: true,
+          assignedCollaborators: {
+            select: {
+              assignedTo: true,
+              assignedFrom: true,
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  profilePicture: true,
+                }
+              }
+            }
+          },
           createdAt: true,
           subTasks: true,
           authorId: true,
@@ -109,6 +137,31 @@ export class TaskService {
           panelId: panelID,
           domainId: domainID,
         },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          order: true,
+          assignedCollaborators: {
+            select: {
+              assignedTo: true,
+              assignedFrom: true,
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  profilePicture: true,
+                }
+              }
+            }
+          },
+          createdAt: true,
+          subTasks: true,
+          authorId: true,
+          domainId: true,
+          panelId: true,
+          statusId: true,
+        }
       });
 
       if (dto.usersToAssignIds.length !== 0) {
@@ -166,102 +219,98 @@ export class TaskService {
     userId: string,
     dto: UpdateTaskDto,
   ) {
-    try {
-      const adminInDomain = await this.dbService.domain.findUnique({
-        where: {
-          id: domainID,
-          domainMembers: {
-            some: {
-              id: userId,
-              memberRole: 'admin',
-            },
+    const adminInDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: domainID,
+        domainMembers: {
+          some: {
+            id: userId,
+            memberRole: 'admin',
           },
         },
-      });
+      },
+    });
 
-      console.log(adminInDomain);
+    console.log(adminInDomain);
 
-      const existingTask = await this.dbService.task.findUnique({
-        where: {
-          id: taskID,
-          panelId: panelID,
-          domainId: domainID,
-          // authorId: userId
-        },
-        include: {
-          subTasks: true,
-        },
-      });
+    const existingTask = await this.dbService.task.findUnique({
+      where: {
+        id: taskID,
+        panelId: panelID,
+        domainId: domainID,
+        // authorId: userId
+      },
+      include: {
+        subTasks: true,
+      },
+    });
 
-      if (!existingTask) {
-        throw new NotFoundException('Task not found');
-      }
-
-      if (existingTask.authorId !== userId) {
-        throw new UnauthorizedException('You do not have this access');
-      }
-
-      if (dto.title || dto.description || dto.statusId) {
-        existingTask.title = dto.title;
-        existingTask.description = dto.description;
-        existingTask.statusId = dto.statusId
-      }
-
-      if (dto.subTasks) {
-        for (const subtaskData of dto.subTasks) {
-          const existingSubtask = existingTask.subTasks.find(
-            (subtask) => subtask.id === subtaskData.id,
-          );
-
-          if (!existingSubtask) {
-            await this.dbService.subTask.create({
-              data: {
-                title: subtaskData.title,
-                done: false,
-                authorId: userId,
-                parentTaskId: existingTask.id,
-              },
-            });
-          }
-
-          await this.dbService.subTask.update({
-            where: {
-              id: existingSubtask.id,
-              parentTaskId: existingTask.id
-            },
-            data: {
-              done: subtaskData.done,
-              title: subtaskData.title
-            }
-          })
-        }
-      }
-
-      const updatedTask = await this.dbService.task.update({
-        where: {
-          id: taskID,
-          panelId: panelID,
-          domainId: domainID,
-          // authorId: userId
-        },
-        data: {
-          title: existingTask.title,
-          description: existingTask.description,
-          statusId: existingTask.statusId
-        },
-        include: {
-          subTasks: true,
-          Status: true
-        }
-      });
-
-      this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
-
-      return updatedTask;
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
+    if (!existingTask) {
+      throw new NotFoundException('Task not found');
     }
+
+    if (existingTask.authorId !== userId) {
+      throw new UnauthorizedException('You do not have this access');
+    }
+
+    if (dto.title || dto.description || dto.statusId) {
+      existingTask.title = dto.title;
+      existingTask.description = dto.description;
+      existingTask.statusId = dto.statusId
+    }
+
+    if (dto.subTasks) {
+      for (const subtaskData of dto.subTasks) {
+        const existingSubtask = existingTask.subTasks.find(
+          (subtask) => subtask.id === subtaskData.id,
+        );
+
+        if (!existingSubtask) {
+          await this.dbService.subTask.create({
+            data: {
+              title: subtaskData.title,
+              done: false,
+              authorId: userId,
+              parentTaskId: existingTask.id,
+            },
+          });
+        }
+
+        await this.dbService.subTask.update({
+          where: {
+            id: existingSubtask.id,
+            parentTaskId: existingTask.id
+          },
+          data: {
+            done: subtaskData.done,
+            title: subtaskData.title
+          }
+        })
+      }
+    }
+
+    const updatedTask = await this.dbService.task.update({
+      where: {
+        id: taskID,
+        panelId: panelID,
+        domainId: domainID,
+        // authorId: userId
+      },
+      data: {
+        title: existingTask.title,
+        description: existingTask.description,
+        statusId: existingTask.statusId
+      },
+      include: {
+        subTasks: true,
+        Status: true
+      }
+    });
+
+    this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
+
+    return updatedTask;
+
   }
 
   async deleteTask(
@@ -274,18 +323,32 @@ export class TaskService {
       const existingTask = await this.dbService.task.findUnique({
         where: { domainId: doaminID, id: taskID, panelId: panelID },
         include: {
+          assignedCollaborators: true,
           subTasks: true
-        }
+        },
       });
 
       if (!existingTask) throw new NotFoundException('Task not found!');
 
-      for (const subTasks of existingTask.subTasks) {
-        await this.dbService.subTask.delete({
-          where: {
-            id: subTasks.id
-          }
-        })
+      if (existingTask.subTasks) {
+        for (const subTasks of existingTask.subTasks) {
+          await this.dbService.subTask.delete({
+            where: {
+              id: subTasks.id
+            }
+          })
+        }
+
+      }
+
+      if (existingTask.assignedCollaborators) {
+        for (const collaborators of existingTask.assignedCollaborators) {
+          await this.dbService.assignedCollaborators.delete({
+            where: {
+              id: collaborators.id
+            }
+          })
+        }
       }
 
       await this.dbService.task.delete({
@@ -302,4 +365,22 @@ export class TaskService {
       throw new InternalServerErrorException();
     }
   }
+
+  async editMultipleTasks(
+    domainID: string,
+    userId: string,
+    panelID: string,
+    tasksDto: UpdateMultipleTasksDto[]
+  ) {
+    const updatedTasks = []
+    for (const task of tasksDto) {
+      const { id, ...otherDetails } = task
+      const updated = await this.editTask(domainID, panelID, task.id, userId, otherDetails)
+      updatedTasks.push(updated)
+    }
+
+    return updatedTasks;
+  }
 }
+
+

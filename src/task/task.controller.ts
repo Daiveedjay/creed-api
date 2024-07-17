@@ -13,12 +13,12 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { CreateTaskDTO, UpdateTaskDto } from './task.dto';
+import { CreateTaskDTO, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 
 @ApiTags('Tasks')
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(private readonly taskService: TaskService) { }
 
   @Get('/:domainID/:panelID')
   @UseGuards(AuthGuard)
@@ -45,6 +45,17 @@ export class TaskController {
     @Body() dto: CreateTaskDTO,
   ) {
     return await this.taskService.createTask(domainID, panelID, id, dto);
+  }
+
+  @Patch('/:domainID/:panelID/multiple-tasks')
+  @UseGuards(AuthGuard)
+  async updateMultipleTasks(
+    @Param('domainID', ParseUUIDPipe) domainID: string,
+    @Param('panelID', ParseUUIDPipe) panelID: string,
+    @CurrentUser('id') id: string,
+    @Body() dto: UpdateMultipleTasksDto[],
+  ) {
+    return await this.taskService.editMultipleTasks(domainID, id, panelID, dto)
   }
 
   @Patch('/:domainID/:panelID/:taskID')
