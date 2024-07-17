@@ -79,3 +79,12 @@ export class CreateTaskDTO {
 
 
 export class UpdateTaskDto extends PartialType(CreateTaskDTO) { }
+
+export class UpdateMultipleTasksDto extends PartialType(UpdateTaskDto) {
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsString()
+  id: string
+}
