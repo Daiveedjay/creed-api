@@ -95,6 +95,8 @@ CREATE TABLE "Task" (
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
+    "assignedFrom" TIMESTAMP(3),
+    "assignedTo" TIMESTAMP(3),
     "authorId" TEXT NOT NULL,
     "statusId" TEXT NOT NULL,
     "panelId" TEXT NOT NULL,
@@ -108,8 +110,6 @@ CREATE TABLE "AssignedCollaborators" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "taskId" TEXT NOT NULL,
-    "assignedFrom" TIMESTAMP(3),
-    "assignedTo" TIMESTAMP(3),
 
     CONSTRAINT "AssignedCollaborators_pkey" PRIMARY KEY ("id")
 );

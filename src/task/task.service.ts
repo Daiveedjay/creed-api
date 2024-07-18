@@ -30,10 +30,10 @@ export class TaskService {
           id: true,
           title: true,
           order: true,
+          assignedTo: true,
+          assignedFrom: true,
           assignedCollaborators: {
             select: {
-              assignedTo: true,
-              assignedFrom: true,
               user: {
                 select: {
                   id: true,
@@ -72,10 +72,10 @@ export class TaskService {
           title: true,
           description: true,
           order: true,
+          assignedTo: true,
+          assignedFrom: true,
           assignedCollaborators: {
             select: {
-              assignedTo: true,
-              assignedFrom: true,
               user: {
                 select: {
                   id: true,
@@ -124,6 +124,8 @@ export class TaskService {
           title: dto.title,
           order: dto.order,
           statusId: dto.statusId,
+          assignedFrom: dto.assignedFrom ? dto.assignedFrom : '',
+          assignedTo: dto.assignedTo ? dto.assignedTo : '',
           subTasks: {
             createMany: {
               data: dto.subTasks.map((task) => ({
@@ -142,10 +144,10 @@ export class TaskService {
           title: true,
           description: true,
           order: true,
+          assignedTo: true,
+          assignedFrom: true,
           assignedCollaborators: {
             select: {
-              assignedTo: true,
-              assignedFrom: true,
               user: {
                 select: {
                   id: true,
@@ -190,8 +192,6 @@ export class TaskService {
           data: users.map((user) => ({
             userId: user.userId,
             taskId: tasks.id,
-            assignFrom: dto.assignedFrom ? dto.assignedFrom : '',
-            assignedTo: dto.assignedTo ? dto.assignedTo : '',
           }))
         })
 

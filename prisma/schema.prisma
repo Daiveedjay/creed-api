@@ -127,9 +127,11 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String
-  description String
-  order       Int
+  title        String
+  description  String
+  order        Int
+  assignedFrom DateTime?
+  assignedTo   DateTime?
 
   // relations
   authorId              String
@@ -145,13 +147,11 @@ model Task {
 }
 
 model AssignedCollaborators {
-  id           String    @id @default(uuid())
-  userId       String
-  user         User      @relation(fields: [userId], references: [id])
-  task         Task      @relation(fields: [taskId], references: [id])
-  taskId       String
-  assignedFrom DateTime?
-  assignedTo   DateTime?
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  task   Task   @relation(fields: [taskId], references: [id])
+  taskId String
 }
 
 model SubTask {
