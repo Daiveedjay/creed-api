@@ -238,7 +238,6 @@ export class TaskService {
         id: taskID,
         panelId: panelID,
         domainId: domainID,
-        // authorId: userId
       },
       include: {
         subTasks: true,
@@ -253,10 +252,13 @@ export class TaskService {
       throw new UnauthorizedException('You do not have this access');
     }
 
-    if (dto.title || dto.description || dto.statusId) {
+    if (dto.title || dto.description || dto.statusId || dto.order || dto.assignedFrom || dto.assignedTo) {
       existingTask.title = dto.title;
       existingTask.description = dto.description;
-      existingTask.statusId = dto.statusId
+      existingTask.statusId = dto.statusId;
+      existingTask.order = dto.order;
+      existingTask.assignedTo = dto.assignedTo
+      existingTask.assignedFrom = dto.assignedFrom;
     }
 
     if (dto.subTasks) {
@@ -372,14 +374,14 @@ export class TaskService {
     panelID: string,
     tasksDto: UpdateMultipleTasksDto[]
   ) {
-    const updatedTasks = []
+    const updatedTasks = new Set()
     for (const task of tasksDto) {
       const { id, ...otherDetails } = task
-      const updated = await this.editTask(domainID, panelID, task.id, userId, otherDetails)
-      updatedTasks.push(updated)
+      const updated = await this.editTask(domainID, panelID, id, userId, otherDetails)
+      updatedTasks.add(updated)
     }
 
-    return updatedTasks;
+    return Array.from(updatedTasks);
   }
 }
 

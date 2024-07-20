@@ -80,7 +80,7 @@ export class CreateTaskDTO {
 
 export class UpdateTaskDto extends PartialType(CreateTaskDTO) { }
 
-export class UpdateMultipleTasksDto extends PartialType(UpdateTaskDto) {
+export class UpdateMultipleTasksDto extends PartialType(CreateTaskDTO) {
   @ApiProperty({
     type: String,
     required: true
