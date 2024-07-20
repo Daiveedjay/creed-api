@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
-import { CreateTaskDTO, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
+import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
@@ -279,18 +279,32 @@ export class TaskService {
               parentTaskId: existingTask.id,
             },
           });
-        }
 
-        await this.dbService.subTask.update({
-          where: {
-            id: existingSubtask.id,
-            parentTaskId: existingTask.id
-          },
-          data: {
-            done: subtaskData.done,
-            title: subtaskData.title
-          }
-        })
+          await this.dbService.subTask.update({
+            where: {
+              id: existingSubtask.id,
+              parentTaskId: existingTask.id
+            },
+            data: {
+              done: subtaskData.done,
+              title: subtaskData.title
+            }
+          })
+
+        } else {
+
+          await this.dbService.subTask.update({
+            where: {
+              id: existingSubtask.id,
+              parentTaskId: existingTask.id
+            },
+            data: {
+              done: subtaskData.done,
+              title: subtaskData.title
+            }
+          })
+
+        }
       }
     }
 
@@ -327,6 +341,32 @@ export class TaskService {
     userId: string,
   ) {
     try {
+      const authorOfTask = await this.dbService.task.findUnique({
+        where: {
+          id: taskID,
+          authorId: userId,
+        }
+      })
+      const ownerOfDomain = await this.dbService.domain.findUnique({
+        where: {
+          ownerId: userId,
+          id: doaminID,
+          domainMembers: {
+            some: {
+              memberRole: {
+                in: [
+                  'owner', 'admin'
+                ]
+              }
+            }
+          }
+        }
+      })
+
+      if (!authorOfTask || !ownerOfDomain) {
+        throw new UnauthorizedException('No access to this')
+      };
+
       const existingTask = await this.dbService.task.findUnique({
         where: { domainId: doaminID, id: taskID, panelId: panelID },
         include: {
@@ -373,6 +413,93 @@ export class TaskService {
     }
   }
 
+  async deleteALotOfTasksInASingleStatus(
+    domainID: string,
+    userId: string,
+    panelID: string,
+    statusID: string,
+    tasksDto: DeleteMultipleTasksDto
+  ) {
+    for (const taskID of tasksDto.taskIds) {
+      const authorOfTask = await this.dbService.task.findUnique({
+        where: {
+          id: taskID,
+          authorId: userId,
+        }
+      })
+      const ownerOfDomain = await this.dbService.domain.findUnique({
+        where: {
+          ownerId: userId,
+          id: domainID,
+          domainMembers: {
+            some: {
+              memberRole: {
+                in: [
+                  'owner', 'admin'
+                ]
+              }
+            }
+          }
+        }
+      })
+
+      if (!authorOfTask || !ownerOfDomain) {
+        throw new UnauthorizedException('No access to this')
+      };
+
+      const existingStatus = await this.dbService.status.findUnique({
+        where: {
+          id: statusID
+        }
+      })
+
+      if (!existingStatus) throw new NotFoundException('Status not found!');
+
+      const existingTask = await this.dbService.task.findUnique({
+        where: { domainId: domainID, statusId: statusID, id: taskID, panelId: panelID },
+        include: {
+          assignedCollaborators: true,
+          subTasks: true
+        },
+      });
+
+      if (!existingTask) throw new NotFoundException('Task not found!');
+
+      if (existingTask.subTasks) {
+        for (const subTasks of existingTask.subTasks) {
+          await this.dbService.subTask.delete({
+            where: {
+              id: subTasks.id
+            }
+          })
+        }
+
+      }
+
+      if (existingTask.assignedCollaborators) {
+        for (const collaborators of existingTask.assignedCollaborators) {
+          await this.dbService.assignedCollaborators.delete({
+            where: {
+              id: collaborators.id
+            }
+          })
+        }
+      }
+
+      await this.dbService.task.delete({
+        where: {
+          domainId: domainID,
+          id: taskID,
+          panelId: panelID,
+          statusId: statusID,
+        },
+      });
+
+      return new HttpException('Deleted', HttpStatus.ACCEPTED);
+
+    }
+  }
+
   async editMultipleTasks(
     domainID: string,
     userId: string,
@@ -388,34 +515,6 @@ export class TaskService {
 
     return Array.from(updatedTasks);
   }
-
-
-
-  async updateOrderOfTasks(
-    domainID: string,
-    panelID: string,
-    taskID: string,
-  ) {
-
-    const existingTask = await this.dbService.task.findUnique({
-      where: {
-        id: taskID,
-        panelId: panelID,
-        domainId: domainID,
-      },
-      include: {
-        subTasks: true,
-      },
-    });
-
-    if (!existingTask) {
-      throw new NotFoundException('Task not found');
-    }
-
-    console.log(existingTask)
-
-  }
-
 
 }
 
