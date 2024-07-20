@@ -88,3 +88,12 @@ export class UpdateMultipleTasksDto extends PartialType(CreateTaskDTO) {
   @IsString()
   id: string
 }
+
+export class DeleteMultipleTasksDto {
+  @ApiProperty({
+    required: true
+  })
+  @IsArray()
+  taskIds: string[]
+}
+

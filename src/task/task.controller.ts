@@ -13,7 +13,7 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { CreateTaskDTO, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
+import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 
 @ApiTags('Tasks')
 @Controller('task')
@@ -92,4 +92,18 @@ export class TaskController {
   ) {
     return await this.taskService.deleteTask(domainID, taskID, panelID, id);
   }
+
+
+  @Delete('/:domainID/:panelID/:statusID/tasks-in-column')
+  @UseGuards(AuthGuard)
+  async deleteALotOfTasksInASingleStatus(
+    @Param('domainID', ParseUUIDPipe) domainID: string,
+    @Param('panelID', ParseUUIDPipe) panelID: string,
+    @Param('statusID', ParseUUIDPipe) statusID: string,
+    @CurrentUser('id') id: string,
+    @Body() dto: DeleteMultipleTasksDto,
+  ) {
+    return await this.taskService.deleteALotOfTasksInASingleStatus(domainID, panelID, id, statusID, dto);
+  }
+
 }
