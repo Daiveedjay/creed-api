@@ -7,7 +7,7 @@ import { CreateStatusDTO } from './status.dto';
 export class StatusService {
   constructor(
     private readonly dbService: DbService
-  ) {}
+  ) { }
 
   async getStatus(domainID: string) {
     try {
@@ -36,10 +36,10 @@ export class StatusService {
           domainId: domainID
         }
       })
-  
+
       if (existingCompletedStatus && completedIndex !== -1) {
         const newStatus = this.dbService.status.create({
-          data: { 
+          data: {
             name: dto.name,
             domainId: domainID
           },
@@ -54,7 +54,7 @@ export class StatusService {
         transaction.unshift(newStatus);
       }
 
-      if(!existingCompletedStatus) {
+      if (!existingCompletedStatus) {
         const newCompletedStatus = this.dbService.status.create({
           data: {
             name: 'completed',
@@ -63,25 +63,31 @@ export class StatusService {
         });
 
         transaction.push(newCompletedStatus);
-        
+
         const newStatus = this.dbService.status.create({
           data: {
             name: dto.name,
             domainId: domainID
           },
         });
-  
+
         transaction.unshift(newStatus);
       }
 
-  
+
       await this.dbService.$transaction(transaction);
-  
+
       return new HttpException('Created', HttpStatus.CREATED);
 
     } catch (error) {
       console.log(error)
       throw new InternalServerErrorException('Status cannot be created!')
+    }
+  }
+
+  async createMultipleStatus(domainID: string, dto: CreateStatusDTO[]) {
+    for (const newStatus of dto) {
+      await this.createStatus(domainID, newStatus)
     }
   }
 
@@ -94,8 +100,8 @@ export class StatusService {
         }
       })
 
-      if(!existingStatus) throw new NotFoundException('Status not found')
-      
+      if (!existingStatus) throw new NotFoundException('Status not found')
+
       await this.dbService.status.update({ where: { id: statusID, domainId: domainId }, data: { ...dto } });
       return new HttpException('Updated', HttpStatus.ACCEPTED)
     } catch (error) {
@@ -115,9 +121,9 @@ export class StatusService {
         }
       })
 
-      if(!existingStatus) throw new NotFoundException('Status not found')
+      if (!existingStatus) throw new NotFoundException('Status not found')
 
-      for(const task of existingStatus.tasks) {
+      for (const task of existingStatus.tasks) {
         await this.dbService.task.delete({
           where: {
             id: task.id,
@@ -130,6 +136,6 @@ export class StatusService {
     } catch (error) {
       throw new InternalServerErrorException(error.message)
     }
-    
+
   }
 }
