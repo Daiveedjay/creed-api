@@ -17,7 +17,7 @@ import { CreateStatusDTO } from './status.dto';
 @ApiTags('Status')
 @Controller('status/:domainID')
 export class StatusController {
-  constructor(private readonly statusService: StatusService) {}
+  constructor(private readonly statusService: StatusService) { }
 
   @Get()
   @UseGuards(AuthGuard)
@@ -27,15 +27,22 @@ export class StatusController {
 
   @Post()
   @UseGuards(AuthGuard)
-  async createStatus(@Param('domainID') domainID, @Body() dto: CreateStatusDTO) {
+  async createStatus(@Param('domainID') domainID: string, @Body() dto: CreateStatusDTO) {
     return await this.statusService.createStatus(domainID, dto);
   }
+
+  @Post('/multiple-status')
+  @UseGuards(AuthGuard)
+  async createMultipleStatus(@Param('domainID') domainID: string, @Body() dto: CreateStatusDTO[]) {
+    return await this.statusService.createMultipleStatus(domainID, dto);
+  }
+
 
   @Patch('/:statusID')
   @UseGuards(AuthGuard)
   async editStatus(
-    @Param('statusID') statusID,
-    @Param('domainID') domainID,
+    @Param('statusID') statusID: string,
+    @Param('domainID') domainID: string,
     @Body() dto: CreateStatusDTO,
   ) {
     return await this.statusService.editStatus(statusID, domainID, dto);
@@ -43,7 +50,7 @@ export class StatusController {
 
   @Delete('/:statusID')
   @UseGuards(AuthGuard)
-  async deleteStatus(@Param('domainID') domainID, @Param('statusID') statusID) {
+  async deleteStatus(@Param('domainID') domainID: string, @Param('statusID') statusID: string) {
     return await this.statusService.deleteStatus(statusID, domainID);
   }
 }

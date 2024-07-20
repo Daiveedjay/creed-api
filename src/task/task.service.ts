@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  MethodNotAllowedException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -130,8 +131,6 @@ export class TaskService {
           title: dto.title,
           order: dto.order,
           statusId: dto.statusId,
-          assignedFrom: dto.assignedFrom ? dto.assignedFrom : '',
-          assignedTo: dto.assignedTo ? dto.assignedTo : '',
           subTasks: {
             createMany: {
               data: dto.subTasks.map((task) => ({
@@ -172,7 +171,19 @@ export class TaskService {
         }
       });
 
-      if (dto.usersToAssignIds.length !== 0) {
+      if (dto.assignedFrom || dto.assignedTo) {
+        await this.dbService.task.update({
+          where: {
+            id: tasks.id
+          },
+          data: {
+            assignedFrom: dto.assignedFrom,
+            assignedTo: dto.assignedTo
+          }
+        })
+      };
+
+      if (dto.usersToAssignIds?.length !== 0) {
         const users = await this.dbService.domainMembership.findMany({
           where: {
             userId: {
@@ -195,8 +206,8 @@ export class TaskService {
         if (users.length === 0 || inPanels.length === 0) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
 
         const assignedUsers = await this.dbService.assignedCollaborators.createMany({
-          data: users.map((user) => ({
-            userId: user.userId,
+          data: users.map((col) => ({
+            userId: col.userId,
             taskId: tasks.id,
           }))
         })
@@ -279,18 +290,6 @@ export class TaskService {
               parentTaskId: existingTask.id,
             },
           });
-
-          await this.dbService.subTask.update({
-            where: {
-              id: existingSubtask.id,
-              parentTaskId: existingTask.id
-            },
-            data: {
-              done: subtaskData.done,
-              title: subtaskData.title
-            }
-          })
-
         } else {
 
           await this.dbService.subTask.update({
@@ -306,7 +305,7 @@ export class TaskService {
 
         }
       }
-    }
+    };
 
     const updatedTask = await this.dbService.task.update({
       where: {
@@ -347,24 +346,23 @@ export class TaskService {
           authorId: userId,
         }
       })
+
       const ownerOfDomain = await this.dbService.domain.findUnique({
         where: {
           ownerId: userId,
           id: doaminID,
-          domainMembers: {
-            some: {
-              memberRole: {
-                in: [
-                  'owner', 'admin'
-                ]
-              }
-            }
-          }
         }
       })
 
-      if (!authorOfTask || !ownerOfDomain) {
-        throw new UnauthorizedException('No access to this')
+      const adminAccess = await this.dbService.domainMembership.findFirst({
+        where: {
+          memberRole: 'admin',
+          domainId: doaminID,
+        }
+      })
+
+      if (!authorOfTask || !ownerOfDomain || !adminAccess) {
+        throw new MethodNotAllowedException('No access to this')
       };
 
       const existingTask = await this.dbService.task.findUnique({
