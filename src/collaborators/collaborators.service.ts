@@ -107,7 +107,7 @@ export class CollaboratorsService {
         userId: inviteeUser.id,
         domainId: thereIsDomain.id,
         memberRole: {
-          in: ['admin', 'member'],
+          in: ['admin', 'member', 'owner'],
         },
       },
     });

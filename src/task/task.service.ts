@@ -51,6 +51,9 @@ export class TaskService {
           panelId: true,
           statusId: true,
         },
+        orderBy: {
+          order: 'asc'
+        }
       });
 
       return tasks;
@@ -92,6 +95,9 @@ export class TaskService {
           panelId: true,
           statusId: true,
         },
+        orderBy: {
+          order: 'asc'
+        }
       });
 
       if (!task) throw new NotFoundException('No task like this!')
@@ -248,10 +254,6 @@ export class TaskService {
       throw new NotFoundException('Task not found');
     }
 
-    if (existingTask.authorId !== userId) {
-      throw new UnauthorizedException('You do not have this access');
-    }
-
     if (dto.title || dto.description || dto.statusId || dto.order || dto.assignedFrom || dto.assignedTo) {
       existingTask.title = dto.title;
       existingTask.description = dto.description;
@@ -267,6 +269,7 @@ export class TaskService {
           (subtask) => subtask.id === subtaskData.id,
         );
 
+        //TODO: BE ABLE TO CREATE NEW TASKS FROM EDIT
         if (!existingSubtask) {
           await this.dbService.subTask.create({
             data: {
@@ -296,12 +299,14 @@ export class TaskService {
         id: taskID,
         panelId: panelID,
         domainId: domainID,
-        // authorId: userId
       },
       data: {
         title: existingTask.title,
         description: existingTask.description,
-        statusId: existingTask.statusId
+        statusId: existingTask.statusId,
+        order: existingTask.order,
+        assignedTo: existingTask.assignedTo,
+        assignedFrom: existingTask.assignedFrom,
       },
       include: {
         subTasks: true,
@@ -383,6 +388,36 @@ export class TaskService {
 
     return Array.from(updatedTasks);
   }
+
+
+
+  async updateOrderOfTasks(
+    domainID: string,
+    panelID: string,
+    taskID: string,
+  ) {
+
+    const existingTask = await this.dbService.task.findUnique({
+      where: {
+        id: taskID,
+        panelId: panelID,
+        domainId: domainID,
+      },
+      include: {
+        subTasks: true,
+      },
+    });
+
+    if (!existingTask) {
+      throw new NotFoundException('Task not found');
+    }
+
+    console.log(existingTask)
+
+  }
+
+
 }
+
 
 
