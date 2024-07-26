@@ -441,35 +441,35 @@ export class TaskService {
     statusID: string,
     tasksDto: DeleteMultipleTasksDto
   ) {
-    for (const taskID of tasksDto.taskIds) {
-      const domainMembership = await this.dbService.domain.findUnique({
-        where: {
-          id: domainID,
-          domainMembers: {
-            some: {
-              userId,
-              memberRole: {
-                in: [
-                  'owner', 'admin'
-                ]
-              }
+    const domainMembership = await this.dbService.domain.findUnique({
+      where: {
+        id: domainID,
+        domainMembers: {
+          some: {
+            userId,
+            memberRole: {
+              in: [
+                'owner', 'admin'
+              ]
             }
           }
         }
-      })
+      }
+    })
 
-      if (!domainMembership) {
-        throw new UnauthorizedException('No access to this')
-      };
+    if (!domainMembership) {
+      throw new UnauthorizedException('No access to this')
+    };
 
-      const existingStatus = await this.dbService.status.findUnique({
-        where: {
-          id: statusID
-        }
-      })
+    const existingStatus = await this.dbService.status.findUnique({
+      where: {
+        id: statusID
+      }
+    })
 
-      if (!existingStatus) throw new NotFoundException('Status not found!');
+    if (!existingStatus) throw new NotFoundException('Status not found!');
 
+    for (const taskID of tasksDto.taskIds) {
       const existingTask = await this.dbService.task.findUnique({
         where: { domainId: domainID, statusId: statusID, id: taskID, panelId: panelID },
         include: {
