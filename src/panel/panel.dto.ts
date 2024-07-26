@@ -14,3 +14,14 @@ export class AddUsersDto {
   @IsArray()
   userIds: string[];
 }
+
+export class DeleteUserDto {
+  @ApiProperty({
+    isArray: true,
+    required: true
+  })
+  @IsArray()
+  panelMembersId: string[];
+}
+
+

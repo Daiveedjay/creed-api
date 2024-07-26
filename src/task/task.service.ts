@@ -307,6 +307,24 @@ export class TaskService {
       }
     };
 
+    if (dto.toBeDeletedSubTaskIds) {
+      for (const id of dto.toBeDeletedSubTaskIds) {
+        const existingSubtask = existingTask.subTasks.find(
+          (subtask) => subtask.id === id,
+        );
+
+        if (!existingSubtask) {
+          throw new NotFoundException('Subtask not found!')
+        }
+
+        await this.dbService.subTask.delete({
+          where: {
+            id: existingSubtask.id
+          }
+        })
+      }
+    }
+
     const updatedTask = await this.dbService.task.update({
       where: {
         id: taskID,
@@ -356,7 +374,12 @@ export class TaskService {
 
       const adminAccess = await this.dbService.domainMembership.findFirst({
         where: {
-          memberRole: 'admin',
+          memberRole: {
+            in: [
+              'admin',
+              'owner'
+            ]
+          },
           domainId: doaminID,
         }
       })
@@ -383,7 +406,6 @@ export class TaskService {
             }
           })
         }
-
       }
 
       if (existingTask.assignedCollaborators) {
@@ -407,6 +429,7 @@ export class TaskService {
 
       return new HttpException('Deleted', HttpStatus.ACCEPTED);
     } catch (error) {
+      console.log(error)
       throw new InternalServerErrorException();
     }
   }
@@ -419,18 +442,12 @@ export class TaskService {
     tasksDto: DeleteMultipleTasksDto
   ) {
     for (const taskID of tasksDto.taskIds) {
-      const authorOfTask = await this.dbService.task.findUnique({
+      const domainMembership = await this.dbService.domain.findUnique({
         where: {
-          id: taskID,
-          authorId: userId,
-        }
-      })
-      const ownerOfDomain = await this.dbService.domain.findUnique({
-        where: {
-          ownerId: userId,
           id: domainID,
           domainMembers: {
             some: {
+              userId,
               memberRole: {
                 in: [
                   'owner', 'admin'
@@ -441,7 +458,7 @@ export class TaskService {
         }
       })
 
-      if (!authorOfTask || !ownerOfDomain) {
+      if (!domainMembership) {
         throw new UnauthorizedException('No access to this')
       };
 

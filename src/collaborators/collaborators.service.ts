@@ -66,6 +66,7 @@ export class CollaboratorsService {
         invitedBy: {
           id: currentUser.id,
           name: currentUser.fullName,
+          jobTitle: currentUser.jobTitle
         },
       };
 
@@ -90,6 +91,8 @@ export class CollaboratorsService {
         secret: this.configService.get('JWT_SECRET'),
       },
     );
+
+    console.log(decodedPayload)
 
     if (!decodedPayload) {
       throw new UnauthorizedException('No access!');

@@ -12,7 +12,7 @@ import {
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { PanelService } from './panel.service';
 import { ApiTags } from '@nestjs/swagger';
-import { AddUsersDto, CreatePanelDTO } from './panel.dto';
+import { AddUsersDto, CreatePanelDTO, DeleteUserDto } from './panel.dto';
 
 @ApiTags('Panels')
 @Controller('panels')
@@ -29,6 +29,12 @@ export class PanelController {
   @UseGuards(AuthGuard)
   async addCollaboratorsToPanel(@Body() addUsersDto: AddUsersDto, @Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('id') id: string,) {
     return await this.panelService.addUsersToPanel(domainID, panelID, id, addUsersDto)
+  }
+
+  @Delete(':domainID/:panelID/remove-users')
+  @UseGuards(AuthGuard)
+  async removeCollaboratorsFromPanel(@Body() deleteUserDto: DeleteUserDto, @Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('id') id: string) {
+    return await this.panelService.removeAUserFromPanel(domainID, panelID, id, deleteUserDto)
   }
 
   @Get('/:domainID/:panelID')
