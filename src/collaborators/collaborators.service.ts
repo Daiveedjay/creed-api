@@ -85,24 +85,9 @@ export class CollaboratorsService {
       joinCollaboratorDto.email,
     );
 
-    const decodedPayload: InvitePayload = new JwtService().verify(
-      joinCollaboratorDto.inviteCode,
-      {
-        secret: this.configService.get('JWT_SECRET'),
-      },
-    );
-
-    console.log(decodedPayload)
-
-    if (!decodedPayload) {
-      throw new UnauthorizedException('No access!');
-    }
-
-    // if(decodedPayload.expiredAt < new Date()) throw new ConflictException('Link has been expired!');
-
     const thereIsDomain = await this.domainService.getUserDomain(
-      decodedPayload.invitedBy.id,
-      decodedPayload.domainId,
+      joinCollaboratorDto.invitedBy.id,
+      joinCollaboratorDto.domainId,
     );
 
     const alreadyInDomain = await this.dbService.domainMembership.findFirst({
@@ -124,7 +109,7 @@ export class CollaboratorsService {
         data: {
           domainId: thereIsDomain.id,
           userId: inviteeUser.id,
-          memberRole: decodedPayload.role,
+          memberRole: joinCollaboratorDto.role,
         }
       });
 
