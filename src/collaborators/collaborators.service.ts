@@ -1,9 +1,11 @@
 /* eslint-disable prettier/prettier */
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  MethodNotAllowedException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -86,14 +88,22 @@ export class CollaboratorsService {
     );
 
     const thereIsDomain = await this.domainService.getUserDomain(
-      joinCollaboratorDto.invitedBy.id,
+      joinCollaboratorDto.invitedBy,
       joinCollaboratorDto.domainId,
     );
+
+    if (!inviteeUser || !thereIsDomain) {
+      throw new MethodNotAllowedException('Not found!')
+    };
+
+    if (inviteeUser.id === joinCollaboratorDto.invitedBy) {
+      throw new ConflictException('Cannot invite yourself!')
+    };
 
     const alreadyInDomain = await this.dbService.domainMembership.findFirst({
       where: {
         userId: inviteeUser.id,
-        domainId: thereIsDomain.id,
+        domainId: joinCollaboratorDto.domainId,
         memberRole: {
           in: ['admin', 'member', 'owner'],
         },
@@ -101,8 +111,8 @@ export class CollaboratorsService {
     });
 
     if (alreadyInDomain) {
-      return new HttpException('Already in domain', HttpStatus.FOUND);
-    }
+      throw new ConflictException('User is already in the domain!')
+    };
 
     try {
       await this.dbService.domainMembership.create({

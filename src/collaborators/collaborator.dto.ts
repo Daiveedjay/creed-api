@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { stripVTControlCharacters } from 'util';
 
 export class CreateCollaboratorDto {
   name: string
@@ -32,29 +31,33 @@ export class JoinCollaboratorDto {
     type: String,
     required: true
   })
-  domainId: string
+  @IsString()
+  @IsNotEmpty()
+  domainId: string;
 
   @ApiProperty({
     type: String,
     required: true
   })
-  email: string
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 
   @ApiProperty({
     enum: ['admin', 'member'],
     enumName: 'Roles',
     required: true
   })
-  role: 'admin' | 'member'
+  @IsNotEmpty()
+  role: 'admin' | 'member';
 
   @ApiProperty({
+    type: String,
     required: true
   })
-  invitedBy: {
-    id: string
-    name: string
-    jobTitle: string
-  }
+  @IsString()
+  @IsNotEmpty()
+  invitedBy: string;
 }
 
 export class CollaboratorsDto {
