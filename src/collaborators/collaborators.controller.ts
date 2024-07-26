@@ -18,7 +18,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Collaborators')
 @Controller('collaborators')
 export class CollaboratorsController {
-  constructor(private readonly collaboratorsService: CollaboratorsService) {}
+  constructor(private readonly collaboratorsService: CollaboratorsService) { }
 
   @Post('/create-link')
   @UseGuards(AuthGuard)
@@ -27,8 +27,10 @@ export class CollaboratorsController {
   }
 
   @Post('/join-through-link')
-  async joinDomainThroughLink(@Body() joinCollaboratorDto: JoinCollaboratorDto) {
-    return await this.collaboratorsService.joinThroughLink(joinCollaboratorDto)
+  async joinDomainThroughLink(
+    @Body() dto: JoinCollaboratorDto,
+  ) {
+    return await this.collaboratorsService.joinThroughLink(dto)
   }
 
   @Get('/:domainId')
