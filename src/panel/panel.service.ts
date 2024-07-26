@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
-import { AddUsersDto, CreatePanelDTO } from './panel.dto';
+import { AddUsersDto, CreatePanelDTO, DeleteUserDto } from './panel.dto';
 @Injectable()
 export class PanelService {
   constructor(private readonly dbService: DbService) { }
@@ -137,6 +137,7 @@ export class PanelService {
           panelId: true,
           user: {
             select: {
+              id: true,
               fullName: true,
               profilePicture: true,
               username: true,
@@ -278,6 +279,62 @@ export class PanelService {
     return new HttpException('Success', HttpStatus.CREATED)
   }
 
+  async removeAUserFromPanel(
+    domainID: string,
+    panelID: string,
+    id: string,
+    deleteUserDto: DeleteUserDto,
+  ) {
+
+    const existingPanel = await this.dbService.panel.findUnique({
+      where: {
+        domainId: domainID,
+        id: panelID,
+      },
+    });
+
+    const currentUser = await this.dbService.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!existingPanel) throw new NotFoundException('Panel not found!');
+
+    const currentUserMembership =
+      await this.dbService.domainMembership.findFirst({
+        where: {
+          userId: currentUser.id,
+          memberRole: {
+            in: ['admin', 'owner'],
+          },
+        },
+      });
+
+    if (!currentUser || !currentUserMembership)
+      throw new UnauthorizedException('No access!');
+
+    for (const id of deleteUserDto.panelMembersId) {
+      const panelMembership = await this.dbService.panelMembership.findFirst({
+        where: {
+          id,
+          domainId: domainID,
+          panelId: panelID
+        }
+      })
+
+      if (panelMembership) throw new ConflictException('No such member here!')
+
+      await this.dbService.panelMembership.delete({
+        where: {
+          id: panelMembership.id
+        }
+      })
+
+      return new HttpException('Success', HttpStatus.CREATED)
+    }
+  }
+
   async editPanel(domainID: string, panelID: string, dto: CreatePanelDTO) {
     try {
       const existingPanel = await this.dbService.panel.findUnique({
@@ -337,4 +394,7 @@ export class PanelService {
       throw new InternalServerErrorException(error.message);
     }
   }
+
+
+
 }

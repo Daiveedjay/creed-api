@@ -78,7 +78,14 @@ export class CreateTaskDTO {
 }
 
 
-export class UpdateTaskDto extends PartialType(CreateTaskDTO) { }
+export class UpdateTaskDto extends PartialType(CreateTaskDTO) {
+  @ApiProperty({
+    type: [String],
+    required: false
+  })
+  @IsArray()
+  toBeDeletedSubTaskIds: string[];
+}
 
 export class UpdateMultipleTasksDto extends PartialType(CreateTaskDTO) {
   @ApiProperty({
@@ -87,6 +94,14 @@ export class UpdateMultipleTasksDto extends PartialType(CreateTaskDTO) {
   })
   @IsString()
   id: string
+
+  @ApiProperty({
+    type: [String],
+    required: false
+  })
+  @IsArray()
+  toBeDeletedSubTaskIds: string[];
+
 }
 
 export class DeleteMultipleTasksDto {

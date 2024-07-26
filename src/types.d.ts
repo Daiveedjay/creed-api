@@ -27,14 +27,15 @@ export interface AuthenticatedSocket extends Socket {
 
 type InviterPayload = {
   id: string;
-  name: string
+  name: string;
+  jobTitle: string;
 }
 
 export type InvitePayload = {
   otp: string;
   domainName: string;
   domainId: string;
-  role: Role.Member | Role.Admin;
+  role: 'admin' | 'member'
   createdAt: Date;
   expiredAt: Date;
   invitedBy: InviterPayload
@@ -49,13 +50,13 @@ export type UserPayload = {
     name: string
   };
   user: {
-      id: string;
-      email: string;
-      fullName: string;
-      username: string;
-      jobTitle: string;
-      department: string;
-      location: string;
-      profilePicture: string;
+    id: string;
+    email: string;
+    fullName: string;
+    username: string;
+    jobTitle: string;
+    department: string;
+    location: string;
+    profilePicture: string;
   };
 }
