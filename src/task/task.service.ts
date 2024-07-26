@@ -458,7 +458,7 @@ export class TaskService {
     })
 
     if (!domainMembership) {
-      throw new UnauthorizedException('No access to this')
+      throw new MethodNotAllowedException('No access to this')
     };
 
     const existingStatus = await this.dbService.status.findUnique({
