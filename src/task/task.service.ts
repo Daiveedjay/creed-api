@@ -7,7 +7,6 @@ import {
   InternalServerErrorException,
   MethodNotAllowedException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
@@ -213,6 +212,13 @@ export class TaskService {
         })
 
         if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
+
+        await this.dbService.notifications.createMany({
+          data: users.map((user) => ({
+            taskId: tasks.id,
+            userId: user.userId
+          }))
+        })
 
         const tasksWithMentions = await this.getTask(domainID, panelID, tasks.id)
 
