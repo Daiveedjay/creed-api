@@ -80,9 +80,14 @@ export class AnnouncementsService {
         }))
       })
 
-      console.log(newMentions)
-
       if (newMentions.count === 0) throw new ConflictException('Could not add the mentions!')
+
+      await this.dbService.notifications.createMany({
+        data: users.map((user) => ({
+          announcementId: announcements.id,
+          userId: user.userId
+        }))
+      })
 
       const announcementsWithMentions = await this.findOne(domainId, announcements.id)
 

@@ -45,6 +45,7 @@ model User {
   panels                Panel[]
   mentions              Mentions[]
   assignedCollaborators AssignedCollaborators[]
+  Notifications         Notifications[]
 }
 
 //Domain
@@ -144,6 +145,7 @@ model Task {
   domainId              String
   subTasks              SubTask[]
   assignedCollaborators AssignedCollaborators[]
+  Notifications         Notifications[]
 }
 
 model AssignedCollaborators {
@@ -177,10 +179,11 @@ model Announcement {
   updatedAt DateTime   @updatedAt
 
   // relation
-  authorId String
-  author   User   @relation("Creator", fields: [authorId], references: [id], onDelete: Cascade)
-  domainId String
-  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User            @relation("Creator", fields: [authorId], references: [id], onDelete: Cascade)
+  domainId      String
+  domain        Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  Notifications Notifications[]
 }
 
 model Mentions {
@@ -189,6 +192,16 @@ model Mentions {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   announcementId String
   announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+}
+
+model Notifications {
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId         String?
+  tasks          Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  announcementId String?
+  announcements  Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
 }
 
 enum Roles {

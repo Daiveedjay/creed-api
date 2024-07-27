@@ -120,19 +120,11 @@ export class DomainService {
           ...dto,
           domainMembers: {
             create: {
-              memberRole: Roles.owner,
+              memberRole: 'owner',
               userId: userID
             }
           },
           ownerId: userID
-        },
-      });
-
-      await this.dbService.domainMembership.create({
-        data: {
-          domainId: domain.id,
-          userId: userID,
-          memberRole: Roles.owner,
         },
       });
 

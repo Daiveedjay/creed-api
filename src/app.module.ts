@@ -11,6 +11,7 @@ import { TaskModule } from './task/task.module';
 import { CollaboratorsModule } from './collaborators/collaborators.module';
 import { NotificationModule } from './notification/notification.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { AnnouncementsModule } from './announcements/announcements.module';
     CollaboratorsModule,
     NotificationModule,
     AnnouncementsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
 })

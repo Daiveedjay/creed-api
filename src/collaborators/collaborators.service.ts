@@ -153,10 +153,6 @@ export class CollaboratorsService {
       const domains = await this.dbService.domain.findMany({
         where: {
           id: currentDomainAndAccess.id,
-          OR: [
-            { ownerId: currentUser.id }, // Domains created by the user
-            { domainMembers: { some: { userId: currentUser.id } } }, // Domains joined by the user
-          ],
         },
         include: {
           domainMembers: {
@@ -188,13 +184,14 @@ export class CollaboratorsService {
       });
 
       // Extract unique members
-      const membersMap = {};
+      const membersMap = new Set()
       for (const domain of domains) {
         for (const member of domain.domainMembers) {
-          membersMap[member.user.id] = member;
+          membersMap.add(member)
         }
       }
-      const uniqueMembers: UserPayload[] = Object.values(membersMap);
+      const uniqueMembers = Array.from(membersMap);
+      console.log(uniqueMembers)
 
       return uniqueMembers;
     } catch (error) {
