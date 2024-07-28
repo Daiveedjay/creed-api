@@ -50,17 +50,10 @@ export class AuthService {
       });
 
       // Setup default domain
-      await this.dbService.domain.create({
+      const newDomain = await this.dbService.domain.create({
         data: {
           name: dto.domainName,
           ownerId: user.id,
-
-          domainMembers: {
-            create: {
-              memberRole: Roles.owner,
-              userId: user.id
-            }
-          }
         },
         include: {
           panels: true,
@@ -68,6 +61,14 @@ export class AuthService {
           domainMembers: true,
         }
       });
+
+      await this.dbService.domainMembership.create({
+        data: {
+          userId: user.id,
+          domainId: newDomain.id,
+          memberRole: 'owner',
+        }
+      })
 
       // TODO: Send welcome email
 

@@ -8,13 +8,16 @@ export class NotificationsService {
     private readonly dbService: DbService,
     private readonly userServive: UserService
   ) { }
-  async getAllAnnouncementsNotifications(email: string) {
+  async getAllAnnouncementsNotifications(email: string, domainID: string) {
     const user = await this.userServive.getProfileThroughEmail(email)
     if (!user) throw new MethodNotAllowedException('User not found!');
 
     return await this.dbService.notifications.findMany({
       where: {
-        userId: user.id
+        userId: user.id,
+        announcements: {
+          domainId: domainID
+        }
       },
       select: {
         announcements: {
@@ -38,13 +41,16 @@ export class NotificationsService {
     })
   }
 
-  async getALlAssignedTasksNotifications(email: string) {
+  async getALlAssignedTasksNotifications(email: string, domainID: string) {
     const user = await this.userServive.getProfileThroughEmail(email)
     if (!user) throw new MethodNotAllowedException('User not found!');
 
     return await this.dbService.notifications.findMany({
       where: {
-        userId: user.id
+        userId: user.id,
+        tasks: {
+          domainId: domainID
+        }
       },
       select: {
         tasks: {

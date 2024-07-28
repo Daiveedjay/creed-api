@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 
@@ -6,15 +6,15 @@ import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) { }
 
-  @Get('/announcements')
+  @Get('/announcements/:domainID')
   @UseGuards(AuthGuard)
-  findAll(@CurrentUser('email') email: string) {
-    return this.notificationsService.getAllAnnouncementsNotifications(email);
+  findAll(@CurrentUser('email') email: string, @Param('domainID') domainID: string) {
+    return this.notificationsService.getAllAnnouncementsNotifications(email, domainID);
   }
 
-  @Get('/tasks')
+  @Get('/tasks/:domainID')
   @UseGuards(AuthGuard)
-  findOne(@CurrentUser('email') email: string) {
-    return this.notificationsService.getALlAssignedTasksNotifications(email);
+  findOne(@CurrentUser('email') email: string, @Param('domainID') domainID: string) {
+    return this.notificationsService.getALlAssignedTasksNotifications(email, domainID);
   }
 }
