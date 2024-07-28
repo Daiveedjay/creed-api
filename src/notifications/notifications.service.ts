@@ -20,6 +20,17 @@ export class NotificationsService {
         announcements: {
           select: {
             id: true,
+            content: true,
+            domainId: true,
+            mentions: true,
+            sentAt: true,
+            author: {
+              select: {
+                fullName: true,
+                profilePicture: true,
+                id: true
+              }
+            },
           }
         },
         id: true
@@ -38,7 +49,24 @@ export class NotificationsService {
       select: {
         tasks: {
           select: {
-            id: true
+            id: true,
+            title: true,
+            assignedTo: true,
+            assignedFrom: true,
+            author: {
+              select: {
+                fullName: true
+              }
+            },
+            assignedCollaborators: {
+              select: {
+                user: {
+                  select: {
+                    fullName: true,
+                  }
+                }
+              }
+            }
           }
         },
         id: true

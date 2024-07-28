@@ -55,11 +55,19 @@ export class PanelService {
         const panels = await this.dbService.panel.findMany({
           where: {
             domainId: domainID,
-            panelMembers: {
-              some: {
-                userId: currentUser.id,
+            OR: [
+              {
+                panelMembers: {
+                  some: {
+                    userId: currentUser.id,
+                  },
+                },
+
               },
-            },
+              {
+                ownerId: currentUser.id
+              }
+            ]
           },
           orderBy: {
             createdAt: 'desc'
