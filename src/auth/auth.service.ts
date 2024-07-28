@@ -139,13 +139,14 @@ export class AuthService {
       });
 
       // Extract unique members
-      const membersMap = {};
+      const membersMap = new Set()
       for (const domain of domains) {
         for (const member of domain.domainMembers) {
-          membersMap[member.user.id] = member;
+          membersMap.add(member)
         }
       }
-      const uniqueMembers: UserPayload[] = Object.values(membersMap);
+      const uniqueMembers = Array.from(membersMap);
+      console.log(uniqueMembers)
 
       return {
         message: 'Signup successful',
@@ -251,22 +252,25 @@ export class AuthService {
       });
 
       // Extract unique members
-      const membersMap = {};
+      const membersMap = new Set()
       for (const domain of domains) {
         for (const member of domain.domainMembers) {
-          membersMap[member.user.id] = member;
+          membersMap.add(member)
         }
       }
-      const uniqueMembers: UserPayload[] = Object.values(membersMap);
+      const uniqueMembers = Array.from(membersMap);
+      console.log(uniqueMembers)
 
       const panels = await this.dbService.panel.findMany({
         where: {
           OR: [
             {
               domain: {
-                id: domains[0].id,
                 ownerId: user.id
               }
+            },
+            {
+              ownerId: user.id
             },
             {
               panelMembers: {
@@ -279,6 +283,7 @@ export class AuthService {
           ]
         }
       })
+      console.log(panels)
 
 
       return {
