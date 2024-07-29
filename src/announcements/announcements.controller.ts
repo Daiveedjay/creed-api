@@ -25,8 +25,9 @@ export class AnnouncementsController {
     return await this.announcementsService.findOne(domainId, announcementId);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.announcementsService.remove(+id);
+  @UseGuards(AuthGuard)
+  @Delete(':domainId/announcementId')
+  remove(@Param('domainId') domainId: string, @Param('announcementId') announcementId: string, @CurrentUser('email') email: string) {
+    return this.announcementsService.deleteAnnouncements(domainId, announcementId, email);
   }
 }

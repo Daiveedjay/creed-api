@@ -33,53 +33,50 @@ export class CollaboratorsService {
     addCollaboratorDto: AddCollaboratorDto,
     email: string,
   ) {
-    try {
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 1);
-      const otp = generateOTP({ length: 4, numbers: true, alphabets: true });
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1);
+    const otp = generateOTP({ length: 4, numbers: true, alphabets: true });
 
-      const currentUser = await this.dbService.user.findUnique({
-        where: {
-          email,
-        },
-      });
+    const currentUser = await this.dbService.user.findUnique({
+      where: {
+        email,
+      },
+    });
 
-      if (!currentUser) {
-        throw new UnauthorizedException('No access');
-      }
-
-      const existingDomain = await this.dbService.domain.findUnique({
-        where: {
-          id: addCollaboratorDto.domainId,
-        },
-      });
-
-      if (!existingDomain) {
-        throw new NotFoundException('Domain not found!');
-      }
-
-      const payload: InvitePayload = {
-        otp,
-        domainName: existingDomain.name,
-        domainId: existingDomain.id,
-        createdAt: new Date(),
-        role: addCollaboratorDto.role,
-        expiredAt: expiresAt,
-        invitedBy: {
-          id: currentUser.id,
-          name: currentUser.fullName,
-          jobTitle: currentUser.jobTitle
-        },
-      };
-
-      const hashedPayload = new JwtService().sign(payload, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
-
-      return `https://kreed.tech/invite?invite_code=${hashedPayload}`;
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
+    if (!currentUser) {
+      throw new UnauthorizedException('No access');
     }
+
+    const existingDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: addCollaboratorDto.domainId,
+      },
+    });
+
+    if (!existingDomain) {
+      throw new NotFoundException('Domain not found!');
+    }
+
+    const payload: InvitePayload = {
+      otp,
+      domainName: existingDomain.name,
+      domainId: existingDomain.id,
+      createdAt: new Date(),
+      role: addCollaboratorDto.role,
+      expiredAt: expiresAt,
+      invitedBy: {
+        id: currentUser.id,
+        name: currentUser.fullName,
+        jobTitle: currentUser.jobTitle
+      },
+    };
+
+    const hashedPayload = new JwtService().sign(payload, {
+      secret: this.configService.get('JWT_SECRET'),
+    });
+
+    return `https://kreed.tech/invite?invite_code=${hashedPayload}`;
+
   }
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
@@ -114,25 +111,20 @@ export class CollaboratorsService {
       throw new ConflictException('User is already in the domain!')
     };
 
-    try {
-      await this.dbService.domainMembership.create({
-        data: {
-          domainId: thereIsDomain.id,
-          userId: inviteeUser.id,
-          memberRole: joinCollaboratorDto.role,
-        }
-      });
+    await this.dbService.domainMembership.create({
+      data: {
+        domainId: thereIsDomain.id,
+        userId: inviteeUser.id,
+        memberRole: joinCollaboratorDto.role,
+      }
+    });
 
-      this.notificationGateway.sendNotification({ domain: thereIsDomain.id, message: 'You might wanna refresh though' })
+    this.notificationGateway.sendNotification({ domain: thereIsDomain.id, message: 'You might wanna refresh though' })
 
-      return new HttpException(
-        `You have successfully joined a domain: ${thereIsDomain.name}`,
-        HttpStatus.ACCEPTED,
-      );
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(error.message);
-    }
+    return new HttpException(
+      `You have successfully joined a domain: ${thereIsDomain.name}`,
+      HttpStatus.ACCEPTED,
+    );
   }
 
   async getAllCollaboratorsInADomain(domainId: string, email: string) {
@@ -149,41 +141,37 @@ export class CollaboratorsService {
     if (!currentDomainAndAccess)
       throw new UnauthorizedException('You do not have access!');
 
-    try {
-      const members = await this.dbService.domainMembership.findMany({
-        where: {
-          domainId: currentDomainAndAccess.id
-        },
-        select: {
-          createdAt: true,
-          id: true,
-          memberRole: true,
-          domain: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          user: {
-            select: {
-              id: true,
-              email: true,
-              fullName: true,
-              username: true,
-              jobTitle: true,
-              department: true,
-              location: true,
-              profilePicture: true,
-            }
+    const members = await this.dbService.domainMembership.findMany({
+      where: {
+        domainId: currentDomainAndAccess.id
+      },
+      select: {
+        createdAt: true,
+        id: true,
+        memberRole: true,
+        domain: {
+          select: {
+            id: true,
+            name: true
           }
-
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            username: true,
+            jobTitle: true,
+            department: true,
+            location: true,
+            profilePicture: true,
+          }
         }
-      })
 
-      return members;
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException('Cannot fetch the collaborators');
-    }
+      }
+    })
+
+    return members;
   }
 }
+

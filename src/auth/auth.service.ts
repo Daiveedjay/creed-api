@@ -27,393 +27,372 @@ export class AuthService {
   ) { }
 
   async signUp(dto: UserSignupDTOType) {
-    try {
-      // const firstName = dto.fullName.split(' ')
-      const oldUser = await this.dbService.user.findUnique({
-        where: { email: dto.email },
+    // const firstName = dto.fullName.split(' ')
+    const oldUser = await this.dbService.user.findUnique({
+      where: { email: dto.email },
 
-      });
+    });
 
-      if (oldUser) {
-        throw new ForbiddenException('A user with this email already exists');
-      }
-
-      const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-      // await this.emailService.sendWelcomeEmail(dto.email, firstName[0])
-
-      const user = await this.dbService.user.create({
-        data: {
-          email: dto.email,
-          password: hashedPassword,
-          fullName: dto.fullName,
-        },
-      });
-
-      // Setup default domain
-      const newDomain = await this.dbService.domain.create({
-        data: {
-          name: dto.domainName,
-          ownerId: user.id,
-        },
-        include: {
-          panels: true,
-          status: true,
-          domainMembers: true,
-        }
-      });
-
-      await this.dbService.domainMembership.create({
-        data: {
-          userId: user.id,
-          domainId: newDomain.id,
-          memberRole: 'owner',
-        }
-      })
-
-      // TODO: Send welcome email
-
-      const token = this.jwtService.sign(
-        { uid: user.id },
-        {
-          expiresIn: '24h',
-        },
-      );
-
-      const userObj = {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        username: user.username,
-        jobTitle: user.jobTitle,
-        department: user.department,
-        location: user.location,
-        language: user.language,
-        availableHoursFrom: user.availableHoursFrom,
-        availableHoursTo: user.availableHoursTo,
-        profilePicture: user.profilePicture,
-        emailVerified: user.emailVerified,
-      };
-
-      const allDomains = await this.dbService.domain.findMany({
-        where: {
-          ownerId: user.id
-        },
-        include: {
-          status: true
-        }
-      })
-
-      const members = await this.dbService.domainMembership.findMany({
-        where: {
-          domainId: allDomains[0].id
-        },
-        select: {
-          createdAt: true,
-          id: true,
-          memberRole: true,
-          domain: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          user: {
-            select: {
-              id: true,
-              email: true,
-              fullName: true,
-              username: true,
-              jobTitle: true,
-              department: true,
-              location: true,
-              profilePicture: true,
-            }
-          }
-
-        }
-      })
-
-      return {
-        message: 'Signup successful',
-        access_token: token,
-        user_data: userObj,
-        domains: {
-          domains: allDomains,
-          members: members,
-          panels: []
-        }
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
+    if (oldUser) {
+      throw new ForbiddenException('A user with this email already exists');
     }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    // await this.emailService.sendWelcomeEmail(dto.email, firstName[0])
+
+    const user = await this.dbService.user.create({
+      data: {
+        email: dto.email,
+        password: hashedPassword,
+        fullName: dto.fullName,
+      },
+    });
+
+    // Setup default domain
+    const newDomain = await this.dbService.domain.create({
+      data: {
+        name: dto.domainName,
+        ownerId: user.id,
+      },
+      include: {
+        panels: true,
+        status: true,
+        domainMembers: true,
+      }
+    });
+
+    await this.dbService.domainMembership.create({
+      data: {
+        userId: user.id,
+        domainId: newDomain.id,
+        memberRole: 'owner',
+      }
+    })
+
+    // TODO: Send welcome email
+
+    const token = this.jwtService.sign(
+      { uid: user.id },
+      {
+        expiresIn: '24h',
+      },
+    );
+
+    const userObj = {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+      jobTitle: user.jobTitle,
+      department: user.department,
+      location: user.location,
+      language: user.language,
+      availableHoursFrom: user.availableHoursFrom,
+      availableHoursTo: user.availableHoursTo,
+      profilePicture: user.profilePicture,
+      emailVerified: user.emailVerified,
+    };
+
+    const allDomains = await this.dbService.domain.findMany({
+      where: {
+        ownerId: user.id
+      },
+      include: {
+        status: true
+      }
+    })
+
+    const members = await this.dbService.domainMembership.findMany({
+      where: {
+        domainId: allDomains[0].id
+      },
+      select: {
+        createdAt: true,
+        id: true,
+        memberRole: true,
+        domain: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            username: true,
+            jobTitle: true,
+            department: true,
+            location: true,
+            profilePicture: true,
+          }
+        }
+
+      }
+    })
+
+    return {
+      message: 'Signup successful',
+      access_token: token,
+      user_data: userObj,
+      domains: {
+        domains: allDomains,
+        members: members,
+        panels: []
+      }
+    };
+
   }
 
   async signIn(dto: UserSigninDTOType) {
-    try {
-      const user = await this.dbService.user.findUnique({
-        where: { email: dto.email },
-      });
+    const user = await this.dbService.user.findUnique({
+      where: { email: dto.email },
+    });
 
-      if (!user) {
-        throw new ForbiddenException('Invalid credentials');
+    if (!user) {
+      throw new ForbiddenException('Invalid credentials');
+    }
+
+    const passwordMatch = await bcrypt.compare(dto.password, user.password);
+
+    if (!passwordMatch) {
+      throw new ForbiddenException('Invalid credentials');
+    }
+
+    // TODO: Send signin email
+
+    const token = this.jwtService.sign(
+      { uid: user.id },
+      {
+        expiresIn: '24h',
+      },
+    );
+
+    const userObj = {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+      jobTitle: user.jobTitle,
+      department: user.department,
+      location: user.location,
+      language: user.language,
+      availableHoursFrom: user.availableHoursFrom,
+      availableHoursTo: user.availableHoursTo,
+      profilePicture: user.profilePicture,
+      emailVerified: user.emailVerified,
+    };
+
+    const domains = await this.dbService.domain.findMany({
+      where: {
+        OR: [
+          { ownerId: user.id },
+          { domainMembers: { some: { userId: user.id } } }
+        ]
+      },
+      include: {
+        status: true,
       }
+    });
 
-      const passwordMatch = await bcrypt.compare(dto.password, user.password);
-
-      if (!passwordMatch) {
-        throw new ForbiddenException('Invalid credentials');
-      }
-
-      // TODO: Send signin email
-
-      const token = this.jwtService.sign(
-        { uid: user.id },
-        {
-          expiresIn: '24h',
-        },
-      );
-
-      const userObj = {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        username: user.username,
-        jobTitle: user.jobTitle,
-        department: user.department,
-        location: user.location,
-        language: user.language,
-        availableHoursFrom: user.availableHoursFrom,
-        availableHoursTo: user.availableHoursTo,
-        profilePicture: user.profilePicture,
-        emailVerified: user.emailVerified,
-      };
-
-      const domains = await this.dbService.domain.findMany({
-        where: {
-          OR: [
-            { ownerId: user.id },
-            { domainMembers: { some: { userId: user.id } } }
-          ]
-        },
-        include: {
-          status: true,
-        }
-      });
-
-      const panels = await this.dbService.panel.findMany({
-        where: {
-          OR: [
-            {
-              domain: {
-                ownerId: user.id
-              }
-            },
-            {
+    const panels = await this.dbService.panel.findMany({
+      where: {
+        OR: [
+          {
+            domain: {
               ownerId: user.id
-            },
-            {
-              panelMembers: {
-                some: {
-                  domainId: domains[0].id,
-                  userId: user.id
-                }
-              }
-            }
-          ]
-        }
-      })
-
-      const members = await this.dbService.domainMembership.findMany({
-        where: {
-          domainId: domains[0].id
-        },
-        select: {
-          createdAt: true,
-          id: true,
-          memberRole: true,
-          domain: {
-            select: {
-              id: true,
-              name: true
             }
           },
-          user: {
-            select: {
-              id: true,
-              email: true,
-              fullName: true,
-              username: true,
-              jobTitle: true,
-              department: true,
-              location: true,
-              profilePicture: true,
+          {
+            ownerId: user.id
+          },
+          {
+            panelMembers: {
+              some: {
+                domainId: domains[0].id,
+                userId: user.id
+              }
             }
           }
+        ]
+      }
+    })
 
-        }
-      })
-
-      return {
-        message: 'Access Token',
-        access_token: token,
-        user_data: userObj,
-        domains: {
-          domains,
-          members,
-          panels,
+    const members = await this.dbService.domainMembership.findMany({
+      where: {
+        domainId: domains[0].id
+      },
+      select: {
+        createdAt: true,
+        id: true,
+        memberRole: true,
+        domain: {
+          select: {
+            id: true,
+            name: true
+          }
         },
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(error.message)
-    }
+        user: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            username: true,
+            jobTitle: true,
+            department: true,
+            location: true,
+            profilePicture: true,
+          }
+        }
+
+      }
+    })
+
+    return {
+      message: 'Access Token',
+      access_token: token,
+      user_data: userObj,
+      domains: {
+        domains,
+        members,
+        panels,
+      },
+    };
+
   }
 
   async forgotPassword(email: string) {
-    try {
-      const user = await this.dbService.user.findUnique({ where: { email } });
+    const user = await this.dbService.user.findUnique({ where: { email } });
 
-      if (!user) {
-        throw new ForbiddenException("User with this email doesn't exist");
-      }
-      // generate new OTP
-      const otp = crypto
-        .randomUUID()
-        .slice(0, this.configService.get('OTP_LENGTH'));
-      await this.dbService.user.update({
-        where: { email },
-        data: {
-          otp,
-          otpLastModifiedAt: new Date(),
-          otpReason: OTPReason.PasswordReset,
-        },
-      });
-
-      // TODO: Send OTP through email, remove the otp from the response object
-      return {
-        message: 'Sent an email',
-        data: otp,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
+    if (!user) {
+      throw new ForbiddenException("User with this email doesn't exist");
     }
+    // generate new OTP
+    const otp = crypto
+      .randomUUID()
+      .slice(0, this.configService.get('OTP_LENGTH'));
+    await this.dbService.user.update({
+      where: { email },
+      data: {
+        otp,
+        otpLastModifiedAt: new Date(),
+        otpReason: OTPReason.PasswordReset,
+      },
+    });
+
+    // TODO: Send OTP through email, remove the otp from the response object
+    return {
+      message: 'Sent an email',
+      data: otp,
+    };
+
   }
 
   async resetPassword(dto: PasswordResetDTO) {
-    try {
-      const { otp, password } = dto;
-      const otpTimeToLive = new Date();
-      otpTimeToLive.setMinutes(
-        otpTimeToLive.getMinutes() - this.configService.get('OTP_TTL'),
-      );
-      const user = await this.dbService.user.findFirst({
-        where: {
-          otp,
-          otpReason: OTPReason.PasswordReset,
-          otpLastModifiedAt: { gte: otpTimeToLive },
-        },
-      });
-      if (!user) {
-        throw new ForbiddenException('Invalid otp');
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await this.dbService.user.update({
-        where: { email: user.email },
-        data: {
-          password: hashedPassword,
-        },
-      });
-
-      return {
-        message: 'Password reset successful',
-      };
-    } catch (error: any) {
-      throw new InternalServerErrorException(error.message);
+    const { otp, password } = dto;
+    const otpTimeToLive = new Date();
+    otpTimeToLive.setMinutes(
+      otpTimeToLive.getMinutes() - this.configService.get('OTP_TTL'),
+    );
+    const user = await this.dbService.user.findFirst({
+      where: {
+        otp,
+        otpReason: OTPReason.PasswordReset,
+        otpLastModifiedAt: { gte: otpTimeToLive },
+      },
+    });
+    if (!user) {
+      throw new ForbiddenException('Invalid otp');
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.dbService.user.update({
+      where: { email: user.email },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    return {
+      message: 'Password reset successful',
+    };
+
   }
 
   private async getUserData(
     access_token: string,
     credentials: Record<string, any>,
   ) {
-    try {
-      const response = await fetch(
-        `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
-      );
+    const response = await fetch(
+      `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
+    );
 
-      if (!response.ok) throw new NotFoundException('User nor found!');
+    if (!response.ok) throw new NotFoundException('User nor found!');
 
-      const data = await response.json()
-      return {
-        googleId: data.sub,
-        name: data.name,
-        email: data.email,
-        picture: data.picture, // Users who use google signin have verified email automatically,
-        googleCredentials: credentials,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(error.message)
-    }
+    const data = await response.json()
+    return {
+      googleId: data.sub,
+      name: data.name,
+      email: data.email,
+      picture: data.picture, // Users who use google signin have verified email automatically,
+      googleCredentials: credentials,
+    };
+
   }
 
   async signGoogleLink(redirectURLi: string) {
-    try {
-      const oAuth2Client = new OAuth2Client(
-        this.configService.get('GOOGLE_CLIENT_ID'),
-        this.configService.get('GOOGLE_CLIENT_SECRET'),
-        redirectURLi,
-      );
+    const oAuth2Client = new OAuth2Client(
+      this.configService.get('GOOGLE_CLIENT_ID'),
+      this.configService.get('GOOGLE_CLIENT_SECRET'),
+      redirectURLi,
+    );
 
-      const authorizedUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: `${this.configService.get('GOOGLE_API_BASE_URL')}/auth/userinfo.profile openid ${this.configService.get('GOOGLE_API_BASE_URL')}/auth/userinfo.email`,
-        prompt: 'consent',
-      });
+    const authorizedUrl = oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: `${this.configService.get('GOOGLE_API_BASE_URL')}/auth/userinfo.profile openid ${this.configService.get('GOOGLE_API_BASE_URL')}/auth/userinfo.email`,
+      prompt: 'consent',
+    });
 
-      return {
-        success: true,
-        message: 'Authorized url',
-        data: authorizedUrl,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException();
-    }
+    return {
+      success: true,
+      message: 'Authorized url',
+      data: authorizedUrl,
+    };
+
   }
 
   async signInGoogle(redirectURLi: string, code: string) {
-    try {
-      const oAuth2Client = new OAuth2Client(
-        this.configService.get('GOOGLE_CLIENT_ID'),
-        this.configService.get('GOOGLE_CLIENT_SECRET'),
-        redirectURLi,
-      );
-      const r = await oAuth2Client.getToken(code);
-      // Make sure to set the credentials on the OAuth2 client.
-      oAuth2Client.setCredentials(r.tokens);
-      const user = oAuth2Client.credentials;
-      const cred = await this.getUserData(
-        oAuth2Client.credentials.access_token!,
-        user,
-      );
+    const oAuth2Client = new OAuth2Client(
+      this.configService.get('GOOGLE_CLIENT_ID'),
+      this.configService.get('GOOGLE_CLIENT_SECRET'),
+      redirectURLi,
+    );
+    const r = await oAuth2Client.getToken(code);
+    // Make sure to set the credentials on the OAuth2 client.
+    oAuth2Client.setCredentials(r.tokens);
+    const user = oAuth2Client.credentials;
+    const cred = await this.getUserData(
+      oAuth2Client.credentials.access_token!,
+      user,
+    );
 
-      if (!cred) throw new InternalServerErrorException();
+    if (!cred) throw new InternalServerErrorException();
 
-      const oldUser = await this.dbService.user.findUnique({
-        where: { googleId: cred.googleId },
-      });
-      if (!oldUser) throw new ForbiddenException('Account does not exist');
+    const oldUser = await this.dbService.user.findUnique({
+      where: { googleId: cred.googleId },
+    });
+    if (!oldUser) throw new ForbiddenException('Account does not exist');
 
-      const token = this.jwtService.sign(
-        { uid: oldUser.id },
-        {
-          expiresIn: '1h',
-        },
-      );
-      return { success: true, message: 'Signin successful', data: token };
-    } catch (err) {
-      throw new InternalServerErrorException('User signin failed');
-    }
+    const token = this.jwtService.sign(
+      { uid: oldUser.id },
+      {
+        expiresIn: '1h',
+      },
+    );
+    return { success: true, message: 'Signin successful', data: token };
+
   }
 
   async signUpGoogle(
@@ -421,66 +400,63 @@ export class AuthService {
     redirectURLi: string,
     code: string,
   ) {
-    try {
-      const oAuth2Client = new OAuth2Client(
-        this.configService.get('GOOGLE_CLIENT_ID'),
-        this.configService.get('GOOGLE_CLIENT_SECRET'),
-        redirectURLi,
-      );
-      const r = await oAuth2Client.getToken(code);
-      // Make sure to set the credentials on the OAuth2 client.
-      oAuth2Client.setCredentials(r.tokens);
-      const user = oAuth2Client.credentials;
+    const oAuth2Client = new OAuth2Client(
+      this.configService.get('GOOGLE_CLIENT_ID'),
+      this.configService.get('GOOGLE_CLIENT_SECRET'),
+      redirectURLi,
+    );
+    const r = await oAuth2Client.getToken(code);
+    // Make sure to set the credentials on the OAuth2 client.
+    oAuth2Client.setCredentials(r.tokens);
+    const user = oAuth2Client.credentials;
 
-      const cred = await this.getUserData(
-        oAuth2Client.credentials.access_token!,
-        user,
-      );
+    const cred = await this.getUserData(
+      oAuth2Client.credentials.access_token!,
+      user,
+    );
 
-      if (!cred) throw new InternalServerErrorException();
+    if (!cred) throw new InternalServerErrorException();
 
-      // no duplicate user check
-      const oldUser = await this.dbService.user.findUnique({
-        where: { googleId: cred.googleId },
-      });
-      if (oldUser) throw new ForbiddenException('User already exist');
+    // no duplicate user check
+    const oldUser = await this.dbService.user.findUnique({
+      where: { googleId: cred.googleId },
+    });
+    if (oldUser) throw new ForbiddenException('User already exist');
 
-      const newUser = await this.dbService.user.create({
-        data: {
-          email: cred.email,
-          fullName: cred.name,
-          password: '',
-          googleId: cred.googleId,
-          profilePicture: cred.picture,
-          emailVerified: true,
-        },
-      });
+    const newUser = await this.dbService.user.create({
+      data: {
+        email: cred.email,
+        fullName: cred.name,
+        password: '',
+        googleId: cred.googleId,
+        profilePicture: cred.picture,
+        emailVerified: true,
+      },
+    });
 
-      // Setup default domain
-      await this.dbService.domain.create({
-        data: {
-          name: dto.domainName,
-          ownerId: newUser.id,
+    // Setup default domain
+    await this.dbService.domain.create({
+      data: {
+        name: dto.domainName,
+        ownerId: newUser.id,
 
-          domainMembers: {
-            create: {
-              memberRole: Roles.owner,
-              userId: newUser.id
-            }
+        domainMembers: {
+          create: {
+            memberRole: Roles.owner,
+            userId: newUser.id
           }
-        },
-      })
+        }
+      },
+    })
 
-      const token = this.jwtService.sign(
-        { uid: newUser.id },
-        {
-          expiresIn: '1h',
-        },
-      );
+    const token = this.jwtService.sign(
+      { uid: newUser.id },
+      {
+        expiresIn: '1h',
+      },
+    );
 
-      return { success: true, message: 'Signup successful', data: token };
-    } catch (err) {
-      throw new InternalServerErrorException('User signup failed');
-    }
+    return { success: true, message: 'Signup successful', data: token };
+
   }
 }
