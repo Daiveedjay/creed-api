@@ -1,11 +1,13 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, MethodNotAllowedException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateAnnouncementDto } from './announcements.dto';
 import { DbService } from 'src/utils/db.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AnnouncementsService {
   constructor(
     private readonly dbService: DbService,
+    private readonly userService: UserService,
   ) { }
   async create(email: string, domainId: string, createAnnouncementDto: CreateAnnouncementDto) {
     const currentUser = await this.dbService.user.findUnique({
@@ -154,7 +156,34 @@ export class AnnouncementsService {
     return particularAnnouncement;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} announcement`;
+  async deleteAnnouncements(domainId: string, announcementId: string, email: string) {
+    const currentUser = await this.userService.getProfileThroughEmail(email)
+    const ableToAccess = await this.dbService.domain.findUnique({
+      where: {
+        id: domainId,
+        domainMembers: {
+          some: {
+            userId: currentUser.id,
+            memberRole: {
+              in: [
+                'owner', 'admin'
+              ]
+            }
+          }
+        }
+      }
+    })
+
+    if (!ableToAccess) throw new MethodNotAllowedException('No access')
+
+    const particularAnnouncement = await this.findOne(domainId, announcementId)
+
+    await this.dbService.announcement.delete({
+      where: {
+        id: particularAnnouncement.id
+      }
+    })
+
+    return new HttpException('Deleted', HttpStatus.OK)
   }
 }

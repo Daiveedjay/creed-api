@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly reflector: Reflector,
-  ) {}
+  ) { }
 
   canActivate(
     context: ExecutionContext,
@@ -36,31 +36,28 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid token');
     }
 
-    try {
-      const decoded = new JwtService().verify(token, {
-        secret: this.configService.get('JWT_SECRET'),
-      });
+    const decoded = new JwtService().verify(token, {
+      secret: this.configService.get('JWT_SECRET'),
+    });
 
-      const user = await this.dbService.user.findUnique({
-        where: { id: decoded.uid },
-        select: {
-          id: true,
-          createdAt: true,
-          updatedAt: true,
-          email: true,
-          fullName: true,
-        },
-      });
+    const user = await this.dbService.user.findUnique({
+      where: { id: decoded.uid },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        email: true,
+        fullName: true,
+      },
+    });
 
-      if (!user) {
-        throw new NotFoundException();
-      }
-
-      req.user = user;
-      return true;
-    } catch (err) {
-      throw new UnauthorizedException('Invalid token');
+    if (!user) {
+      throw new NotFoundException();
     }
+
+    req.user = user;
+    return true;
+
   }
 }
 
