@@ -26,7 +26,7 @@ export class AnnouncementsController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete(':domainId/announcementId')
+  @Delete(':domainId/:announcementId')
   remove(@Param('domainId') domainId: string, @Param('announcementId') announcementId: string, @CurrentUser('email') email: string) {
     return this.announcementsService.deleteAnnouncements(domainId, announcementId, email);
   }
