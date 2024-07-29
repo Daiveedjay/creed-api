@@ -448,21 +448,18 @@ export class TaskService {
     statusID: string,
     tasksDto: DeleteMultipleTasksDto
   ) {
-    const domainMembership = await this.dbService.domain.findUnique({
+    const domain = await this.dbService.domain.findUnique({
       where: {
         id: domainID,
-        domainMembers: {
-          some: {
-            userId,
-            memberRole: {
-              in: [
-                'owner', 'admin'
-              ]
-            }
-          }
-        }
+      },
+      select: {
+        domainMembers: true
       }
     })
+
+    const domainMembership = domain?.domainMembers.some((member) =>
+      member.userId === userId && ['owner', 'admin'].includes(member.memberRole)
+    );
 
     if (!domainMembership) {
       throw new MethodNotAllowedException('No access to this')

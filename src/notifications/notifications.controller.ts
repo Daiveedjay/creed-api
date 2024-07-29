@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 
@@ -8,13 +8,19 @@ export class NotificationsController {
 
   @Get('/announcements/:domainID')
   @UseGuards(AuthGuard)
-  findAll(@CurrentUser('email') email: string, @Param('domainID') domainID: string) {
-    return this.notificationsService.getAllAnnouncementsNotifications(email, domainID);
+  async getAllAnnouncementsNotifications(@CurrentUser('email') email: string, @Param('domainID') domainID: string) {
+    return await this.notificationsService.getAllAnnouncementsNotifications(email, domainID);
   }
 
   @Get('/tasks/:domainID')
   @UseGuards(AuthGuard)
-  findOne(@CurrentUser('email') email: string, @Param('domainID') domainID: string) {
-    return this.notificationsService.getALlAssignedTasksNotifications(email, domainID);
+  async getALlAssignedTasksNotifications(@CurrentUser('email') email: string, @Param('domainID') domainID: string) {
+    return await this.notificationsService.getALlAssignedTasksNotifications(email, domainID);
+  }
+
+  @Patch('/:notificationId')
+  @UseGuards(AuthGuard)
+  async announceMentIsRead(@Param('notificationId') notificationId: string) {
+    return await this.notificationsService.announceMentIsRead(notificationId)
   }
 }

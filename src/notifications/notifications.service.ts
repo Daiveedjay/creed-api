@@ -1,4 +1,4 @@
-import { Injectable, MethodNotAllowedException } from '@nestjs/common';
+import { ConflictException, Injectable, MethodNotAllowedException, NotFoundException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { DbService } from 'src/utils/db.service';
 
@@ -24,7 +24,6 @@ export class NotificationsService {
           select: {
             id: true,
             content: true,
-            domainId: true,
             mentions: true,
             sentAt: true,
             author: {
@@ -60,7 +59,6 @@ export class NotificationsService {
             assignedTo: true,
             assignedFrom: true,
             panelId: true,
-            domainId: true,
             author: {
               select: {
                 id: true,
@@ -83,5 +81,25 @@ export class NotificationsService {
       }
     })
 
+  }
+
+  async announceMentIsRead(notificationId: string) {
+    const notification = await this.dbService.notifications.findUnique({
+      where: {
+        id: notificationId,
+        hasRead: false
+      }
+    })
+
+    if (!notification) throw new ConflictException('This notification has been either read or not found!')
+
+    await this.dbService.notifications.update({
+      where: {
+        id: notification.id
+      },
+      data: {
+        hasRead: true
+      }
+    })
   }
 }
