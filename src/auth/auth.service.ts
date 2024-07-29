@@ -17,6 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 import { UserPayload } from 'src/types';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -103,51 +104,35 @@ export class AuthService {
         }
       })
 
-      const domains = await this.dbService.domain.findMany({
+      const members = await this.dbService.domainMembership.findMany({
         where: {
-          OR: [
-            { ownerId: user.id },
-            { domainMembers: { some: { userId: user.id } } }
-          ]
+          domainId: allDomains[0].id
         },
-        include: {
-          domainMembers: {
+        select: {
+          createdAt: true,
+          id: true,
+          memberRole: true,
+          domain: {
             select: {
-              createdAt: true,
               id: true,
-              memberRole: true,
-              domain: {
-                select: {
-                  id: true,
-                  name: true,
-                }
-              },
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  fullName: true,
-                  username: true,
-                  jobTitle: true,
-                  department: true,
-                  location: true,
-                  profilePicture: true,
-                }
-              }
+              name: true
+            }
+          },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              username: true,
+              jobTitle: true,
+              department: true,
+              location: true,
+              profilePicture: true,
             }
           }
-        }
-      });
 
-      // Extract unique members
-      const membersMap = new Set()
-      for (const domain of domains) {
-        for (const member of domain.domainMembers) {
-          membersMap.add(member)
         }
-      }
-      const uniqueMembers = Array.from(membersMap);
-      console.log(uniqueMembers)
+      })
 
       return {
         message: 'Signup successful',
@@ -155,7 +140,7 @@ export class AuthService {
         user_data: userObj,
         domains: {
           domains: allDomains,
-          members: uniqueMembers,
+          members: members,
           panels: []
         }
       };
@@ -204,7 +189,7 @@ export class AuthService {
         emailVerified: user.emailVerified,
       };
 
-      const domainMembership = await this.dbService.domain.findMany({
+      const domains = await this.dbService.domain.findMany({
         where: {
           OR: [
             { ownerId: user.id },
@@ -214,53 +199,7 @@ export class AuthService {
         include: {
           status: true,
         }
-      })
-
-      const domains = await this.dbService.domain.findMany({
-        where: {
-          OR: [
-            { ownerId: user.id },
-            { domainMembers: { some: { userId: user.id } } }
-          ]
-        },
-        include: {
-          domainMembers: {
-            select: {
-              createdAt: true,
-              id: true,
-              memberRole: true,
-              domain: {
-                select: {
-                  id: true,
-                  name: true
-                },
-              },
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  fullName: true,
-                  username: true,
-                  jobTitle: true,
-                  department: true,
-                  location: true,
-                  profilePicture: true,
-                }
-              }
-            }
-          }
-        }
       });
-
-      // Extract unique members
-      const membersMap = new Set()
-      for (const domain of domains) {
-        for (const member of domain.domainMembers) {
-          membersMap.add(member)
-        }
-      }
-      const uniqueMembers = Array.from(membersMap);
-      console.log(uniqueMembers)
 
       const panels = await this.dbService.panel.findMany({
         where: {
@@ -284,16 +223,44 @@ export class AuthService {
           ]
         }
       })
-      console.log(panels)
 
+      const members = await this.dbService.domainMembership.findMany({
+        where: {
+          domainId: domains[0].id
+        },
+        select: {
+          createdAt: true,
+          id: true,
+          memberRole: true,
+          domain: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              username: true,
+              jobTitle: true,
+              department: true,
+              location: true,
+              profilePicture: true,
+            }
+          }
+
+        }
+      })
 
       return {
         message: 'Access Token',
         access_token: token,
         user_data: userObj,
         domains: {
-          domains: domainMembership,
-          members: uniqueMembers,
+          domains,
+          members,
           panels,
         },
       };

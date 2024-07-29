@@ -150,50 +150,37 @@ export class CollaboratorsService {
       throw new UnauthorizedException('You do not have access!');
 
     try {
-      const domains = await this.dbService.domain.findMany({
+      const members = await this.dbService.domainMembership.findMany({
         where: {
-          id: currentDomainAndAccess.id,
+          domainId: currentDomainAndAccess.id
         },
-        include: {
-          domainMembers: {
+        select: {
+          createdAt: true,
+          id: true,
+          memberRole: true,
+          domain: {
             select: {
-              createdAt: true,
               id: true,
-              memberRole: true,
-              domain: {
-                select: {
-                  id: true,
-                  name: true
-                }
-              },
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  fullName: true,
-                  username: true,
-                  jobTitle: true,
-                  department: true,
-                  location: true,
-                  profilePicture: true,
-                }
-              }
+              name: true
+            }
+          },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+              username: true,
+              jobTitle: true,
+              department: true,
+              location: true,
+              profilePicture: true,
             }
           }
-        }
-      });
 
-      // Extract unique members
-      const membersMap = new Set()
-      for (const domain of domains) {
-        for (const member of domain.domainMembers) {
-          membersMap.add(member)
         }
-      }
-      const uniqueMembers = Array.from(membersMap);
-      console.log(uniqueMembers)
+      })
 
-      return uniqueMembers;
+      return members;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Cannot fetch the collaborators');

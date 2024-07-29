@@ -59,8 +59,11 @@ export class NotificationsService {
             title: true,
             assignedTo: true,
             assignedFrom: true,
+            panelId: true,
+            domainId: true,
             author: {
               select: {
+                id: true,
                 fullName: true
               }
             },
@@ -68,6 +71,7 @@ export class NotificationsService {
               select: {
                 user: {
                   select: {
+                    id: true,
                     fullName: true,
                   }
                 }

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,197 +8,170 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  email    String  @unique
-  password String
-  fullName String
-  googleId String? @unique
-
-  username           String?
-  jobTitle           String?
-  department         String?
-  location           String?
-  language           String?
-  availableHoursFrom DateTime?
-  availableHoursTo   DateTime?
-  profilePicture     String?
-  emailVerified      Boolean   @default(false)
-
-  // extras
-  otp               String?
-  otpLastModifiedAt DateTime?
-  otpReason         OTPReason?
-
-  // Relations
+  id                    String                  @id @default(uuid())
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  email                 String                  @unique
+  password              String
+  fullName              String
+  googleId              String?                 @unique
+  username              String?
+  jobTitle              String?
+  department            String?
+  location              String?
+  language              String?
+  availableHoursFrom    DateTime?
+  availableHoursTo      DateTime?
+  profilePicture        String?
+  emailVerified         Boolean                 @default(false)
+  otp                   String?
+  otpLastModifiedAt     DateTime?
+  otpReason             OTPReason?
   announcement          Announcement[]          @relation("Creator")
-  tasks                 Task[]
-  subTasks              SubTask[]
-  domainMembership      DomainMembership[]
-  panelMembership       PanelMembership[]
-  domains               Domain[]
-  panels                Panel[]
-  mentions              Mentions[]
   assignedCollaborators AssignedCollaborators[]
+  domains               Domain[]
+  domainMembership      DomainMembership[]
+  mentions              Mentions[]
   Notifications         Notifications[]
+  panels                Panel[]
+  panelMembership       PanelMembership[]
+  subTasks              SubTask[]
+  tasks                 Task[]
 }
 
-//Domain
 model Domain {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            String             @id @default(uuid())
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   name          String
   ownerId       String
-  owner         User               @relation(fields: [ownerId], references: [id])
   announcements Announcement[]
-  tasks         Task[]
-  panels        Panel[]
+  owner         User               @relation(fields: [ownerId], references: [id])
   domainMembers DomainMembership[]
+  panels        Panel[]
   panelMembers  PanelMembership[]
   status        Status[]
+  tasks         Task[]
 }
 
 model DomainMembership {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   userId     String
-  memberRole Roles  @default(member)
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  domainId String
-  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  memberRole Roles    @default(member)
+  domainId   String
+  domain     Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// TODO 
 model Panel {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  name String
-
-  // Relations
+  id           String            @id @default(uuid())
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  name         String
   ownerId      String
-  owner        User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  tasks        Task[]
-  panelMembers PanelMembership[]
   domainId     String
   domain       Domain            @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  owner        User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  panelMembers PanelMembership[]
+  tasks        Task[]
 }
 
 model PanelMembership {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  domainId String
-  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
-
-  panelId String
-  panel   Panel  @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  userId    String
+  domainId  String
+  panelId   String
+  domain    Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  panel     Panel    @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Status {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  name String
-
-  // relations
-  domainId String
-  domain   Domain @relation(fields: [domainId], references: [id], onDelete: Cascade)
-  tasks    Task[]
+  name      String
+  domainId  String
+  domain    Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  tasks     Task[]
 }
 
 model Task {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  title        String
-  description  String
-  order        Int
-  assignedFrom DateTime?
-  assignedTo   DateTime?
-
-  // relations
+  id                    String                  @id @default(uuid())
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  title                 String
+  description           String
+  order                 Int
+  assignedFrom          DateTime?
+  assignedTo            DateTime?
   authorId              String
-  author                User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Status                Status                  @relation(fields: [statusId], references: [id])
   statusId              String
-  panel                 Panel                   @relation(fields: [panelId], references: [id])
   panelId               String
-  domain                Domain                  @relation(fields: [domainId], references: [id])
   domainId              String
-  subTasks              SubTask[]
   assignedCollaborators AssignedCollaborators[]
   Notifications         Notifications[]
+  subTasks              SubTask[]
+  author                User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  domain                Domain                  @relation(fields: [domainId], references: [id])
+  panel                 Panel                   @relation(fields: [panelId], references: [id])
+  Status                Status                  @relation(fields: [statusId], references: [id])
 }
 
 model AssignedCollaborators {
   id     String @id @default(uuid())
   userId String
-  user   User   @relation(fields: [userId], references: [id])
-  task   Task   @relation(fields: [taskId], references: [id])
   taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model SubTask {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  title String
-  done  Boolean @default(false)
-
-  // relation
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  title        String
+  done         Boolean  @default(false)
   authorId     String
-  author       User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parentTaskId String
-  parentTask   Task   @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentTask   Task     @relation(fields: [parentTaskId], references: [id], onDelete: Cascade)
 }
 
 model Announcement {
-  id        String     @id @default(uuid())
-  content   String
-  mentions  Mentions[]
-  sentAt    DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  // relation
+  id            String          @id @default(uuid())
+  content       String
+  sentAt        DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   authorId      String
-  author        User            @relation("Creator", fields: [authorId], references: [id], onDelete: Cascade)
   domainId      String
+  author        User            @relation("Creator", fields: [authorId], references: [id], onDelete: Cascade)
   domain        Domain          @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  mentions      Mentions[]
   Notifications Notifications[]
 }
 
 model Mentions {
   id             String       @id @default(uuid())
   userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   announcementId String
   announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notifications {
   id             String        @id @default(uuid())
   userId         String
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   taskId         String?
-  tasks          Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   announcementId String?
+  hasRead        Boolean       @default(false)
   announcements  Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  tasks          Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Roles {

@@ -48,6 +48,15 @@ export class CreateTaskDTO {
   usersToAssignIds: string[]
 
   @ApiProperty({
+    type: [String],
+    required: false
+  })
+  @IsArray()
+  @IsOptional()
+  usersToDeleteFromAssigned: string[]
+
+
+  @ApiProperty({
     required: false,
     type: Date
   })

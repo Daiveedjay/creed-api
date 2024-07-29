@@ -264,6 +264,7 @@ export class TaskService {
       },
       include: {
         subTasks: true,
+        assignedCollaborators: true,
       },
     });
 
@@ -286,7 +287,6 @@ export class TaskService {
           (subtask) => subtask.id === subtaskData.id,
         );
 
-        //TODO: BE ABLE TO CREATE NEW TASKS FROM EDIT
         if (!existingSubtask) {
           await this.dbService.subTask.create({
             data: {
@@ -330,6 +330,25 @@ export class TaskService {
         })
       }
     }
+
+    if (dto.usersToDeleteFromAssigned) {
+      for (const id of dto.usersToDeleteFromAssigned) {
+        const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
+          (assigned) => assigned.userId === id,
+        );
+
+        if (!existingAssignedCollaborators) {
+          throw new NotFoundException('Subtask not found!')
+        }
+
+        await this.dbService.assignedCollaborators.delete({
+          where: {
+            id: existingAssignedCollaborators.id
+          }
+        })
+      }
+    }
+
 
     const updatedTask = await this.dbService.task.update({
       where: {
