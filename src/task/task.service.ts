@@ -325,11 +325,11 @@ export class TaskService {
           userId: {
             in: dto.usersToAssignIds
           },
-          taskId: taskID,
+          taskId: existingTask.id,
         },
       })
 
-      if (allreadyAssignedUsers) throw new ConflictException('A user is already assigned to this task');
+      if (allreadyAssignedUsers.length === 0) throw new ConflictException('A user is already assigned to this task');
 
       const assignedUsers = await this.dbService.assignedCollaborators.createMany({
         data: users.map((col) => ({
