@@ -299,51 +299,54 @@ export class TaskService {
     };
 
     if (dto.usersToAssignIds) {
-      for (const userId of dto.usersToAssignIds) {
-        const user = await this.dbService.domainMembership.findFirst({
-          where: {
-            userId,
-            domainId: domainID,
-          }
-        })
-
-        const inPanels = await this.dbService.panelMembership.findFirst({
-          where: {
-            userId,
-            domainId: domainID,
-            panelId: panelID,
-          }
-        })
-
-        if (!user || !inPanels) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
-
-        const allreadyAssignedUsers = await this.dbService.assignedCollaborators.findMany({
-          where: {
-            userId,
-            taskId: taskID,
+      const users = await this.dbService.domainMembership.findMany({
+        where: {
+          userId: {
+            in: dto.usersToAssignIds
           },
-        })
+          domainId: domainID,
+        }
+      })
 
-        if (allreadyAssignedUsers) {
-          break;
-        };
+      const inPanels = await this.dbService.panelMembership.findMany({
+        where: {
+          userId: {
+            in: dto.usersToAssignIds
+          },
+          domainId: domainID,
+          panelId: panelID,
+        }
+      })
 
-        const assignedUsers = await this.dbService.assignedCollaborators.create({
-          data: {
-            userId,
-            taskId: existingTask.id,
-          }
-        })
+      if (users.length === 0 || inPanels.length === 0) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
 
-        if (!assignedUsers) throw new ConflictException('Could not assign these users!')
+      const allreadyAssignedUsers = await this.dbService.assignedCollaborators.findMany({
+        where: {
+          userId: {
+            in: dto.usersToAssignIds
+          },
+          taskId: taskID,
+        },
+      })
 
-        await this.dbService.notifications.create({
-          data: {
-            userId,
-            taskId: existingTask.id,
-          }
-        })
-      }
+      if (allreadyAssignedUsers) throw new ConflictException('A user is already assigned to this task');
+
+      const assignedUsers = await this.dbService.assignedCollaborators.createMany({
+        data: users.map((col) => ({
+          userId: col.userId,
+          taskId: existingTask.id,
+        }))
+      })
+
+      if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
+
+      await this.dbService.notifications.createMany({
+        data: users.map((user) => ({
+          taskId: existingTask.id,
+          userId: user.userId
+        }))
+      })
+
     }
 
     if (dto.toBeDeletedSubTaskIds) {
