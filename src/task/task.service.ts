@@ -241,8 +241,6 @@ export class TaskService {
       },
     });
 
-    console.log(adminInDomain);
-
     const existingTask = await this.dbService.task.findUnique({
       where: {
         id: taskID,
@@ -301,43 +299,51 @@ export class TaskService {
     };
 
     if (dto.usersToAssignIds) {
-      const users = await this.dbService.domainMembership.findMany({
-        where: {
-          userId: {
-            in: dto.usersToAssignIds
+      for (const userId of dto.usersToAssignIds) {
+        const user = await this.dbService.domainMembership.findFirst({
+          where: {
+            userId,
+            domainId: domainID,
+          }
+        })
+
+        const inPanels = await this.dbService.panelMembership.findFirst({
+          where: {
+            userId,
+            domainId: domainID,
+            panelId: panelID,
+          }
+        })
+
+        if (!user || !inPanels) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
+
+        const allreadyAssignedUsers = await this.dbService.assignedCollaborators.findMany({
+          where: {
+            userId,
+            taskId: taskID,
           },
-          domainId: domainID,
-        }
-      })
+        })
 
-      const inPanels = await this.dbService.panelMembership.findMany({
-        where: {
-          userId: {
-            in: dto.usersToAssignIds
-          },
-          domainId: domainID,
-          panelId: panelID,
-        }
-      })
+        if (allreadyAssignedUsers) {
+          break;
+        };
 
-      if (users.length === 0 || inPanels.length === 0) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
+        const assignedUsers = await this.dbService.assignedCollaborators.create({
+          data: {
+            userId,
+            taskId: existingTask.id,
+          }
+        })
 
-      const assignedUsers = await this.dbService.assignedCollaborators.createMany({
-        data: users.map((col) => ({
-          userId: col.userId,
-          taskId: existingTask.id,
-        }))
-      })
+        if (!assignedUsers) throw new ConflictException('Could not assign these users!')
 
-      if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
-
-      await this.dbService.notifications.createMany({
-        data: users.map((user) => ({
-          taskId: existingTask.id,
-          userId: user.userId
-        }))
-      })
-
+        await this.dbService.notifications.create({
+          data: {
+            userId,
+            taskId: existingTask.id,
+          }
+        })
+      }
     }
 
     if (dto.toBeDeletedSubTaskIds) {
@@ -553,10 +559,9 @@ export class TaskService {
           statusId: statusID,
         },
       });
-
-      return new HttpException('Deleted', HttpStatus.ACCEPTED);
-
     }
+
+    return new HttpException('Deleted', HttpStatus.ACCEPTED);
   }
 
   async editMultipleTasks(
