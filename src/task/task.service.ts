@@ -300,6 +300,46 @@ export class TaskService {
       }
     };
 
+    if (dto.usersToAssignIds) {
+      const users = await this.dbService.domainMembership.findMany({
+        where: {
+          userId: {
+            in: dto.usersToAssignIds
+          },
+          domainId: domainID,
+        }
+      })
+
+      const inPanels = await this.dbService.panelMembership.findMany({
+        where: {
+          userId: {
+            in: dto.usersToAssignIds
+          },
+          domainId: domainID,
+          panelId: panelID,
+        }
+      })
+
+      if (users.length === 0 || inPanels.length === 0) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
+
+      const assignedUsers = await this.dbService.assignedCollaborators.createMany({
+        data: users.map((col) => ({
+          userId: col.userId,
+          taskId: existingTask.id,
+        }))
+      })
+
+      if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
+
+      await this.dbService.notifications.createMany({
+        data: users.map((user) => ({
+          taskId: existingTask.id,
+          userId: user.userId
+        }))
+      })
+
+    }
+
     if (dto.toBeDeletedSubTaskIds) {
       for (const id of dto.toBeDeletedSubTaskIds) {
         const existingSubtask = existingTask.subTasks.find(
