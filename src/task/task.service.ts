@@ -11,6 +11,7 @@ import {
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
+import { all } from 'axios';
 
 @Injectable()
 export class TaskService {
@@ -329,7 +330,9 @@ export class TaskService {
         },
       })
 
-      if (allreadyAssignedUsers.length === 0) throw new ConflictException('A user is already assigned to this task');
+      console.log(allreadyAssignedUsers)
+
+      if (allreadyAssignedUsers.length !== 0) throw new ConflictException('A user is already assigned to this task');
 
       const assignedUsers = await this.dbService.assignedCollaborators.createMany({
         data: users.map((col) => ({
