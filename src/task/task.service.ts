@@ -299,7 +299,7 @@ export class TaskService {
       }
     };
 
-    if (dto.usersToAssignIds) {
+    if (dto.usersToAssignIds?.length !== 0) {
       const users = await this.dbService.domainMembership.findMany({
         where: {
           userId: {
@@ -352,7 +352,7 @@ export class TaskService {
 
     }
 
-    if (dto.toBeDeletedSubTaskIds) {
+    if (dto.toBeDeletedSubTaskIds?.length !== 0) {
       for (const id of dto.toBeDeletedSubTaskIds) {
         const existingSubtask = existingTask.subTasks.find(
           (subtask) => subtask.id === id,
@@ -370,7 +370,7 @@ export class TaskService {
       }
     }
 
-    if (dto.usersToDeleteFromAssigned) {
+    if (dto.usersToDeleteFromAssigned?.length !== 0) {
       for (const id of dto.usersToDeleteFromAssigned) {
         const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
           (assigned) => assigned.userId === id,
