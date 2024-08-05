@@ -17,11 +17,13 @@ import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 import { UserPayload } from 'src/types';
+import { AnalyticsService } from 'src/analytics/analytics.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly dbService: DbService,
+    private readonly analyticService: AnalyticsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) { }
@@ -132,6 +134,7 @@ export class AuthService {
 
       }
     })
+    const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
 
     return {
       message: 'Signup successful',
@@ -140,7 +143,8 @@ export class AuthService {
       domains: {
         domains: allDomains,
         members: members,
-        panels: []
+        panels: [],
+        analytics
       }
     };
 
@@ -250,6 +254,8 @@ export class AuthService {
       }
     })
 
+    const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
+
     return {
       message: 'Access Token',
       access_token: token,
@@ -258,6 +264,7 @@ export class AuthService {
         domains,
         members,
         panels,
+        analytics,
       },
     };
 

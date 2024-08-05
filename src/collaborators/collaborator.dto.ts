@@ -58,6 +58,14 @@ export class JoinCollaboratorDto {
   @IsString()
   @IsNotEmpty()
   invitedBy: string;
+
+
+  @ApiProperty({
+    required: true,
+    type: Date
+  })
+  @IsNotEmpty()
+  expiredAt: Date;
 }
 
 export class CollaboratorsDto {

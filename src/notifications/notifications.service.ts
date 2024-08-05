@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, MethodNotAllowedException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, MethodNotAllowedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { DbService } from 'src/utils/db.service';
 
@@ -35,7 +35,8 @@ export class NotificationsService {
             },
           }
         },
-        id: true
+        id: true,
+        hasRead: true
       }
     })
   }
@@ -77,7 +78,8 @@ export class NotificationsService {
             }
           }
         },
-        id: true
+        id: true,
+        hasRead: true
       }
     })
 
@@ -99,6 +101,27 @@ export class NotificationsService {
       },
       data: {
         hasRead: true
+      }
+    })
+  }
+
+  async announcementToBeDeleted(notificationId: string, email: string) {
+    const user = await this.userServive.getProfileThroughEmail(email)
+    if (!user) throw new MethodNotAllowedException('User not found!');
+
+    const notification = await this.dbService.notifications.findUnique({
+      where: {
+        id: notificationId,
+        userId: user.id,
+      }
+    })
+
+    if (!notification) throw new ConflictException('This notification not found!')
+
+    await this.dbService.notifications.delete({
+      where: {
+        id: notificationId,
+        userId: user.id,
       }
     })
   }

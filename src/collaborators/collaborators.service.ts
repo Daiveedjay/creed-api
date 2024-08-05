@@ -14,7 +14,7 @@ import { DbService } from 'src/utils/db.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { generateOTP } from 'otp-agent';
-import { InvitePayload, UserPayload } from 'src/types';
+import { InvitePayload } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DomainService } from 'src/domain/domain.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
@@ -80,6 +80,7 @@ export class CollaboratorsService {
   }
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
+    const todaysDate = new Date()
     const inviteeUser = await this.userService.getProfileThroughEmail(
       joinCollaboratorDto.email,
     );
@@ -109,6 +110,10 @@ export class CollaboratorsService {
 
     if (alreadyInDomain) {
       throw new ConflictException('User is already in the domain!')
+    };
+
+    if (joinCollaboratorDto.expiredAt > todaysDate) {
+      throw new UnauthorizedException('Link already expired!')
     };
 
     await this.dbService.domainMembership.create({
