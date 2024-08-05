@@ -87,7 +87,8 @@ export class AnnouncementsService {
       await this.dbService.notifications.createMany({
         data: users.map((user) => ({
           announcementId: announcements.id,
-          userId: user.userId
+          userId: user.userId,
+          hasRead: false
         }))
       })
 

@@ -208,7 +208,8 @@ export class TaskService {
       await this.dbService.notifications.createMany({
         data: users.map((user) => ({
           taskId: tasks.id,
-          userId: user.userId
+          userId: user.userId,
+          hasRead: false
         }))
       })
 
@@ -346,7 +347,8 @@ export class TaskService {
       await this.dbService.notifications.createMany({
         data: users.map((user) => ({
           taskId: existingTask.id,
-          userId: user.userId
+          userId: user.userId,
+          hasRead: false
         }))
       })
 

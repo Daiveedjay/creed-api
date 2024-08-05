@@ -12,6 +12,7 @@ import { CollaboratorsModule } from './collaborators/collaborators.module';
 import { NotificationModule } from './notification/notification.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 
 @Module({
@@ -28,6 +29,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     NotificationModule,
     AnnouncementsModule,
     NotificationsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
 })
