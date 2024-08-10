@@ -231,18 +231,6 @@ export class TaskService {
     userId: string,
     dto: UpdateTaskDto,
   ) {
-    const adminInDomain = await this.dbService.domain.findUnique({
-      where: {
-        id: domainID,
-        domainMembers: {
-          some: {
-            id: userId,
-            memberRole: 'admin',
-          },
-        },
-      },
-    });
-
     const existingTask = await this.dbService.task.findUnique({
       where: {
         id: taskID,

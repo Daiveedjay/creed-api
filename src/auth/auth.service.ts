@@ -18,6 +18,7 @@ import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 import { UserPayload } from 'src/types';
 import { AnalyticsService } from 'src/analytics/analytics.service';
+import { EmailService } from 'src/utils/email.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly analyticService: AnalyticsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) { }
 
   async signUp(dto: UserSignupDTOType) {
@@ -77,7 +79,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { uid: user.id },
       {
-        expiresIn: '24h',
+        expiresIn: '1h',
       },
     );
 
@@ -135,6 +137,7 @@ export class AuthService {
       }
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
+    await this.emailService.sendWelcomeEmail(userObj.email)
 
     return {
       message: 'Signup successful',
@@ -170,7 +173,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { uid: user.id },
       {
-        expiresIn: '24h',
+        expiresIn: '1h',
       },
     );
 
@@ -395,7 +398,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { uid: oldUser.id },
       {
-        expiresIn: '1h',
+        expiresIn: '12h',
       },
     );
     return { success: true, message: 'Signin successful', data: token };
@@ -459,7 +462,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { uid: newUser.id },
       {
-        expiresIn: '1h',
+        expiresIn: '12h',
       },
     );
 

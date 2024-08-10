@@ -17,9 +17,9 @@ export class UserService {
     private readonly dbService: DbService
   ) { }
 
-  async getProfile(userId: string) {
+  async getProfile(email: string) {
     const profile = await this.dbService.user.findUnique({
-      where: { id: userId },
+      where: { email },
       select: {
         id: true,
         createdAt: true,

@@ -9,7 +9,7 @@ import { User } from './user.decorator';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   /**
    * Retrieves the details of an existing user.
@@ -18,8 +18,8 @@ export class UserController {
   @Get('/profile')
   @ApiSecurity('bearerAuth')
   @UseGuards(AuthGuard)
-  public async getProfile(@User() user): Promise<any> {
-    return await this.userService.getProfile(user.id);
+  public async getProfile(@CurrentUser('email') email: string): Promise<any> {
+    return await this.userService.getProfile(email);
   }
 
   /**

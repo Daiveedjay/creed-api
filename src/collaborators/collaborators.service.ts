@@ -98,6 +98,17 @@ export class CollaboratorsService {
       throw new ConflictException('Cannot invite yourself!')
     };
 
+    const ownerOfDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: joinCollaboratorDto.domainId,
+        ownerId: inviteeUser.id
+      }
+    })
+
+    if (ownerOfDomain) {
+      throw new ConflictException('You cannot add yourself bros!')
+    }
+
     const alreadyInDomain = await this.dbService.domainMembership.findFirst({
       where: {
         userId: inviteeUser.id,
