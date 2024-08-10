@@ -40,6 +40,10 @@ export class AuthGuard implements CanActivate {
       secret: this.configService.get('JWT_SECRET'),
     });
 
+    if (!decoded) {
+      throw new UnauthorizedException('Token has been expired!');
+    };
+
     const user = await this.dbService.user.findUnique({
       where: { id: decoded.uid },
       select: {

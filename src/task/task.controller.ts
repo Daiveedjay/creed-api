@@ -10,12 +10,13 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { TaskService } from './task.service';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 
 @ApiTags('Tasks')
+@ApiSecurity('bearerAuth')
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) { }

@@ -3,6 +3,7 @@ import { ConflictException, HttpException, HttpStatus, Injectable, InternalServe
 import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
+import { MAXIMUM_DOMAINS } from 'src/utils/constants';
 
 @Injectable()
 export class DomainService {
@@ -105,6 +106,16 @@ export class DomainService {
   }
 
   async create(userID: string, dto: CreateDomainDTO) {
+    const domainLength = await this.dbService.domain.count({
+      where: {
+        ownerId: userID
+      }
+    })
+
+    if (domainLength >= MAXIMUM_DOMAINS) {
+      throw new ConflictException('Maximum domains exceeded');
+    };
+
     const domain = await this.dbService.domain.create({
       data: {
         ...dto,
