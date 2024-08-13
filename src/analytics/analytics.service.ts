@@ -46,6 +46,7 @@ export class AnalyticsService {
 
     const panelsUserIsAssociatedInto = await this.dbService.panel.findMany({
       where: {
+        domainId: particularDomain.id,
         OR: [
           {
             ownerId: user.id
@@ -56,7 +57,7 @@ export class AnalyticsService {
                 userId: user.id
               }
             }
-          }
+          },
         ]
       }
     })
@@ -84,6 +85,7 @@ export class AnalyticsService {
             select: {
               user: {
                 select: {
+                  id: true,
                   fullName: true,
                   profilePicture: true
                 }

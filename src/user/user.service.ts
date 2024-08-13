@@ -46,10 +46,10 @@ export class UserService {
 
   }
 
-  async editProfile(userId: string, body: UserUpdateDTOType) {
+  async editProfile(email: string, body: UserUpdateDTOType) {
     const currentUser = await this.dbService.user.findUnique({
       where: {
-        id: userId,
+        email
       },
     });
 
@@ -57,7 +57,7 @@ export class UserService {
 
     await this.dbService.user.update({
       where: {
-        id: userId,
+        email
       },
       data: {
         username: body.username,
