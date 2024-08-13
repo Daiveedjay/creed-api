@@ -30,9 +30,9 @@ export class UserController {
   @ApiSecurity('bearerAuth')
   @UseGuards(AuthGuard)
   public async editProfile(
-    @CurrentUser('id') id: string,
+    @CurrentUser('email') email: string,
     @Body() body: UserUpdateDTOType,
   ) {
-    return await this.userService.editProfile(id, body);
+    return await this.userService.editProfile(email, body);
   }
 }

@@ -98,10 +98,18 @@ export class StatusService {
   }
 
   async deleteStatus(statusID: string, domainId: string) {
+    const particularDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: domainId
+      }
+    })
+
+    if (!particularDomain) throw new NotFoundException('No domain found');
+
     const existingStatus = await this.dbService.status.findUnique({
       where: {
         id: statusID,
-        domainId,
+        domainId: particularDomain.id,
       },
       include: {
         tasks: true
@@ -120,7 +128,5 @@ export class StatusService {
 
     await this.dbService.status.delete({ where: { id: statusID, domainId, } });
     return new HttpException('Deleted', HttpStatus.ACCEPTED)
-
-
   }
 }

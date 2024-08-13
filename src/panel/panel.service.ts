@@ -4,7 +4,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -168,13 +167,21 @@ export class PanelService {
       },
     });
 
+    const particularDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: domainID
+      }
+    })
+
     if (!currentUser) throw new UnauthorizedException('No access!');
+
+    if (!particularDomain) throw new NotFoundException('No domain found');
 
     const panel = await this.dbService.panel.create({
       data: {
         name: dto.name,
         ownerId: currentUser.userId,
-        domainId: domainID,
+        domainId: particularDomain.id,
       },
     });
 
