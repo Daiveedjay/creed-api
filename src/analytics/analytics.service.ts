@@ -96,7 +96,6 @@ export class AnalyticsService {
       })
       const allTasks = await this.dbService.task.findMany({
         where: {
-          domainId,
           panelId: panel.id,
         },
         include: {
@@ -107,7 +106,6 @@ export class AnalyticsService {
 
       const allCompletedTasks = await this.dbService.task.findMany({
         where: {
-          domainId,
           panelId: panel.id,
           statusId: completedStatus.id
         }
@@ -115,7 +113,6 @@ export class AnalyticsService {
 
       const ongoingTasks = await this.dbService.task.findMany({
         where: {
-          domainId,
           panelId: panel.id,
           AND: [
             {
@@ -135,7 +132,6 @@ export class AnalyticsService {
       // Overdue Tasks
       const overdueTasks = await this.dbService.task.findMany({
         where: {
-          domainId,
           panelId: panel.id,
           assignedTo: {
             lt: today,
@@ -217,7 +213,6 @@ export class AnalyticsService {
 
       const allCompletedTasks = await this.dbService.task.findMany({
         where: {
-          domainId,
           panelId: panel.id,
           statusId: completedStatus.id
         }

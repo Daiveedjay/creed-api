@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UtilsModule } from './utils/utils.module';
@@ -13,6 +13,15 @@ import { NotificationModule } from './notification/notification.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { JwtMiddleware } from './app.middleware';
+import { DomainController } from './domain/domain.controller';
+import { PanelController } from './panel/panel.controller';
+import { NotificationsController } from './notifications/notifications.controller';
+import { AnalyticsController } from './analytics/analytics.controller';
+import { UserController } from './user/user.controller';
+import { AnnouncementsController } from './announcements/announcements.controller';
+import { TaskController } from './task/task.controller';
+import { StatusController } from './status/status.controller';
 
 
 @Module({
@@ -33,4 +42,19 @@ import { AnalyticsModule } from './analytics/analytics.module';
   ],
   controllers: [AppController],
 })
-export class AppModule { }
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(JwtMiddleware).forRoutes(
+      DomainController,
+      PanelController,
+      NotificationsController,
+      AnalyticsController,
+      UserController,
+      AnnouncementsController,
+      TaskController,
+      StatusController,
+      'collaborators/:domainId',
+      'collaborators/create-link'
+    ); // Apply to all routes or specific ones
+  }
+}
