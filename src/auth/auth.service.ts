@@ -79,7 +79,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { uid: user.id },
       {
-        expiresIn: '0.16h',
+        expiresIn: '1d',
       },
     );
 
@@ -173,7 +173,7 @@ export class AuthService {
     const token = this.jwtService.sign(
       { uid: user.id },
       {
-        expiresIn: '0.16h',
+        expiresIn: '1d',
       },
     );
 
