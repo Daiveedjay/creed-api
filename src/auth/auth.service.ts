@@ -157,12 +157,14 @@ export class AuthService {
     const user = await this.dbService.user.findUnique({
       where: { email: dto.email },
     });
+    console.log(user)
 
     if (!user) {
-      throw new ForbiddenException('Invalid credentials');
+      throw new ForbiddenException('No user like this!');
     }
 
     const passwordMatch = await bcrypt.compare(dto.password, user.password);
+    console.log(passwordMatch)
 
     if (!passwordMatch) {
       throw new ForbiddenException('Invalid credentials');
@@ -206,24 +208,12 @@ export class AuthService {
 
     const panels = await this.dbService.panel.findMany({
       where: {
-        OR: [
-          {
-            domain: {
-              ownerId: user.id
-            }
-          },
-          {
-            ownerId: user.id
-          },
-          {
-            panelMembers: {
-              some: {
-                domainId: domains[0].id,
-                userId: user.id
-              }
-            }
+        panelMembers: {
+          some: {
+            domainId: domains[0].id,
+            userId: user.id
           }
-        ]
+        }
       }
     })
 
