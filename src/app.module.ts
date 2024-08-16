@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UtilsModule } from './utils/utils.module';
@@ -53,8 +53,8 @@ export class AppModule {
       AnnouncementsController,
       TaskController,
       StatusController,
-      'collaborators/:domainId',
-      'collaborators/create-link'
+      { path: 'collaborators/:domainId', method: RequestMethod.ALL },
+      { path: 'collaborators/create-link', method: RequestMethod.ALL }
     ); // Apply to all routes or specific ones
   }
 }
