@@ -123,10 +123,6 @@ export class CollaboratorsService {
       throw new ConflictException('User is already in the domain!')
     };
 
-    if (joinCollaboratorDto.expiredAt > todaysDate) {
-      throw new UnauthorizedException('Link already expired!')
-    };
-
     await this.dbService.domainMembership.create({
       data: {
         domainId: thereIsDomain.id,
