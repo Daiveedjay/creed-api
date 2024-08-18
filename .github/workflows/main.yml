@@ -48,7 +48,10 @@ jobs:
             # Build Docker image
             sudo docker build --no-cache -t kreed_api:latest .
 
+            # Run Redis container
+            sudo docker run -d --name redis -p 6379:6379 redis:alpine
+
             # Run the newly built Docker image
-            sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
+            sudo docker run -d --name kreed_api --link redis:redis -p 3000:3000 kreed_api:latest
 
             # may be restart caddy (needless)

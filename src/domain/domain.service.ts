@@ -3,7 +3,7 @@ import { ConflictException, HttpException, HttpStatus, Injectable, InternalServe
 import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
-import { MAXIMUM_DOMAINS } from 'src/utils/constants';
+import CONSTANTS from 'src/lib/constants';
 
 @Injectable()
 export class DomainService {
@@ -112,7 +112,7 @@ export class DomainService {
       }
     })
 
-    if (domainLength >= MAXIMUM_DOMAINS) {
+    if (domainLength >= CONSTANTS.MAXIMUM_DOMAINS) {
       throw new ConflictException('Maximum domains exceeded');
     };
 

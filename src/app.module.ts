@@ -22,10 +22,16 @@ import { UserController } from './user/user.controller';
 import { AnnouncementsController } from './announcements/announcements.controller';
 import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
+import { RedisModule } from 'nestjs-redis-fork';
 
 
 @Module({
   imports: [
+    RedisModule.forRoot({
+      config: {
+        url: 'redis://redis:6379'
+      }
+    }),
     AuthModule,
     UtilsModule,
     UserModule,
@@ -44,7 +50,9 @@ import { StatusController } from './status/status.controller';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(JwtMiddleware).forRoutes(
+    consumer.apply(JwtMiddleware).exclude(
+      { path: '/join-through-link', method: RequestMethod.POST }
+    ).forRoutes(
       DomainController,
       PanelController,
       NotificationsController,
@@ -53,8 +61,8 @@ export class AppModule {
       AnnouncementsController,
       TaskController,
       StatusController,
-      { path: 'collaborators/:domainId', method: RequestMethod.ALL },
-      { path: 'collaborators/create-link', method: RequestMethod.ALL }
+      { path: 'collaborators/:domainId', method: RequestMethod.GET },
+      { path: 'collaborators/create-link', method: RequestMethod.POST }
     ); // Apply to all routes or specific ones
   }
 }
