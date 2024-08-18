@@ -41,9 +41,11 @@ jobs:
 
             # Stop and remove existing container
             sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
+            sudo docker ps -q --filter "name=redis" | grep -q . && sudo docker stop redis && sudo docker rm redis || true
 
             # Remove old Docker image
             sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
+            sudo docker images -q redis:latest | grep -q . && sudo docker rmi redis:latest || true
 
             # Build Docker image
             sudo docker build --no-cache -t kreed_api:latest .
