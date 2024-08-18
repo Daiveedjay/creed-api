@@ -38,9 +38,13 @@
     "class-validator": "^0.14.1",
     "cookie": "^0.6.0",
     "cookie-parser": "^1.4.6",
+    "firebase-admin": "^12.3.1",
     "google-auth-library": "^9.7.0",
+    "ioredis": "^5.4.1",
+    "nestjs-redis-fork": "^9.0.5",
     "nodemailer": "^6.9.13",
     "otp-agent": "^3.0.3",
+    "redis": "^4.7.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "swagger-themes": "^1.4.2"

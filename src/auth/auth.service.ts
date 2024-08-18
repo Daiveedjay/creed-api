@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -19,11 +20,14 @@ import { OAuth2Client } from 'google-auth-library';
 import { UserPayload } from 'src/types';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
+import { NotifyService } from 'src/utils/notify.service';
+import { devNull } from 'os';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly dbService: DbService,
+    private readonly notifyService: NotifyService,
     private readonly analyticService: AnalyticsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -71,6 +75,14 @@ export class AuthService {
         userId: user.id,
         domainId: newDomain.id,
         memberRole: 'owner',
+      }
+    })
+
+
+    await this.dbService.device.create({
+      data: {
+        userId: user.id,
+        deviceToken: dto.deviceToken
       }
     })
 
@@ -138,6 +150,7 @@ export class AuthService {
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
     await this.emailService.sendWelcomeEmail(userObj.email)
+    await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
     return {
       message: 'Signup successful',
@@ -248,6 +261,11 @@ export class AuthService {
     })
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
+    const deviceToken = await this.notifyService.getDeviceTokens([user.id])
+
+    if (deviceToken.length < 0) {
+      throw new ConflictException('How did you get through?!')
+    }
 
     return {
       message: 'Access Token',

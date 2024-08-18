@@ -11,13 +11,14 @@ import {
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
-import { all } from 'axios';
+import { NotifyService } from 'src/utils/notify.service';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly notificationGateway: NotificationGateway,
     private readonly dbService: DbService,
+    private readonly notifyService: NotifyService,
   ) { }
 
   async getTasks(domainID: string, panelID: string) {
@@ -115,6 +116,16 @@ export class TaskService {
     });
 
     if (!currentUser) throw new NotFoundException('No user found!');
+
+    const panelMembers = await this.dbService.panelMembership.findMany({
+      where: {
+        domainId: domainID,
+        panelId: panelID
+      },
+      select: {
+        userId: true
+      }
+    })
 
     const tasks = await this.dbService.task.create({
       data: {
@@ -215,12 +226,13 @@ export class TaskService {
 
       const tasksWithMentions = await this.getTask(domainID, panelID, tasks.id)
 
-      this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
+      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You have been assigned' })
+      await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
 
       return tasksWithMentions;
     }
 
-    this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
+    await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
     return tasks;
   }
 
@@ -319,8 +331,6 @@ export class TaskService {
         },
       })
 
-      console.log(allreadyAssignedUsers)
-
       if (allreadyAssignedUsers.length !== 0) throw new ConflictException('A user is already assigned to this task');
 
       const assignedUsers = await this.dbService.assignedCollaborators.createMany({
@@ -329,6 +339,8 @@ export class TaskService {
           taskId: existingTask.id,
         }))
       })
+
+      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
@@ -399,7 +411,7 @@ export class TaskService {
       }
     });
 
-    this.notificationGateway.sendNotification({ domain: domainID, message: 'You might wanna refresh though' })
+    await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return updatedTask;
 
@@ -479,6 +491,8 @@ export class TaskService {
         authorId: userId,
       },
     });
+
+    //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return new HttpException('Deleted', HttpStatus.ACCEPTED);
   }

@@ -24,6 +24,10 @@ export interface AuthenticatedSocket extends Socket {
   };
 }
 
+type NotificationData = {
+  title: string;
+  body: string;
+}
 
 type InviterPayload = {
   id: string;

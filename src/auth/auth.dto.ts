@@ -42,6 +42,13 @@ export class UserSignupDTOType {
   // @IsNotEmpty()
   country: string;
 
+  @ApiProperty({
+    type: String
+  })
+  @IsString()
+  @IsNotEmpty()
+  deviceToken: string;
+
   @ApiProperty()
   @IsString()
   // @IsNotEmpty()
