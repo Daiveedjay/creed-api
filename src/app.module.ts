@@ -23,13 +23,14 @@ import { AnnouncementsController } from './announcements/announcements.controlle
 import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
 import { RedisModule } from 'nestjs-redis-fork';
+import CONSTANTS from './lib/constants';
 
 
 @Module({
   imports: [
     RedisModule.forRoot({
       config: {
-        url: process.env.REDIS_URL
+        url: CONSTANTS.REDIS_URL,
       }
     }),
     AuthModule,
