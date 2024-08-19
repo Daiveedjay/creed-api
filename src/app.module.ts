@@ -29,7 +29,7 @@ import { RedisModule } from 'nestjs-redis-fork';
   imports: [
     RedisModule.forRoot({
       config: {
-        url: 'redis://localhost:6379'
+        url: process.env.REDIS_URL
       }
     }),
     AuthModule,
