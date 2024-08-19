@@ -48,18 +48,16 @@ jobs:
             echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
 
             # Stop and remove existing container
-            sudo docker ps -q --filter "name=redis" | grep -q . && sudo docker stop redis && sudo docker rm redis || true
             sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
 
             # Remove old Docker image
-            sudo docker images -q redis:alpine | grep -q . && sudo docker rmi redis:alpine || true
             sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
 
             # Build Docker image
             sudo docker build --no-cache -t kreed_api:latest .
 
-            # Run Redis container
-            sudo docker run -d --name redis -p 6379:6379 redis:alpine
+            # Run Redis container if the container is not running
+            sudo docker ps -q --filter "name=redis" | grep -q . && sudo docker run -d --name redis -p 6379:6379 redis:alpine || false
 
             # Run the newly built Docker image
             sudo docker run -d --name kreed_api -p 3000:3000 kreed_api:latest
