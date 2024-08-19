@@ -38,13 +38,21 @@ jobs:
             echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
             echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
             echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+            echo "IAM_USERNAME=${{ secrets.IAM_USERNAME }}" >> ".env"
+            echo "SMTP_ENDPOINT=${{ secrets.SMTP_ENDPOINT }}" >> ".env"
+            echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> ".env"
+            echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> ".env"
+            echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> ".env"
+            echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> ".env"
+            echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> ".env"
+            echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
 
             # Stop and remove existing container
             sudo docker ps -q --filter "name=redis" | grep -q . && sudo docker stop redis && sudo docker rm redis || true
             sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
 
             # Remove old Docker image
-            sudo docker images -q redis:latest | grep -q . && sudo docker rmi redis:latest || true
+            sudo docker images -q redis:alpine | grep -q . && sudo docker rmi redis:alpine || true
             sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
 
             # Build Docker image
