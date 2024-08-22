@@ -30,7 +30,8 @@ import CONSTANTS from './lib/constants';
   imports: [
     RedisModule.forRoot({
       config: {
-        url: CONSTANTS.REDIS_URL,
+        host: 'redis',
+        port: 6379
       }
     }),
     AuthModule,
