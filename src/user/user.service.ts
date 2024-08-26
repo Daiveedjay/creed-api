@@ -10,11 +10,13 @@ import {
 import { DbService } from 'src/utils/db.service';
 import { UserUpdateDTOType } from './user.dto';
 import { UserPayload } from 'src/types';
+import { AWSService } from 'src/utils/aws.service';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly dbService: DbService
+    private readonly dbService: DbService,
+    private readonly awsService: AWSService
   ) { }
 
   async getProfile(email: string) {
@@ -55,24 +57,85 @@ export class UserService {
 
     if (!currentUser) throw new UnauthorizedException('No access');
 
-    await this.dbService.user.update({
-      where: {
-        email
-      },
-      data: {
-        username: body.username,
-        location: body.location,
-        language: body.language,
-        jobTitle: body.jobTitle,
-        fullName: body.fullName,
-        department: body.department,
-        availableHoursTo: body.availableHoursTo,
-        availableHoursFrom: body.availableHoursFrom
-      },
-    });
+    if (body.profilePicture) {
+      if (currentUser.profilePictureKey && currentUser.profilePicture) {
+        const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
 
-    return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+        if (deleteUrlFromAWS.success === true) {
+          const picture = await this.awsService.uploadFile(body.profilePicture, currentUser.id)
+          if (picture.success === true) {
+            await this.dbService.user.update({
+              where: {
+                email
+              },
+              data: {
+                username: body.username,
+                location: body.location,
+                language: body.language,
+                profilePicture: picture.url,
+                profilePictureKey: picture.key,
+                jobTitle: body.jobTitle,
+                fullName: body.fullName,
+                department: body.department,
+                availableHoursTo: body.availableHoursTo,
+                availableHoursFrom: body.availableHoursFrom
+              },
+            });
 
+            return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+          } else {
+            throw new InternalServerErrorException(picture.url)
+          }
+        } else {
+          throw new InternalServerErrorException(deleteUrlFromAWS.message)
+        }
+      } else {
+        const picture = await this.awsService.uploadFile(body.profilePicture, currentUser.id)
+        if (picture.success === true) {
+          await this.dbService.user.update({
+            where: {
+              email
+            },
+            data: {
+              username: body.username,
+              location: body.location,
+              language: body.language,
+              profilePicture: picture.url,
+              profilePictureKey: picture.key,
+              jobTitle: body.jobTitle,
+              fullName: body.fullName,
+              department: body.department,
+              availableHoursTo: body.availableHoursTo,
+              availableHoursFrom: body.availableHoursFrom
+            },
+          });
+
+          return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+        } else {
+          throw new InternalServerErrorException(picture.url)
+        }
+
+      }
+    } else {
+      await this.dbService.user.update({
+        where: {
+          email
+        },
+        data: {
+          username: body.username,
+          location: body.location,
+          language: body.language,
+          jobTitle: body.jobTitle,
+          fullName: body.fullName,
+          department: body.department,
+          availableHoursTo: body.availableHoursTo,
+          availableHoursFrom: body.availableHoursFrom
+        },
+      });
+
+      return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+
+    }
   }
 
   async getProfileThroughEmail(email: string) {

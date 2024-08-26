@@ -9,7 +9,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AddCollaboratorDto, JoinCollaboratorDto } from './collaborator.dto';
+import { AddCollaboratorDto, DemotingAndPromotingCollaboratorsDto, JoinCollaboratorDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -184,6 +184,71 @@ export class CollaboratorsService {
     })
 
     return members;
+  }
+
+  async demotingAndPromotingAUser(domainId: string, dto: DemotingAndPromotingCollaboratorsDto) {
+    const userToBePromotedOrDemoted = await this.dbService.user.findUnique({
+      where: {
+        id: dto.userToBePromotedId
+      }
+    });
+
+    if (!userToBePromotedOrDemoted) throw new UnauthorizedException('Need to be logged in');
+
+    const currentDomainAndAccess =
+      await this.domainService.getUserDomainButLimitedAccess(
+        domainId,
+        userToBePromotedOrDemoted.id,
+      );
+
+    if (!currentDomainAndAccess)
+      throw new UnauthorizedException('You do not have access!');
+
+    const currentDomainMembership = await this.dbService.domainMembership.findFirst({
+      where: {
+        userId: userToBePromotedOrDemoted.id,
+        domainId: currentDomainAndAccess.id,
+      }
+    })
+
+    if (!currentDomainMembership) throw new UnauthorizedException('There is no access i guess!')
+
+    if (dto.action === 'promoting' && currentDomainMembership.memberRole === 'member') {
+      await this.dbService.domainMembership.update({
+        where: {
+          id: currentDomainMembership.id
+        },
+        data: {
+          memberRole: 'admin'
+        }
+      })
+
+      return new HttpException(`${userToBePromotedOrDemoted.fullName} has leveled up!`, HttpStatus.ACCEPTED)
+
+    } else if (dto.action === 'promoting' && (currentDomainMembership.memberRole === 'admin' || currentDomainMembership.memberRole === 'owner')) {
+
+      throw new MethodNotAllowedException('You cannot promote someone that is already a big man!')
+
+    } else if (dto.action === 'demoting' && currentDomainMembership.memberRole === 'admin') {
+
+      await this.dbService.domainMembership.update({
+        where: {
+          id: currentDomainMembership.id
+        },
+        data: {
+          memberRole: 'member'
+        }
+      })
+
+      return new HttpException(`${userToBePromotedOrDemoted.fullName} has been benched`, HttpStatus.ACCEPTED)
+
+    } else if (dto.action === 'demoting' && (currentDomainMembership.memberRole === 'member' || currentDomainMembership.memberRole === 'owner')) {
+
+      throw new MethodNotAllowedException('I believe this is ment')
+
+    } else {
+      return;
+    }
   }
 }
 
