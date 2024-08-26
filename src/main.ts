@@ -37,7 +37,7 @@ async function bootstrap() {
 
   await app.listen(3000);
   Logger.log(
-    'Swagger is ready on: ' + 'http://localhost:' + 3000 + '/' + 'docs',
+    'Swagger is ready on: ' + 'http://localhost:' + 8000 + '/' + 'docs',
   );
   Logger.log('Application started on: ' + 'http://localhost:' + 3000);
 }

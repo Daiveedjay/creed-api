@@ -21,6 +21,7 @@ CREATE TABLE "User" (
     "availableHoursFrom" TIMESTAMP(3),
     "availableHoursTo" TIMESTAMP(3),
     "profilePicture" TEXT,
+    "profilePictureKey" TEXT,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "otp" TEXT,
     "otpLastModifiedAt" TIMESTAMP(3),

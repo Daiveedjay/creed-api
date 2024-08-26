@@ -23,6 +23,7 @@ model User {
   availableHoursFrom    DateTime?
   availableHoursTo      DateTime?
   profilePicture        String?
+  profilePictureKey     String?
   emailVerified         Boolean                 @default(false)
   otp                   String?
   otpLastModifiedAt     DateTime?

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { APP_PIPE } from '@nestjs/core';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
@@ -81,4 +82,20 @@ export class CollaboratorsDto {
 export enum Role {
   Admin = 'admin',
   Member = 'member',
+}
+
+export class DemotingAndPromotingCollaboratorsDto {
+  @ApiProperty({
+    enum: ['promoting', 'demoting'],
+    enumName: 'Action',
+    required: true
+  })
+  @IsNotEmpty()
+  action: 'promoting' | 'demoting'
+
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  userToBePromotedId: string
 }

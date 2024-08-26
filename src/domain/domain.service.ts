@@ -57,6 +57,9 @@ export class DomainService {
             userId: userId,
           }
         }
+      },
+      include: {
+        domainMembers: true,
       }
     });
 

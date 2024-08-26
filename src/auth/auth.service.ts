@@ -86,8 +86,6 @@ export class AuthService {
       }
     })
 
-    // TODO: Send welcome email
-
     const token = this.jwtService.sign(
       { uid: user.id },
       {
@@ -149,7 +147,7 @@ export class AuthService {
       }
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
-    await this.emailService.sendWelcomeEmail(userObj.email)
+    //await this.emailService.sendWelcomeEmail(userObj.email)
     await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
     return {
