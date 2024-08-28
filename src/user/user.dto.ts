@@ -19,8 +19,6 @@ export class UserUpdateDTOType {
   username?: string;
 
   @ApiProperty({
-    type: String,
-    format: 'binary',
     required: false,
   })
   @IsOptional()
