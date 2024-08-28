@@ -7,7 +7,11 @@ import { DbService } from './db.service';
 @Injectable()
 export class AWSService {
   private readonly s3Client = new S3Client({
-    region: 'us-east-1'
+    region: 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    }
   });
   constructor(
     private readonly dbService: DbService

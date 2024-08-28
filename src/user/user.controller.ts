@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserUpdateDTOType } from './user.dto';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { User } from './user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('User')
 @Controller('user')
@@ -29,10 +29,12 @@ export class UserController {
   @Patch('/')
   @ApiSecurity('bearerAuth')
   @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('profilePicture'))
   public async editProfile(
     @CurrentUser('email') email: string,
+    @UploadedFile() profilePicture: Express.Multer.File,
     @Body() body: UserUpdateDTOType,
   ) {
-    return await this.userService.editProfile(email, body);
+    return await this.userService.editProfile(email, profilePicture, body);
   }
 }

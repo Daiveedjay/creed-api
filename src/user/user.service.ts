@@ -48,7 +48,7 @@ export class UserService {
 
   }
 
-  async editProfile(email: string, body: UserUpdateDTOType) {
+  async editProfile(email: string, profilePicture: Express.Multer.File, body: UserUpdateDTOType) {
     const currentUser = await this.dbService.user.findUnique({
       where: {
         email
@@ -62,7 +62,7 @@ export class UserService {
         const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
 
         if (deleteUrlFromAWS.success === true) {
-          const picture = await this.awsService.uploadFile(body.profilePicture, currentUser.id)
+          const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
           if (picture.success === true) {
             await this.dbService.user.update({
               where: {
@@ -90,7 +90,7 @@ export class UserService {
           throw new InternalServerErrorException(deleteUrlFromAWS.message)
         }
       } else {
-        const picture = await this.awsService.uploadFile(body.profilePicture, currentUser.id)
+        const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
         if (picture.success === true) {
           await this.dbService.user.update({
             where: {
