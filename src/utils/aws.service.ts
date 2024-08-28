@@ -25,7 +25,6 @@ export class AWSService {
         Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: key,
         Body: file.buffer,
-        ACL: 'public-read', // or 'private' depending on your use case
         CacheControl: "max-age=86400",
         ContentType: file.mimetype,
       }
