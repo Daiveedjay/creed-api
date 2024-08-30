@@ -284,7 +284,7 @@ export class PanelService {
   async removeAUserFromPanel(
     domainID: string,
     panelID: string,
-    id: string,
+    email: string,
     deleteUserDto: DeleteUserDto,
   ) {
 
@@ -297,7 +297,7 @@ export class PanelService {
 
     const currentUser = await this.dbService.user.findUnique({
       where: {
-        id,
+        email,
       },
     });
 
@@ -319,7 +319,7 @@ export class PanelService {
     for (const id of deleteUserDto.panelMembersId) {
       const panelMembership = await this.dbService.panelMembership.findFirst({
         where: {
-          id,
+          userId: id,
           domainId: domainID,
           panelId: panelID
         }

@@ -9,7 +9,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AddCollaboratorDto, DemotingAndPromotingCollaboratorsDto, JoinCollaboratorDto } from './collaborator.dto';
+import { AddCollaboratorDto, DemotingAndPromotingCollaboratorsDto, JoinCollaboratorDto, RemovingCollaboratorsDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -249,6 +249,78 @@ export class CollaboratorsService {
     } else {
       return;
     }
+  }
+
+  async removingCollaboratorFromADomain(domainId: string, email: string, dto: RemovingCollaboratorsDto) {
+    const currentUser = await this.dbService.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    const userToBeRemoved = await this.dbService.domainMembership.findFirst({
+      where: {
+        userId: dto.userToBeRemovedId,
+        domainId,
+      }
+    })
+
+    if (!currentUser || !userToBeRemoved) {
+      throw new UnauthorizedException('Either you are not logged in or this user is not available!')
+    }
+
+    const domainMembership = await this.dbService.domainMembership.findFirst({
+      where: {
+        userId: currentUser.id,
+        memberRole: {
+          in: [
+            'owner', 'admin'
+          ]
+        },
+        domainId,
+      }
+    })
+
+    if (!domainMembership) {
+      throw new MethodNotAllowedException('You do not have permission to do this!')
+    }
+
+    const panelMembership = await this.dbService.panelMembership.findFirst({
+      where: {
+        userId: dto.userToBeRemovedId,
+        domainId
+      }
+    })
+
+    const assignedToTask = await this.dbService.assignedCollaborators.findMany({
+      where: {
+        userId: dto.userToBeRemovedId,
+      }
+    })
+
+    if (assignedToTask.length > 0) {
+      for (const task of assignedToTask) {
+        await this.dbService.assignedCollaborators.delete({
+          where: {
+            id: task.id,
+          }
+        })
+      }
+    }
+
+    if (panelMembership) {
+      await this.dbService.panelMembership.delete({
+        where: {
+          id: panelMembership.id
+        }
+      })
+    }
+
+    await this.dbService.domainMembership.delete({
+      where: {
+        id: userToBeRemoved.id
+      }
+    })
   }
 }
 

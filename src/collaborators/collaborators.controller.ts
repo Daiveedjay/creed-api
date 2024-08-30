@@ -5,12 +5,15 @@ import {
   Body,
   UseGuards,
   Param,
-  Get
+  Get,
+  Patch
 } from '@nestjs/common';
 import { CollaboratorsService } from './collaborators.service';
 import {
   AddCollaboratorDto,
-  JoinCollaboratorDto
+  DemotingAndPromotingCollaboratorsDto,
+  JoinCollaboratorDto,
+  RemovingCollaboratorsDto
 } from './collaborator.dto';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -38,4 +41,17 @@ export class CollaboratorsController {
   async getAllCollaboratorsInADomain(@Param('domainId') domainId: string, @CurrentUser('email') email: string) {
     return await this.collaboratorsService.getAllCollaboratorsInADomain(domainId, email)
   }
+
+  @Patch('/:domainId')
+  @UseGuards(AuthGuard)
+  async demoteAndPromoteACollaboratorInADomain(@Param('domainId') domainId: string, @Body() dto: DemotingAndPromotingCollaboratorsDto) {
+    return await this.collaboratorsService.demotingAndPromotingAUser(domainId, dto)
+  }
+
+  @Patch('/:domainId')
+  @UseGuards(AuthGuard)
+  async removeACollaboratorFromADomain(@Param('domainId') domainId: string, @CurrentUser('email') email: string, @Body() dto: RemovingCollaboratorsDto) {
+    return await this.collaboratorsService.removingCollaboratorFromADomain(domainId, email, dto)
+  }
+
 }
