@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, MethodNotAllowedException, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
@@ -134,6 +134,27 @@ export class DomainService {
 
     return domain
 
+  }
+
+  async leaveADomain(domainId: string, userId: string) {
+    const domainMembership = await this.dbService.domainMembership.findFirst({
+      where: {
+        domainId,
+        userId
+      }
+    })
+
+    if (!domainMembership) {
+      throw new MethodNotAllowedException('Domain not found!')
+    };
+
+    await this.dbService.domainMembership.delete({
+      where: {
+        id: domainMembership.id
+      }
+    })
+
+    return new HttpException('Left apparently', HttpStatus.OK)
   }
 
   async deleteDomain(domainID: string, userId: string) {

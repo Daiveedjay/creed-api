@@ -12,7 +12,6 @@ export class AnalyticsService {
   async getAnalyticsofDomain(domainId: string, email: string) {
     const allAssignedTasks = []
     const allOngoingTasks = []
-    const allTasks = []
     const allOverdueTasks = []
     const allCompletedTasks = []
     const today = new Date()
@@ -55,6 +54,8 @@ export class AnalyticsService {
       }
     })
 
+    console.log({ panelsUserIsAssociatedInto })
+
     for (const panel of panelsUserIsAssociatedInto) {
       const completedStatus = await this.dbService.status.findFirst({
         where: {
@@ -85,15 +86,6 @@ export class AnalyticsService {
               }
             }
           }
-        }
-      })
-      const allTasks = await this.dbService.task.findMany({
-        where: {
-          panelId: panel.id,
-        },
-        include: {
-          subTasks: true,
-          assignedCollaborators: true,
         }
       })
 
@@ -134,7 +126,6 @@ export class AnalyticsService {
 
       allAssignedTasks.push(...assignedTasks)
       allOngoingTasks.push(...ongoingTasks)
-      allTasks.push(...allTasks)
       allOverdueTasks.push(...overdueTasks)
       allCompletedTasks.push(...allCompletedTasks)
     }
@@ -143,7 +134,7 @@ export class AnalyticsService {
       allAssignedTasks,
       allOngoingTasks,
       allOverdueTasks,
-      allTasks,
+      allTasks: panelsUserIsAssociatedInto,
       allCompletedTasks,
       numberOfDomainMembers: particularDomain.domainMembers.length,
       domainId

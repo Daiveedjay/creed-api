@@ -31,7 +31,8 @@ import CONSTANTS from './lib/constants';
     RedisModule.forRoot({
       config: {
         host: 'redis',
-        port: 6379
+        //host: '127.0.0.1', // Redis server host
+        port: 6379,
       }
     }),
     AuthModule,
@@ -63,6 +64,7 @@ export class AppModule {
       AnnouncementsController,
       TaskController,
       StatusController,
+      { path: 'collaborators/:domainId', method: RequestMethod.PATCH },
       { path: 'collaborators/:domainId', method: RequestMethod.GET },
       { path: 'collaborators/create-link', method: RequestMethod.POST }
     ); // Apply to all routes or specific ones

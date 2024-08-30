@@ -17,7 +17,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Domains')
 @Controller('domains')
 export class DomainController {
-  constructor(private readonly domainService: DomainService) {}
+  constructor(private readonly domainService: DomainService) { }
 
   @Get()
   @UseGuards(AuthGuard)
@@ -55,7 +55,13 @@ export class DomainController {
 
   @Delete('/:domainID')
   @UseGuards(AuthGuard)
-  async deletePanel(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
+  async leaveADomain(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
+    return await this.domainService.leaveADomain(domainID, id);
+  }
+
+  @Delete('/:domainID')
+  @UseGuards(AuthGuard)
+  async deleteDomain(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
     return await this.domainService.deleteDomain(domainID, id);
   }
 }

@@ -99,3 +99,12 @@ export class DemotingAndPromotingCollaboratorsDto {
   })
   userToBePromotedId: string
 }
+
+export class RemovingCollaboratorsDto {
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  userToBeRemovedId: string
+
+}

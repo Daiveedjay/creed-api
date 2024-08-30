@@ -33,8 +33,8 @@ export class PanelController {
 
   @Delete(':domainID/:panelID/remove-users')
   @UseGuards(AuthGuard)
-  async removeCollaboratorsFromPanel(@Body() deleteUserDto: DeleteUserDto, @Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('id') id: string) {
-    return await this.panelService.removeAUserFromPanel(domainID, panelID, id, deleteUserDto)
+  async removeCollaboratorsFromPanel(@Param('domainID') domainID: string, @Param('panelID') panelID: string, @CurrentUser('email') email: string, @Body() deleteUserDto: DeleteUserDto) {
+    return await this.panelService.removeAUserFromPanel(domainID, panelID, email, deleteUserDto)
   }
 
   @Get('/:domainID/:panelID')
