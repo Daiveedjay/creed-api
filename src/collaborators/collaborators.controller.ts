@@ -42,13 +42,13 @@ export class CollaboratorsController {
     return await this.collaboratorsService.getAllCollaboratorsInADomain(domainId, email)
   }
 
-  @Patch('/:domainId')
+  @Patch('/:domainId/role-change')
   @UseGuards(AuthGuard)
   async demoteAndPromoteACollaboratorInADomain(@Param('domainId') domainId: string, @Body() dto: DemotingAndPromotingCollaboratorsDto) {
     return await this.collaboratorsService.demotingAndPromotingAUser(domainId, dto)
   }
 
-  @Patch('/:domainId')
+  @Patch('/:domainId/remove-collaborator')
   @UseGuards(AuthGuard)
   async removeACollaboratorFromADomain(@Param('domainId') domainId: string, @CurrentUser('email') email: string, @Body() dto: RemovingCollaboratorsDto) {
     return await this.collaboratorsService.removingCollaboratorFromADomain(domainId, email, dto)

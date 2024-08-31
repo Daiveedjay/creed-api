@@ -300,7 +300,7 @@ export class TaskService {
       }
     };
 
-    if (dto.usersToAssignIds?.length !== 0) {
+    if (dto.usersToAssignIds?.length > 0) {
       const users = await this.dbService.domainMembership.findMany({
         where: {
           userId: {
@@ -331,7 +331,7 @@ export class TaskService {
         },
       })
 
-      if (allreadyAssignedUsers.length !== 0) throw new ConflictException('A user is already assigned to this task');
+      if (allreadyAssignedUsers.length > 0) throw new ConflictException('A user is already assigned to this task');
 
       const assignedUsers = await this.dbService.assignedCollaborators.createMany({
         data: users.map((col) => ({
@@ -340,7 +340,7 @@ export class TaskService {
         }))
       })
 
-      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+      //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
@@ -354,7 +354,7 @@ export class TaskService {
 
     }
 
-    if (dto.toBeDeletedSubTaskIds?.length !== 0) {
+    if (dto.toBeDeletedSubTaskIds?.length > 0) {
       for (const id of dto.toBeDeletedSubTaskIds) {
         const existingSubtask = existingTask.subTasks.find(
           (subtask) => subtask.id === id,
@@ -372,7 +372,7 @@ export class TaskService {
       }
     }
 
-    if (dto.usersToDeleteFromAssigned?.length !== 0) {
+    if (dto.usersToDeleteFromAssigned?.length > 0) {
       for (const id of dto.usersToDeleteFromAssigned) {
         const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
           (assigned) => assigned.userId === id,
@@ -411,7 +411,7 @@ export class TaskService {
       }
     });
 
-    await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+    //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return updatedTask;
 
@@ -581,10 +581,180 @@ export class TaskService {
     tasksDto: UpdateMultipleTasksDto[]
   ) {
     const updatedTasks = new Set()
-    for (const task of tasksDto) {
-      const { id, ...otherDetails } = task
-      const updated = await this.editTask(domainID, panelID, id, userId, otherDetails)
-      updatedTasks.add(updated)
+    for (const dto of tasksDto) {
+      const { id } = dto
+
+      const existingTask = await this.dbService.task.findUnique({
+        where: {
+          id,
+          panelId: panelID,
+          domainId: domainID,
+        },
+        include: {
+          subTasks: true,
+          assignedCollaborators: true,
+        },
+      });
+
+      if (!existingTask) {
+        throw new NotFoundException('Task not found');
+      }
+
+      if (dto.title || dto.description || dto.statusId || dto.order || dto.assignedFrom || dto.assignedTo) {
+        existingTask.title = dto.title;
+        existingTask.description = dto.description;
+        existingTask.statusId = dto.statusId;
+        existingTask.order = dto.order;
+        existingTask.assignedTo = dto.assignedTo
+        existingTask.assignedFrom = dto.assignedFrom;
+      }
+
+      if (dto.subTasks) {
+        for (const subtaskData of dto.subTasks) {
+          const existingSubtask = existingTask.subTasks.find(
+            (subtask) => subtask.id === subtaskData.id,
+          );
+
+          if (!existingSubtask) {
+            await this.dbService.subTask.create({
+              data: {
+                title: subtaskData.title,
+                done: false,
+                authorId: userId,
+                parentTaskId: existingTask.id,
+              },
+            });
+          } else {
+
+            await this.dbService.subTask.update({
+              where: {
+                id: existingSubtask.id,
+                parentTaskId: existingTask.id
+              },
+              data: {
+                done: subtaskData.done,
+                title: subtaskData.title
+              }
+            })
+
+          }
+        }
+      };
+
+      if (dto.usersToAssignIds?.length > 0) {
+        const users = await this.dbService.domainMembership.findMany({
+          where: {
+            userId: {
+              in: dto.usersToAssignIds
+            },
+            domainId: domainID,
+          }
+        })
+
+        const inPanels = await this.dbService.panelMembership.findMany({
+          where: {
+            userId: {
+              in: dto.usersToAssignIds
+            },
+            domainId: domainID,
+            panelId: panelID,
+          }
+        })
+
+        if (users.length === 0 || inPanels.length === 0) throw new ConflictException('Users are either not in this domain or do not have access to this panel');
+
+        const allreadyAssignedUsers = await this.dbService.assignedCollaborators.findMany({
+          where: {
+            userId: {
+              in: dto.usersToAssignIds
+            },
+            taskId: existingTask.id,
+          },
+        })
+
+        if (allreadyAssignedUsers.length > 0) throw new ConflictException('A user is already assigned to this task');
+
+        const assignedUsers = await this.dbService.assignedCollaborators.createMany({
+          data: users.map((col) => ({
+            userId: col.userId,
+            taskId: existingTask.id,
+          }))
+        })
+
+        await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+
+        if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
+
+        await this.dbService.notifications.createMany({
+          data: users.map((user) => ({
+            taskId: existingTask.id,
+            userId: user.userId,
+            hasRead: false
+          }))
+        })
+
+      }
+
+      if (dto.toBeDeletedSubTaskIds?.length > 0) {
+        for (const id of dto.toBeDeletedSubTaskIds) {
+          const existingSubtask = existingTask.subTasks.find(
+            (subtask) => subtask.id === id,
+          );
+
+          if (!existingSubtask) {
+            throw new NotFoundException('Subtask not found!')
+          }
+
+          await this.dbService.subTask.delete({
+            where: {
+              id: existingSubtask.id
+            }
+          })
+        }
+      }
+
+      if (dto.usersToDeleteFromAssigned?.length > 0) {
+        for (const id of dto.usersToDeleteFromAssigned) {
+          const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
+            (assigned) => assigned.userId === id,
+          );
+
+          if (!existingAssignedCollaborators) {
+            throw new NotFoundException('Subtask not found!')
+          }
+
+          await this.dbService.assignedCollaborators.delete({
+            where: {
+              id: existingAssignedCollaborators.id
+            }
+          })
+        }
+      }
+
+
+      const updatedTask = await this.dbService.task.update({
+        where: {
+          id,
+          panelId: panelID,
+          domainId: domainID,
+        },
+        data: {
+          title: existingTask.title,
+          description: existingTask.description,
+          statusId: existingTask.statusId,
+          order: existingTask.order,
+          assignedTo: existingTask.assignedTo,
+          assignedFrom: existingTask.assignedFrom,
+        },
+        include: {
+          subTasks: true,
+          Status: true
+        }
+      });
+
+      //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+
+      updatedTasks.add(updatedTask)
     }
 
     return Array.from(updatedTasks);
