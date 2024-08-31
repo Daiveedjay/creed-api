@@ -11,10 +11,12 @@ export class AnalyticsService {
   ) { }
   async getAnalyticsofDomain(domainId: string, email: string) {
     const allAssignedTasks = []
+    const allTasks = []
     const allOngoingTasks = []
     const allOverdueTasks = []
     const allCompletedTasks = []
     const today = new Date()
+
     const user = await this.userService.getProfileThroughEmail(email)
     if (!user) throw new MethodNotAllowedException('User not found!');
 
@@ -54,14 +56,15 @@ export class AnalyticsService {
       }
     })
 
-    console.log({ panelsUserIsAssociatedInto })
+    const completedStatus = await this.dbService.status.findFirst({
+      where: {
+        name: 'completed'
+      }
+    })
+
+    console.log({ panelsUserIsAssociatedInto, completedStatus })
 
     for (const panel of panelsUserIsAssociatedInto) {
-      const completedStatus = await this.dbService.status.findFirst({
-        where: {
-          name: 'completed'
-        }
-      })
       const assignedTasks = await this.dbService.task.findMany({
         where: {
           domainId,
@@ -89,6 +92,16 @@ export class AnalyticsService {
         }
       })
 
+      const allTasksHere = await this.dbService.task.findMany({
+        where: {
+          panelId: panel.id
+        },
+        include: {
+          subTasks: true,
+          assignedCollaborators: true
+        }
+      })
+
       const allCompletedTasks = await this.dbService.task.findMany({
         where: {
           panelId: panel.id,
@@ -109,6 +122,11 @@ export class AnalyticsService {
               assignedTo: {
                 gt: today
               }
+            },
+            {
+              statusId: {
+                not: completedStatus.id
+              }
             }
           ]
         },
@@ -125,6 +143,7 @@ export class AnalyticsService {
       });
 
       allAssignedTasks.push(...assignedTasks)
+      allTasks.push(...allTasksHere)
       allOngoingTasks.push(...ongoingTasks)
       allOverdueTasks.push(...overdueTasks)
       allCompletedTasks.push(...allCompletedTasks)
@@ -134,7 +153,7 @@ export class AnalyticsService {
       allAssignedTasks,
       allOngoingTasks,
       allOverdueTasks,
-      allTasks: panelsUserIsAssociatedInto,
+      allTasks,
       allCompletedTasks,
       numberOfDomainMembers: particularDomain.domainMembers.length,
       domainId

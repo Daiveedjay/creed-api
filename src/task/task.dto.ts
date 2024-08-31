@@ -110,7 +110,6 @@ export class UpdateMultipleTasksDto extends PartialType(CreateTaskDTO) {
   })
   @IsArray()
   toBeDeletedSubTaskIds: string[];
-
 }
 
 export class DeleteMultipleTasksDto {
