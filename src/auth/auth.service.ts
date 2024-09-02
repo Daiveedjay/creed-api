@@ -21,7 +21,6 @@ import { UserPayload } from 'src/types';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
 import { NotifyService } from 'src/utils/notify.service';
-import { devNull } from 'os';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +37,7 @@ export class AuthService {
     this.oAuth2Client = new OAuth2Client(
       this.configService.get('GOOGLE_CLIENT_ID'),
       this.configService.get('GOOGLE_CLIENT_SECRET'),
-      this.configService.get('GOOGLE_REDIRECT_URI'),
+      //this.configService.get('GOOGLE_REDIRECT_URI'),
     );
   }
 
