@@ -83,6 +83,7 @@ export class CreateTaskDTO {
     required: false,
   })
   @IsString()
+  @IsOptional()
   statusId: string;
 }
 
@@ -93,6 +94,7 @@ export class UpdateTaskDto extends PartialType(CreateTaskDTO) {
     required: false
   })
   @IsArray()
+  @IsOptional()
   toBeDeletedSubTaskIds: string[];
 }
 
@@ -109,6 +111,7 @@ export class UpdateMultipleTasksDto extends PartialType(CreateTaskDTO) {
     required: false
   })
   @IsArray()
+  @IsOptional()
   toBeDeletedSubTaskIds: string[];
 }
 

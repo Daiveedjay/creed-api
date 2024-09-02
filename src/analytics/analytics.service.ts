@@ -11,7 +11,7 @@ export class AnalyticsService {
   ) { }
   async getAnalyticsofDomain(domainId: string, email: string) {
     const allAssignedTasks = []
-    const allTasks = []
+    //const allTasks = []
     const allOngoingTasks = []
     const allOverdueTasks = []
     const allCompletedTasks = []
@@ -88,24 +88,28 @@ export class AnalyticsService {
                 }
               }
             }
-          }
+          },
+          subTasks: true
         }
       })
 
-      const allTasksHere = await this.dbService.task.findMany({
-        where: {
-          panelId: panel.id
-        },
-        include: {
-          subTasks: true,
-          assignedCollaborators: true
-        }
-      })
-
-      const allCompletedTasks = await this.dbService.task.findMany({
+      const completedTasks = await this.dbService.task.findMany({
         where: {
           panelId: panel.id,
           statusId: completedStatus.id
+        },
+        include: {
+          assignedCollaborators: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  profilePicture: true
+                }
+              }
+            }
+          }
         }
       })
 
@@ -130,6 +134,19 @@ export class AnalyticsService {
             }
           ]
         },
+        include: {
+          assignedCollaborators: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  profilePicture: true
+                }
+              }
+            }
+          }
+        }
       });
 
       // Overdue Tasks
@@ -140,20 +157,32 @@ export class AnalyticsService {
             lt: today,
           },
         },
+        include: {
+          assignedCollaborators: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  profilePicture: true
+                }
+              }
+            }
+          }
+        }
       });
 
       allAssignedTasks.push(...assignedTasks)
-      allTasks.push(...allTasksHere)
+      //allTasks.push(...allTasksHere)
       allOngoingTasks.push(...ongoingTasks)
       allOverdueTasks.push(...overdueTasks)
-      allCompletedTasks.push(...allCompletedTasks)
+      allCompletedTasks.push(...completedTasks)
     }
 
     return {
       allAssignedTasks,
       allOngoingTasks,
       allOverdueTasks,
-      allTasks,
       allCompletedTasks,
       numberOfDomainMembers: particularDomain.domainMembers.length,
       domainId

@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
 import {
   PasswordResetDTO,
@@ -14,14 +15,15 @@ import {
   UserSignupDTOType,
 } from './auth.dto';
 import { AuthService } from './auth.service';
-import { Request as ExpressRequest } from 'express';
+import { Request as ExpressRequest, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import CONSTANTS from 'src/lib/constants';
+import { OAuth2Client } from 'google-auth-library';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   /**
    * Endpoint to signup user
@@ -63,17 +65,19 @@ export class AuthController {
    * @param redirectURL (Optional) url google should redirect the user to after the google auth screen
    */
   @Get('sign-google-link')
-  @Header('Access-Control-Allow-Origin', CONSTANTS.CLIENT_APP_URL)
-  @Header('Referrer-Policy', 'no-referrer-when-downgrade')
   public async signGoogleLink(
-    @Req() req: ExpressRequest,
-    @Query('redirectURL') redirectURL?: string,
+    @Res() res: Response
   ): Promise<any> {
-    const redirectURLi =
-      redirectURL ||
-      `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const redirectUri = 'http://localhost:3000/api/auth/google/callback'; // Your backend endpoint
+    const scope = 'profile email';
+    const responseType = 'code';
+    const state = 'random_state_string'; // Optional, used for CSRF protection
 
-    return this.authService.signGoogleLink(redirectURLi);
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&state=${state}`;
+
+    //return googleAuthUrl;
+    return res.redirect(googleAuthUrl)
   }
 
   /**
@@ -103,6 +107,7 @@ export class AuthController {
    */
   @Post('/signup-google')
   public async signUpGoogle(@Req() req: ExpressRequest) {
+    console.log(req.query.code)
     const redirectURL =
       (req.query.redirectURL as string) ||
       `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
@@ -111,5 +116,11 @@ export class AuthController {
       redirectURL,
       req.query.code as string,
     );
+  }
+
+  @Get('google/callback')
+  async googleCallback(@Query('code') code: string, @Res() res: Response) {
+    const data = await this.authService.googleCallback(code)
+    return data
   }
 }

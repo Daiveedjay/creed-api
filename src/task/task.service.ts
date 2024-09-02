@@ -226,14 +226,21 @@ export class TaskService {
 
       const tasksWithMentions = await this.getTask(domainID, panelID, tasks.id)
 
-      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You have been assigned' })
-      await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
+      const res = await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You have been assigned' })
+      const res2 = await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
 
-      return tasksWithMentions;
+      return {
+        tasksWithMentions,
+        res,
+        res2
+      };
     }
 
-    await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
-    return tasks;
+    const res = await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
+    return {
+      tasks,
+      res
+    };
   }
 
   async editTask(

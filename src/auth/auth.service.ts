@@ -25,6 +25,8 @@ import { devNull } from 'os';
 
 @Injectable()
 export class AuthService {
+  private oAuth2Client: OAuth2Client
+
   constructor(
     private readonly dbService: DbService,
     private readonly notifyService: NotifyService,
@@ -32,9 +34,16 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
-  ) { }
+  ) {
+    this.oAuth2Client = new OAuth2Client(
+      this.configService.get('GOOGLE_CLIENT_ID'),
+      this.configService.get('GOOGLE_CLIENT_SECRET'),
+      this.configService.get('GOOGLE_REDIRECT_URI'),
+    );
+  }
 
   async signUp(dto: UserSignupDTOType) {
+    console.log(dto.deviceToken)
     // const firstName = dto.fullName.split(' ')
     const oldUser = await this.dbService.user.findUnique({
       where: { email: dto.email },
@@ -167,6 +176,13 @@ export class AuthService {
   async signIn(dto: UserSigninDTOType) {
     const user = await this.dbService.user.findUnique({
       where: { email: dto.email },
+      include: {
+        Device: {
+          select: {
+            deviceToken: true
+          }
+        }
+      }
     });
     console.log(user)
 
@@ -261,8 +277,8 @@ export class AuthService {
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
     const deviceToken = await this.notifyService.getDeviceTokens([user.id])
 
-    if (deviceToken.length < 0) {
-      throw new ConflictException('How did you get through?!')
+    if (deviceToken[0] === null) {
+      await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
     }
 
     return {
@@ -474,5 +490,35 @@ export class AuthService {
 
     return { success: true, message: 'Signup successful', data: token };
 
+  }
+
+  async googleCallback(code: string) {
+    try {
+      const { tokens } = await this.oAuth2Client.getToken(code);
+      console.log({ tokens, code })
+      this.oAuth2Client.setCredentials(tokens);
+
+      const ticket = await this.oAuth2Client.verifyIdToken({
+        idToken: tokens.id_token!,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+
+      // Use the payload to find or create the user in your database
+      //const user = await this.authService.validateOAuthLogin(payload);
+
+      // Optionally, set a session or token for the user here
+      // Redirect the user to the frontend after authentication
+      console.log(payload)
+      return {
+        token: tokens.id_token,
+        user: payload
+      }
+      //return res.redirect(`http://localhost:3000/dashboard?token=$`);
+    } catch (error) {
+      console.error('Error during Google authentication:', error);
+      //return res.redirect(`http://localhost:3000/login?error=Authentication failed`);
+    }
   }
 }
