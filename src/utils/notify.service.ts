@@ -14,6 +14,7 @@ export class NotifyService {
   // Store a device token in Redis
   public async storeDeviceToken(userId: string, token: string) {
     await this.redis.set(`user:${userId}:tokens`, token);
+
   };
 
   // Retrieve device tokens from Redis
@@ -25,33 +26,43 @@ export class NotifyService {
     }
 
     const tokens = Array.from(allTokens) as string[]
-    if (tokens.length < 0) {
+    if (tokens[0] === null) {
       throw new ConflictException('These users are not in this platform?')
     }
 
     return tokens;
   };
 
-  private async sendNotification(tokens: string[], messageData: NotificationData) {
-    const message: admin.messaging.MulticastMessage = {
-      tokens: tokens,
-      notification: {
-        title: messageData.title,
-        body: messageData.body,
-      },
+  private async sendNotification(token: string, messageData: NotificationData) {
+    console.log({ fcm: token })
+    const message: admin.messaging.Message = {
+      token: token,
+      webpush: {
+        notification: {
+          title: messageData.title,
+          body: messageData.body,
+        },
+      }
     };
 
     try {
-      const response = await admin.messaging().sendEachForMulticast(message);
+      const response = await admin.messaging().send(message);
       console.log('Successfully sent message:', response);
+      return response;
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
   public async notifyUser(userId: string[], messageData: NotificationData) {
+    const responses = new Set()
     const tokens = await this.getDeviceTokens(userId)
 
-    await this.sendNotification(tokens, messageData)
+    for (const token of tokens) {
+      const response = await this.sendNotification(token, messageData)
+      responses.add(response)
+    }
+
+    return Array.from(responses)
   };
 }

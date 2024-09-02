@@ -23,15 +23,14 @@ import { AnnouncementsController } from './announcements/announcements.controlle
 import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
 import { RedisModule } from 'nestjs-redis-fork';
-import CONSTANTS from './lib/constants';
 
 
 @Module({
   imports: [
     RedisModule.forRoot({
       config: {
-        host: 'redis',
-        //host: '127.0.0.1', // Redis server host
+        //host: 'redis',
+        host: '127.0.0.1', // Redis server host
         port: 6379,
       }
     }),
