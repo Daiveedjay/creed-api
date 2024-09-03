@@ -29,6 +29,14 @@ export class UserSignupDTOType {
 
   @ApiProperty({
     type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  profilePicture?: string;
+
+  @ApiProperty({
+    type: String,
     minLength: 6,
     maxLength: 30,
     required: true
@@ -99,4 +107,32 @@ export class PasswordResetDTO {
   })
   @IsNotEmpty()
   otp: string;
+}
+
+export class GoogleSignInDto {
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty()
+  accessToken: string
+}
+
+export class GoogleSignUpDto {
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty()
+  accessToken: string
+
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty()
+  deviceToken: string
 }

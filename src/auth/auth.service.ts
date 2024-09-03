@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -21,12 +22,18 @@ import { UserPayload } from 'src/types';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
 import { NotifyService } from 'src/utils/notify.service';
+import { UserService } from 'src/user/user.service';
+import { InjectRedis } from 'nestjs-redis-fork';
+import { Redis } from "ioredis";
+import { admin } from 'src/lib/firebase';
 
 @Injectable()
 export class AuthService {
   private oAuth2Client: OAuth2Client
 
   constructor(
+    @InjectRedis() private readonly redis: Redis,
+    private readonly userService: UserService,
     private readonly dbService: DbService,
     private readonly notifyService: NotifyService,
     private readonly analyticService: AnalyticsService,
@@ -37,7 +44,7 @@ export class AuthService {
     this.oAuth2Client = new OAuth2Client(
       this.configService.get('GOOGLE_CLIENT_ID'),
       this.configService.get('GOOGLE_CLIENT_SECRET'),
-      //this.configService.get('GOOGLE_REDIRECT_URI'),
+      this.configService.get('GOOGLE_REDIRECT_URI'),
     );
   }
 
@@ -491,33 +498,64 @@ export class AuthService {
 
   }
 
-  async googleCallback(code: string) {
-    try {
-      const { tokens } = await this.oAuth2Client.getToken(code);
-      console.log({ tokens, code })
-      this.oAuth2Client.setCredentials(tokens);
+  async verifyAndUpdateUser(accessToken: string) {
+    const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
-      const ticket = await this.oAuth2Client.verifyIdToken({
-        idToken: tokens.id_token!,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
+    const userInfo = await this.dbService.user.findUnique({
+      where: {
+        email: decodedToken.email,
+      },
+    });
 
-      const payload = ticket.getPayload();
-
-      // Use the payload to find or create the user in your database
-      //const user = await this.authService.validateOAuthLogin(payload);
-
-      // Optionally, set a session or token for the user here
-      // Redirect the user to the frontend after authentication
-      console.log(payload)
-      return {
-        token: tokens.id_token,
-        user: payload
-      }
-      //return res.redirect(`http://localhost:3000/dashboard?token=$`);
-    } catch (error) {
-      console.error('Error during Google authentication:', error);
-      //return res.redirect(`http://localhost:3000/login?error=Authentication failed`);
+    if (!userInfo) {
+      throw new MethodNotAllowedException('No account like this!')
     }
+
+    const user = await this.signIn({
+      email: decodedToken.email,
+      password: decodedToken.sub,
+      rememberMe: true
+    })
+
+    return user
+  }
+
+  async verifyAndCreateUser(accessToken: string, deviceToken: string) {
+    const decodedToken = await admin.auth().verifyIdToken(accessToken);
+
+    const userInfo = await this.dbService.user.findUnique({
+      where: {
+        email: decodedToken.email,
+      },
+    });
+
+    const currentUser = await this.signIn({
+      email: decodedToken.email,
+      password: decodedToken.sub,
+      rememberMe: true
+    })
+
+    if (userInfo) {
+      return currentUser;
+    }
+
+    const hashedPassword = await bcrypt.hash(decodedToken.sub, 10);
+
+    const newUser = await this.signUp({
+      email: decodedToken.email,
+      fullName: decodedToken.name,
+      profilePicture: decodedToken.picture,
+      password: hashedPassword,
+      phone: '',
+      deviceToken: deviceToken,
+      domainName: `${decodedToken.name}'s Domain`,
+      country: ''
+    });
+
+    await admin.auth().setCustomUserClaims(decodedToken.uid, {
+      userId: newUser.user_data.id,
+    });
+
+    return newUser;
   }
 }

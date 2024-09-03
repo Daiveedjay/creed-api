@@ -32,8 +32,11 @@ async function bootstrap() {
   });
 
   // Enable cors
-  app.enableCors();
-
+  app.enableCors({
+    origin: ['http://localhost:5173', 'https://kreed.tech'], // Replace with your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // Enable credentials if necessary
+  });
 
   await app.listen(3000);
   Logger.log(
