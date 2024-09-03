@@ -26,10 +26,6 @@ export class NotifyService {
     }
 
     const tokens = Array.from(allTokens) as string[]
-    if (tokens[0] === null) {
-      throw new ConflictException('These users are not in this platform?')
-    }
-
     return tokens;
   };
 

@@ -7,6 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { DomainModule } from 'src/domain/domain.module';
 import { DomainService } from 'src/domain/domain.service';
 import { AnalyticsModule } from 'src/analytics/analytics.module';
+import { UserModule } from 'src/user/user.module';
+import { UserService } from 'src/user/user.service';
 
 @Module({
   imports: [
@@ -17,9 +19,10 @@ import { AnalyticsModule } from 'src/analytics/analytics.module';
       inject: [ConfigService],
     }),
     DomainModule,
-    AnalyticsModule
+    AnalyticsModule,
+    UserModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, DomainService]
+  providers: [AuthService, DomainService, UserService]
 })
 export class AuthModule { }

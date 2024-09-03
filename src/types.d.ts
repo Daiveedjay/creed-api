@@ -64,3 +64,9 @@ export type UserPayload = {
     profilePicture: string;
   };
 }
+
+declare module 'express' {
+  interface Request {
+    user: any;
+  }
+}

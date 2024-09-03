@@ -8,8 +8,12 @@ import {
   Query,
   Req,
   Res,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  GoogleSignInDto,
+  GoogleSignUpDto,
   PasswordResetDTO,
   UserSigninDTOType,
   UserSignupDTOType,
@@ -17,11 +21,13 @@ import {
 import { AuthService } from './auth.service';
 import { Request as ExpressRequest, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import CONSTANTS from 'src/lib/constants';
 import { OAuth2Client } from 'google-auth-library';
+import { admin } from 'src/lib/firebase';
 
 @ApiTags('Auth')
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) { }
 
@@ -64,63 +70,18 @@ export class AuthController {
    * Retrieves a google signin link for google signin or signup processes
    * @param redirectURL (Optional) url google should redirect the user to after the google auth screen
    */
-  @Get('sign-google-link')
-  public async signGoogleLink(
-    @Res() res: Response
-  ): Promise<any> {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const redirectUri = 'http://localhost:3000/api/auth/google/callback'; // Your backend endpoint
-    const scope = 'profile email';
-    const responseType = 'code';
-    const state = 'random_state_string'; // Optional, used for CSRF protection
-
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&state=${state}`;
-
-    //return googleAuthUrl;
-    return res.redirect(googleAuthUrl)
-  }
-
-  /**
-   * Uses successful google auth screen parameters to signin a new user
-   * @param code
-   * @param redirectURL
-   */
-  @Post('signin-google')
-  public async signInGoogle(
-    @Req() req: ExpressRequest,
-    @Query('code') code: string,
-    @Query('redirectURL') redirectURL: string,
+  @Post('google/login')
+  public async googleLogin(
+    @Body() dto: GoogleSignInDto,
   ) {
-    const redirectURLi =
-      (redirectURL as string) ||
-      `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
-    return this.authService.signInGoogle(redirectURLi, code);
+    return this.authService.verifyAndUpdateUser(dto.accessToken)
   }
 
-  /**
-   * Uses successfull google auth screen parameters to signup a new user
-   * @param code
-   * @param redirectURL
-   * @example {
-   *  "domainName": "My domain name"
-   * }
-   */
-  @Post('/signup-google')
-  public async signUpGoogle(@Req() req: ExpressRequest) {
-    console.log(req.query.code)
-    const redirectURL =
-      (req.query.redirectURL as string) ||
-      `${req.protocol}://${req.get('host')}/api/auth/signup-google`;
-    return this.authService.signUpGoogle(
-      req.body,
-      redirectURL,
-      req.query.code as string,
-    );
+  @Post('google/signup')
+  public async googleSignUp(
+    @Body() dto: GoogleSignUpDto,
+  ) {
+    return this.authService.verifyAndCreateUser(dto.accessToken, dto.deviceToken)
   }
 
-  @Get('google/callback')
-  async googleCallback(@Query('code') code: string, @Res() res: Response) {
-    const data = await this.authService.googleCallback(code)
-    return data
-  }
 }
