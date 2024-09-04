@@ -538,13 +538,11 @@ export class AuthService {
 
       return user
     } else {
-    const hashedPassword = await bcrypt.hash(decodedToken.sub, 10);
-
     const newUser = await this.signUp({
       email: decodedToken.email,
       fullName: decodedToken.name,
       profilePicture: decodedToken.picture,
-      password: hashedPassword,
+      password: decodedToken.sub,
       phone: '',
       deviceToken: deviceToken,
       domainName: `${decodedToken.name}'s Domain`,
@@ -555,16 +553,16 @@ export class AuthService {
       userId: newUser.user_data.id,
     });
 
-    if(newUser) {
-    const user = await this.signIn({
-      email: newUser.user_data.email,
-      password: decodedToken.sub,
-      rememberMe: true
-    })  
+      if(newUser) {
+        const user = await this.signIn({
+          email: newUser.user_data.email,
+          password: decodedToken.sub,
+          rememberMe: true
+        })  
     
 
-    return user;
-    }
+        return user;
+      }
     }
   }
 }
