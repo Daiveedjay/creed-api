@@ -529,16 +529,15 @@ export class AuthService {
       },
     });
 
-    const currentUser = await this.signIn({
-      email: decodedToken.email,
-      password: decodedToken.sub,
-      rememberMe: true
-    })
+    if(userInfo) {
+      const user = await this.signIn({
+        email: decodedToken.email,
+        password: decodedToken.sub,
+        rememberMe: true
+      })  
 
-    if (userInfo) {
-      return currentUser;
-    }
-
+      return user
+    } else {
     const hashedPassword = await bcrypt.hash(decodedToken.sub, 10);
 
     const newUser = await this.signUp({
@@ -556,6 +555,16 @@ export class AuthService {
       userId: newUser.user_data.id,
     });
 
-    return newUser;
+    if(newUser) {
+    const user = await this.signIn({
+      email: newUser.user_data.email,
+      password: decodedToken.sub,
+      rememberMe: true
+    })  
+    
+
+    return user;
+    }
+    }
   }
 }
