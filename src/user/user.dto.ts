@@ -19,7 +19,6 @@ export class UserUpdateDTOType {
   username?: string;
 
   @ApiProperty({
-    example: '34567890-jhgfghjhkjl',
     type: 'string',
     format: 'binary',
     required: false,
