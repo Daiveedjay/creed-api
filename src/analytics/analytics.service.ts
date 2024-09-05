@@ -72,7 +72,7 @@ export class AnalyticsService {
           assignedCollaborators: {
             some: {
               userId: {
-                not: user.id
+                not: null
               }
             }
           }
