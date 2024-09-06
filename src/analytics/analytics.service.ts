@@ -69,13 +69,6 @@ export class AnalyticsService {
         where: {
           domainId,
           panelId: panel.id,
-          assignedCollaborators: {
-            some: {
-              userId: {
-                not: null
-              }
-            }
-          }
         },
         include: {
           assignedCollaborators: {

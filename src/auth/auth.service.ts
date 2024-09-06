@@ -27,6 +27,7 @@ import { InjectRedis } from 'nestjs-redis-fork';
 import { Redis } from "ioredis";
 import { admin } from 'src/lib/firebase';
 
+
 @Injectable()
 export class AuthService {
   private oAuth2Client: OAuth2Client
@@ -529,33 +530,35 @@ export class AuthService {
       },
     });
 
-    const currentUser = await this.signIn({
-      email: decodedToken.email,
-      password: decodedToken.sub,
-      rememberMe: true
-    })
-
     if (userInfo) {
+      const currentUser = await this.signIn({
+        email: decodedToken.email,
+        password: decodedToken.sub,
+        rememberMe: true
+      })
+
       return currentUser;
+    } else {
+      const firstName = decodedToken.name.split(' ')
+      console.log(decodedToken.name)
+
+      const newUser = await this.signUp({
+        email: decodedToken.email,
+        fullName: decodedToken.name,
+        profilePicture: decodedToken.picture,
+        password: decodedToken.sub,
+        phone: '',
+        deviceToken: deviceToken,
+        domainName: `${firstName}'s Domain`,
+        country: ''
+      });
+
+      await admin.auth().setCustomUserClaims(decodedToken.uid, {
+        userId: newUser.user_data.id,
+      });
+
+      return newUser;
+
     }
-
-    const hashedPassword = await bcrypt.hash(decodedToken.sub, 10);
-
-    const newUser = await this.signUp({
-      email: decodedToken.email,
-      fullName: decodedToken.name,
-      profilePicture: decodedToken.picture,
-      password: hashedPassword,
-      phone: '',
-      deviceToken: deviceToken,
-      domainName: `${decodedToken.name}'s Domain`,
-      country: ''
-    });
-
-    await admin.auth().setCustomUserClaims(decodedToken.uid, {
-      userId: newUser.user_data.id,
-    });
-
-    return newUser;
   }
 }
