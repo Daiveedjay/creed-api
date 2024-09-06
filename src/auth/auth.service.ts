@@ -27,6 +27,7 @@ import { InjectRedis } from 'nestjs-redis-fork';
 import { Redis } from "ioredis";
 import { admin } from 'src/lib/firebase';
 
+
 @Injectable()
 export class AuthService {
   private oAuth2Client: OAuth2Client
@@ -521,7 +522,7 @@ export class AuthService {
   }
 
   async verifyAndCreateUser(accessToken: string, deviceToken: string) {
-    const decodedToken = await admin.auth().verifyIdToken(accessToken);
+       const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
     const userInfo = await this.dbService.user.findUnique({
       where: {
@@ -529,40 +530,34 @@ export class AuthService {
       },
     });
 
-    if(userInfo) {
-      const user = await this.signIn({
+    if (userInfo) {
+      const currentUser = await this.signIn({
         email: decodedToken.email,
         password: decodedToken.sub,
         rememberMe: true
-      })  
+      })
 
-      return user
+      return currentUser;
     } else {
-    const newUser = await this.signUp({
-      email: decodedToken.email,
-      fullName: decodedToken.name,
-      profilePicture: decodedToken.picture,
-      password: decodedToken.sub,
-      phone: '',
-      deviceToken: deviceToken,
-      domainName: `${decodedToken.name}'s Domain`,
-      country: ''
-    });
+      const firstName = decodedToken.name.split(' ')
+      console.log(decodedToken.name)
 
-    await admin.auth().setCustomUserClaims(decodedToken.uid, {
-      userId: newUser.user_data.id,
-    });
+      const newUser = await this.signUp({
+        email: decodedToken.email,
+        fullName: decodedToken.name,
+        profilePicture: decodedToken.picture,
+        password: decodedToken.sub,
+        phone: '',
+        deviceToken: deviceToken,
+        domainName: `${firstName}'s Domain`,
+        country: ''
+      });
 
-      if(newUser) {
-        const user = await this.signIn({
-          email: newUser.user_data.email,
-          password: decodedToken.sub,
-          rememberMe: true
-        })  
-    
+      await admin.auth().setCustomUserClaims(decodedToken.uid, {
+        userId: newUser.user_data.id,
+      });
 
-        return user;
-      }
+      return newUser;
     }
   }
 }
