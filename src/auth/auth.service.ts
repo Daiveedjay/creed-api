@@ -522,7 +522,7 @@ export class AuthService {
   }
 
   async verifyAndCreateUser(accessToken: string, deviceToken: string) {
-    const decodedToken = await admin.auth().verifyIdToken(accessToken);
+       const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
     const userInfo = await this.dbService.user.findUnique({
       where: {
@@ -558,7 +558,6 @@ export class AuthService {
       });
 
       return newUser;
-
     }
   }
 }
