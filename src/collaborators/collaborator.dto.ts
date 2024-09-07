@@ -97,7 +97,9 @@ export class DemotingAndPromotingCollaboratorsDto {
     type: String,
     required: true
   })
-  userToBePromotedId: string
+  @IsString()
+  @IsNotEmpty()
+  userToBeModifiedId: string
 }
 
 export class RemovingCollaboratorsDto {
@@ -105,6 +107,7 @@ export class RemovingCollaboratorsDto {
     type: String,
     required: true
   })
+  @IsString()
+  @IsNotEmpty()
   userToBeRemovedId: string
-
 }
