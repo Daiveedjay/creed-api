@@ -189,7 +189,7 @@ export class CollaboratorsService {
   async demotingAndPromotingAUser(domainId: string, dto: DemotingAndPromotingCollaboratorsDto) {
     const userToBePromotedOrDemoted = await this.dbService.user.findUnique({
       where: {
-        id: dto.userToBePromotedId
+        id: dto.userToBeModifiedId
       }
     });
 
