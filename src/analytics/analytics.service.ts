@@ -154,32 +154,9 @@ export class AnalyticsService {
       });
 
       const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
+      const completedTasks = filteredAssignedTasks.filter((fa) => fa.statusId === completedStatus.id)
 
-      for (const filteredAssigned of filteredAssignedTasks) {
-        const completedTasks = await this.dbService.task.findMany({
-          where: {
-            domainId,
-            panelId: filteredAssigned.id,
-            statusId: completedStatus.id
-          },
-          include: {
-            assignedCollaborators: {
-              select: {
-                user: {
-                  select: {
-                    id: true,
-                    fullName: true,
-                    profilePicture: true
-                  }
-                }
-              }
-            }
-          }
-        })
-
-        allCompletedTasks.push(...completedTasks)
-      }
-
+      allCompletedTasks.push(...completedTasks)
       allAssignedTasks.push(...filteredAssignedTasks)
       allOngoingTasks.push(...ongoingTasks)
       allOverdueTasks.push(...overdueTasks)
