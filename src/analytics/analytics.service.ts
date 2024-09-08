@@ -1,5 +1,6 @@
 import { Injectable, MethodNotAllowedException } from '@nestjs/common';
 import { Task } from '@prisma/client';
+import { Collaborator } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DbService } from 'src/utils/db.service';
 
@@ -23,16 +24,6 @@ export class AnalyticsService {
     const particularDomain = await this.dbService.domain.findUnique({
       where: {
         id: domainId,
-        OR: [
-          { ownerId: user.id },
-          {
-            domainMembers: {
-              some: {
-                userId: user.id
-              }
-            }
-          }
-        ]
       },
       include: {
         panels: true,
@@ -65,6 +56,7 @@ export class AnalyticsService {
 
     const completedStatus = await this.dbService.status.findFirst({
       where: {
+        domainId: particularDomain.id,
         name: 'completed'
       }
     })
@@ -179,16 +171,6 @@ export class AnalyticsService {
     const particularDomain = await this.dbService.domain.findUnique({
       where: {
         id: domainId,
-        OR: [
-          { ownerId: user.id },
-          {
-            domainMembers: {
-              some: {
-                userId: user.id
-              }
-            }
-          }
-        ]
       },
       include: {
         panels: true,
@@ -220,6 +202,7 @@ export class AnalyticsService {
 
     const completedStatus = await this.dbService.status.findFirst({
       where: {
+        domainId: particularDomain.id,
         name: 'completed'
       }
     })
@@ -267,23 +250,13 @@ export class AnalyticsService {
   }
 
   async getTotalTimeToCompleteATask(domainId: string, email: string, range: string) {
-    const allCompletedTasksArray: Task[] = []
+    const allCompletedTasksArray: any[] = []
     const user = await this.userService.getProfileThroughEmail(email)
     if (!user) throw new MethodNotAllowedException('User not found!');
 
     const particularDomain = await this.dbService.domain.findUnique({
       where: {
         id: domainId,
-        OR: [
-          { ownerId: user.id },
-          {
-            domainMembers: {
-              some: {
-                userId: user.id
-              }
-            }
-          }
-        ]
       },
       include: {
         panels: true,
@@ -315,6 +288,7 @@ export class AnalyticsService {
 
     const completedStatus = await this.dbService.status.findFirst({
       where: {
+        domainId: particularDomain.id,
         name: 'completed'
       }
     })
@@ -330,6 +304,7 @@ export class AnalyticsService {
         include: {
           assignedCollaborators: {
             select: {
+              createdAt: true,
               user: {
                 select: {
                   id: true,
@@ -347,19 +322,33 @@ export class AnalyticsService {
       const completedTasks = filteredAssignedTasks.filter((fa) => fa.statusId === completedStatus.id)
 
       allCompletedTasksArray.push(...completedTasks)
-      console.log({ filteredAssignedTasks, completedTasks })
     }
+
     //
     // Calculate total time for each task
     const completedTasksWithTime = allCompletedTasksArray.map(task => {
-      const totalTime = new Date(task.updatedAt).getTime() - new Date(task.createdAt).getTime();
+      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
+        if (collaborators.user.id === user.id) {
+          return collaborators.createdAt
+        }
+
+        return
+      }) as Date[]
+      console.log(userAssignedId[0])
+      const createdDate = new Date(userAssignedId[0]);
+      const modifiedDate = new Date(task.updatedAt);
+
+      // Difference in milliseconds
+      const timeDifference = modifiedDate.getTime() - createdDate.getTime();
+
+      // Convert milliseconds to hours
+      const totalTimeInHours = timeDifference / (1000 * 60 * 60);
+
       return {
         ...task,
-        totalTime,
+        totalTimeInHours,
       };
     });
-
-    console.log({ completedTasksWithTime })
 
     // Filter tasks based on the desired date range
     const now = new Date();
@@ -370,10 +359,10 @@ export class AnalyticsService {
           return completedDate >= new Date(now.setDate(now.getDate() - 5));
         case 'last2Weeks':
           return completedDate >= new Date(now.setDate(now.getDate() - 14));
-        case 'lastMonth':
+        case 'last1Month':
           return completedDate >= new Date(now.setMonth(now.getMonth() - 1));
-        case 'last1.5Months':
-          return completedDate >= new Date(now.setMonth(now.getMonth() - 1.5));
+        case 'last6Weeks':
+          return completedDate >= new Date(now.setMonth(now.getDate() - 42));
         case 'last3Months':
           return completedDate >= new Date(now.setMonth(now.getMonth() - 3));
         default:
@@ -395,8 +384,15 @@ export class AnalyticsService {
     console.log({ filteredTasks })
 
     filteredTasks.forEach(task => {
-      const dayOfWeek = new Date(task.updatedAt).toLocaleString('en-US', { weekday: 'long' });
-      dayCounts[dayOfWeek]++;
+      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
+        if (collaborators.user.id === user.id) {
+          return collaborators.createdAt
+        }
+
+        return
+      }) as Date[]
+      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', { weekday: 'long' });
+      dayCounts[dayOfWeek] += task.totalTimeInHours;
     });
 
     return dayCounts;
