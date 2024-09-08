@@ -85,6 +85,7 @@ export class AnalyticsService {
           subTasks: true
         }
       })
+      const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
 
       const completedTasks = await this.dbService.task.findMany({
         where: {
@@ -110,11 +111,6 @@ export class AnalyticsService {
         where: {
           panelId: panel.id,
           AND: [
-            {
-              assignedFrom: {
-                lte: today,
-              },
-            },
             {
               assignedTo: {
                 gt: today
@@ -165,7 +161,7 @@ export class AnalyticsService {
         }
       });
 
-      allAssignedTasks.push(...assignedTasks)
+      allAssignedTasks.push(...filteredAssignedTasks)
       //allTasks.push(...allTasksHere)
       allOngoingTasks.push(...ongoingTasks)
       allOverdueTasks.push(...overdueTasks)
