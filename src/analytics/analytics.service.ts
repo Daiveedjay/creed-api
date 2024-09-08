@@ -94,27 +94,6 @@ export class AnalyticsService {
         }
       })
 
-      const completedTasks = await this.dbService.task.findMany({
-        where: {
-          domainId,
-          panelId: panel.id,
-          statusId: completedStatus.id
-        },
-        include: {
-          assignedCollaborators: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  profilePicture: true
-                }
-              }
-            }
-          }
-        }
-      })
-
       const ongoingTasks = await this.dbService.task.findMany({
         where: {
           domainId,
@@ -177,7 +156,34 @@ export class AnalyticsService {
       //allTasks.push(...allTasksHere)
       allOngoingTasks.push(...ongoingTasks)
       allOverdueTasks.push(...overdueTasks)
-      allCompletedTasks.push(...completedTasks)
+    }
+
+    if (allAssignedTasks.length > 0) {
+      for (const panel of allAssignedTasks) {
+
+        const completedTasks = await this.dbService.task.findMany({
+          where: {
+            domainId,
+            panelId: panel.id,
+            statusId: completedStatus.id
+          },
+          include: {
+            assignedCollaborators: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    fullName: true,
+                    profilePicture: true
+                  }
+                }
+              }
+            }
+          }
+        })
+
+        allCompletedTasks.push(...completedTasks)
+      }
     }
 
     return {
