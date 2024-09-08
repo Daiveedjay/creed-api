@@ -258,6 +258,12 @@ export class CollaboratorsService {
       }
     })
 
+    const particularDomain = await this.dbService.domain.findUnique({
+      where: {
+        id: domainId
+      }
+    })
+
     const userToBeRemoved = await this.dbService.domainMembership.findFirst({
       where: {
         userId: dto.userToBeRemovedId,
@@ -285,6 +291,12 @@ export class CollaboratorsService {
       throw new MethodNotAllowedException('You do not have permission to do this!')
     }
 
+    const panelsCreatedByUserToBeRemoved = await this.dbService.panel.findMany({
+      where: {
+        ownerId: dto.userToBeRemovedId
+      }
+    })
+
     const panelMembership = await this.dbService.panelMembership.findFirst({
       where: {
         userId: dto.userToBeRemovedId,
@@ -297,6 +309,19 @@ export class CollaboratorsService {
         userId: dto.userToBeRemovedId,
       }
     })
+
+    if (panelsCreatedByUserToBeRemoved) {
+      for (const panel of panelsCreatedByUserToBeRemoved) {
+        await this.dbService.panel.update({
+          where: {
+            id: panel.id
+          },
+          data: {
+            ownerId: particularDomain.ownerId
+          }
+        })
+      }
+    }
 
     if (assignedToTask.length > 0) {
       for (const task of assignedToTask) {
