@@ -29,6 +29,7 @@ export class PanelService {
     });
 
     if (!domain) throw new NotFoundException('Domain does not exist!');
+    console.log(domain.ownerId === currentUser.id)
 
     if (domain.ownerId === currentUser.id) {
       return await this.dbService.panel.findMany({
@@ -52,20 +53,12 @@ export class PanelService {
 
       const panels = await this.dbService.panel.findMany({
         where: {
-          domainId: domainID,
-          OR: [
-            {
-              panelMembers: {
-                some: {
-                  userId: currentUser.id,
-                },
-              },
-
-            },
-            {
-              ownerId: currentUser.id
+          panelMembers: {
+            some: {
+              domainId: domainID,
+              userId: currentUser.id
             }
-          ]
+          }
         },
         orderBy: {
           createdAt: 'desc'
