@@ -248,6 +248,18 @@ export class AuthService {
             userId: user.id
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    const allPanels = await this.dbService.panel.findMany({
+      where: {
+        domainId: domains[0].id,
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     })
 
@@ -295,7 +307,7 @@ export class AuthService {
       domains: {
         domains,
         members,
-        panels,
+        panels: domains[0].ownerId === userObj.id ? allPanels : panels,
         analytics,
       },
     };
@@ -522,7 +534,7 @@ export class AuthService {
   }
 
   async verifyAndCreateUser(accessToken: string, deviceToken: string) {
-       const decodedToken = await admin.auth().verifyIdToken(accessToken);
+    const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
     const userInfo = await this.dbService.user.findUnique({
       where: {

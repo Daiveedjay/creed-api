@@ -56,6 +56,13 @@ export class AnalyticsService {
       }
     })
 
+    const allPanelsIfIAmAnOwner = await this.dbService.panel.findMany({
+      where: {
+        domainId: particularDomain.id,
+      }
+    })
+
+
     const completedStatus = await this.dbService.status.findFirst({
       where: {
         name: 'completed'
@@ -63,8 +70,9 @@ export class AnalyticsService {
     })
 
     console.log({ panelsUserIsAssociatedInto, completedStatus })
+    const panels = particularDomain.ownerId === user.id ? allPanelsIfIAmAnOwner : panelsUserIsAssociatedInto
 
-    for (const panel of panelsUserIsAssociatedInto) {
+    for (const panel of panels) {
       const assignedTasks = await this.dbService.task.findMany({
         where: {
           domainId,
@@ -85,10 +93,10 @@ export class AnalyticsService {
           subTasks: true
         }
       })
-      const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
 
       const completedTasks = await this.dbService.task.findMany({
         where: {
+          domainId,
           panelId: panel.id,
           statusId: completedStatus.id
         },
@@ -109,6 +117,7 @@ export class AnalyticsService {
 
       const ongoingTasks = await this.dbService.task.findMany({
         where: {
+          domainId,
           panelId: panel.id,
           AND: [
             {
@@ -141,6 +150,7 @@ export class AnalyticsService {
       // Overdue Tasks
       const overdueTasks = await this.dbService.task.findMany({
         where: {
+          domainId,
           panelId: panel.id,
           assignedTo: {
             lt: today,
@@ -160,6 +170,8 @@ export class AnalyticsService {
           }
         }
       });
+
+      const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
 
       allAssignedTasks.push(...filteredAssignedTasks)
       //allTasks.push(...allTasksHere)
