@@ -12,12 +12,6 @@ export class AnalyticsService {
   ) { }
   async getAnalyticsofDomain(domainId: string, email: string) {
     const allAssignedTasks = []
-    //const allTasks = []
-    const allOngoingTasks = []
-    const allOverdueTasks = []
-    const allCompletedTasks = []
-    const today = new Date()
-
     const user = await this.userService.getProfileThroughEmail(email)
     if (!user) throw new MethodNotAllowedException('User not found!');
 
@@ -53,14 +47,6 @@ export class AnalyticsService {
       }
     })
 
-
-    const completedStatus = await this.dbService.status.findFirst({
-      where: {
-        domainId: particularDomain.id,
-        name: 'completed'
-      }
-    })
-
     const panels = particularDomain.ownerId === user.id ? allPanelsIfIAmAnOwner : panelsUserIsAssociatedInto
 
     for (const panel of panels) {
@@ -84,80 +70,13 @@ export class AnalyticsService {
           subTasks: true
         }
       })
-
-      const ongoingTasks = await this.dbService.task.findMany({
-        where: {
-          domainId,
-          panelId: panel.id,
-          AND: [
-            {
-              assignedTo: {
-                gt: today
-              }
-            },
-            {
-              statusId: {
-                not: completedStatus.id
-              }
-            }
-          ]
-        },
-        include: {
-          assignedCollaborators: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  profilePicture: true
-                }
-              }
-            }
-          }
-        }
-      });
-
-      // Overdue Tasks
-      const overdueTasks = await this.dbService.task.findMany({
-        where: {
-          domainId,
-          panelId: panel.id,
-          assignedTo: {
-            lt: today,
-          },
-          statusId: {
-            not: completedStatus.id
-          }
-        },
-        include: {
-          assignedCollaborators: {
-            select: {
-              user: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  profilePicture: true
-                }
-              }
-            }
-          }
-        }
-      });
-
       const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
-      const completedTasks = filteredAssignedTasks.filter((fa) => fa.statusId === completedStatus.id)
 
-      allCompletedTasks.push(...completedTasks)
       allAssignedTasks.push(...filteredAssignedTasks)
-      allOngoingTasks.push(...ongoingTasks)
-      allOverdueTasks.push(...overdueTasks)
     }
 
     return {
       allAssignedTasks,
-      allOngoingTasks,
-      allOverdueTasks,
-      allCompletedTasks,
       numberOfDomainMembers: particularDomain.domainMembers.length,
       domainId
     }
@@ -391,6 +310,7 @@ export class AnalyticsService {
 
         return
       }) as Date[]
+      console.log({ userAssignedId })
       const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', { weekday: 'long' });
       dayCounts[dayOfWeek] += task.totalTimeInHours;
     });
