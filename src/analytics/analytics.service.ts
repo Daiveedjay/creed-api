@@ -134,6 +134,9 @@ export class AnalyticsService {
           assignedTo: {
             lt: today,
           },
+          statusId: {
+            not: completedStatus.id
+          }
         },
         include: {
           assignedCollaborators: {
@@ -152,19 +155,11 @@ export class AnalyticsService {
 
       const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
 
-      allAssignedTasks.push(...filteredAssignedTasks)
-      //allTasks.push(...allTasksHere)
-      allOngoingTasks.push(...ongoingTasks)
-      allOverdueTasks.push(...overdueTasks)
-    }
-
-    if (allAssignedTasks.length > 0) {
-      for (const panel of allAssignedTasks) {
-
+      for (const filteredAssigned of filteredAssignedTasks) {
         const completedTasks = await this.dbService.task.findMany({
           where: {
             domainId,
-            panelId: panel.id,
+            panelId: filteredAssigned.id,
             statusId: completedStatus.id
           },
           include: {
@@ -184,6 +179,10 @@ export class AnalyticsService {
 
         allCompletedTasks.push(...completedTasks)
       }
+
+      allAssignedTasks.push(...filteredAssignedTasks)
+      allOngoingTasks.push(...ongoingTasks)
+      allOverdueTasks.push(...overdueTasks)
     }
 
     return {
