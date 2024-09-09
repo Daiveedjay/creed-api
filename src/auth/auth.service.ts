@@ -163,6 +163,8 @@ export class AuthService {
       }
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
+    const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
+    const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
     //await this.emailService.sendWelcomeEmail(userObj.email)
     await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
@@ -174,7 +176,11 @@ export class AuthService {
         domains: allDomains,
         members: members,
         panels: [],
-        analytics
+        analytics: {
+          analytics,
+          totalTimeAnalyticsFor5Days,
+          averageTimeAnalyticsFor5Days
+        }
       }
     };
 
@@ -295,6 +301,8 @@ export class AuthService {
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
     const deviceToken = await this.notifyService.getDeviceTokens([user.id])
+    const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(domains[0].id, userObj.email, 'last5Days')
+    const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(domains[0].id, userObj.email, 'last5Days')
 
     if (deviceToken[0] === null) {
       await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
@@ -308,7 +316,11 @@ export class AuthService {
         domains,
         members,
         panels: domains[0].ownerId === userObj.id ? allPanels : panels,
-        analytics,
+        analytics: {
+          analytics,
+          totalTimeAnalyticsFor5Days,
+          averageTimeAnalyticsFor5Days
+        }
       },
     };
 
