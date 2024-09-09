@@ -82,8 +82,8 @@ export class AnalyticsService {
     }
   }
 
-  async getAverageTiemToCompleteATask(domainId: string, email: string) {
-    const allCompletedTasksArray: Task[] = []
+  async getAverageTiemToCompleteATask(domainId: string, email: string, range: string) {
+    const allCompletedTasksArray: any[] = []
     const user = await this.userService.getProfileThroughEmail(email)
     if (!user) throw new MethodNotAllowedException('User not found!');
 
@@ -137,6 +137,7 @@ export class AnalyticsService {
         include: {
           assignedCollaborators: {
             select: {
+              createdAt: true,
               user: {
                 select: {
                   id: true,
@@ -156,15 +157,90 @@ export class AnalyticsService {
       allCompletedTasksArray.push(...completedTasks)
     }
 
-    // Calculate the total duration of all completed tasks
-    const totalDuration = allCompletedTasksArray.reduce((acc, task) => {
-      const duration = task.updatedAt.getTime() - task.createdAt.getTime(); // Duration in milliseconds
-      return acc + duration;
-    }, 0);
-    const averageDuration = totalDuration / allCompletedTasksArray.length;
-    const averageDurationInHours = averageDuration / (1000 * 60 * 60);
+    //
+    // Calculate total time for each task
+    const completedTasksWithTime = allCompletedTasksArray.map(task => {
+      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
+        if (collaborators.user.id === user.id) {
+          return collaborators.createdAt
+        }
 
-    return averageDurationInHours;
+        return
+      }) as Date[]
+      console.log(userAssignedId[0])
+      const createdDate = new Date(userAssignedId[0]);
+      const modifiedDate = new Date(task.updatedAt);
+
+      // Difference in milliseconds
+      const timeDifference = modifiedDate.getTime() - createdDate.getTime();
+
+      // Convert milliseconds to hours
+      const totalTimeInHours = timeDifference / (1000 * 60 * 60);
+
+      return {
+        ...task,
+        totalTimeInHours,
+      };
+    });
+
+    // Filter tasks based on the desired date range
+    const now = new Date();
+    const filteredTasks = completedTasksWithTime.filter(task => {
+      const completedDate = new Date(task.updatedAt);
+      switch (range) {
+        case 'last5Days':
+          return completedDate >= new Date(now.setDate(now.getDate() - 5));
+        case 'last2Weeks':
+          return completedDate >= new Date(now.setDate(now.getDate() - 14));
+        case 'last1Month':
+          return completedDate >= new Date(now.setMonth(now.getMonth() - 1));
+        case 'last6Weeks':
+          return completedDate >= new Date(now.setMonth(now.getDate() - 42));
+        case 'last3Months':
+          return completedDate >= new Date(now.setMonth(now.getMonth() - 3));
+        default:
+          return false;
+      }
+    });
+
+    // Group tasks by the day of the week
+    const dayCounts = {
+      Monday: { totalTime: 0, taskCount: 0 },
+      Tuesday: { totalTime: 0, taskCount: 0 },
+      Wednesday: { totalTime: 0, taskCount: 0 },
+      Thursday: { totalTime: 0, taskCount: 0 },
+      Friday: { totalTime: 0, taskCount: 0 },
+      Saturday: { totalTime: 0, taskCount: 0 },
+      Sunday: { totalTime: 0, taskCount: 0 },
+    };
+
+    console.log({ filteredTasks })
+
+    filteredTasks.forEach(task => {
+      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
+        if (collaborators.user.id === user.id) {
+          return collaborators.createdAt
+        }
+
+        return
+      }) as Date[]
+      console.log({ userAssignedId })
+      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', { weekday: 'long' });
+      dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
+      dayCounts[dayOfWeek].taskCount++;
+    });
+
+    console.log(dayCounts)
+
+    // Calculate the average time for each day
+    const dayAverages: Record<string, number> = {};
+    for (const day in dayCounts) {
+      const { totalTime, taskCount } = dayCounts[day];
+      dayAverages[day] = taskCount > 0 ? totalTime / taskCount : 0;
+    }
+
+    console.log({ dayAverages });
+    return dayAverages;
 
   }
 

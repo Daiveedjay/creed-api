@@ -18,8 +18,8 @@ export class AnalyticsController {
   @Get(':domainId/average-time')
   @ApiSecurity('bearerAuth')
   @UseGuards(AuthGuard)
-  async getAverageTimeInADomain(@Param('domainId') domainId: string, @CurrentUser('email') email: string) {
-    return await this.analyticsService.getAverageTiemToCompleteATask(domainId, email)
+  async getAverageTimeInADomain(@Param('domainId') domainId: string, @Query('range') range: string, @CurrentUser('email') email: string) {
+    return await this.analyticsService.getAverageTiemToCompleteATask(domainId, email, range)
   }
 
   @Get(':domainId/total-time')
