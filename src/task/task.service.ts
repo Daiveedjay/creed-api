@@ -225,13 +225,13 @@ export class TaskService {
 
       const tasksWithMentions = await this.getTask(domainID, panelID, tasks.id)
 
-      //const res = await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You have been assigned' })
-      //const res2 = await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
+      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You have been assigned' })
+      await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
 
       return tasksWithMentions;
     }
 
-    //const res = await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
+    await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
     return tasks;
   }
 
@@ -339,7 +339,7 @@ export class TaskService {
         }))
       })
 
-      //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
@@ -410,7 +410,7 @@ export class TaskService {
       }
     });
 
-    //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+    await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return updatedTask;
 
@@ -491,7 +491,7 @@ export class TaskService {
       },
     });
 
-    //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+    await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return new HttpException('Deleted', HttpStatus.ACCEPTED);
   }
@@ -751,7 +751,7 @@ export class TaskService {
         }
       });
 
-      //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
       updatedTasks.add(updatedTask)
     }
