@@ -19,14 +19,6 @@ export class UserUpdateDTOType {
   username?: string;
 
   @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    required: false,
-  })
-  @IsOptional()
-  profilePicture?: Express.Multer.File;
-
-  @ApiProperty({
     type: String,
     required: false,
   })

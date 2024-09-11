@@ -22,7 +22,6 @@ export class AWSService {
     url: string,
     key: string
   }> {
-    console.log(file)
     const key = `profile-pictures/${userId}/${file.originalname}`
     const uploader = new Upload({
       client: this.s3Client,

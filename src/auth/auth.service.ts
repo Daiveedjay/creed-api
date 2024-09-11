@@ -50,7 +50,6 @@ export class AuthService {
   }
 
   async signUp(dto: UserSignupDTOType) {
-    console.log(dto.deviceToken)
     // const firstName = dto.fullName.split(' ')
     const oldUser = await this.dbService.user.findUnique({
       where: { email: dto.email },
@@ -197,14 +196,12 @@ export class AuthService {
         }
       }
     });
-    console.log(user)
 
     if (!user) {
       throw new ForbiddenException('No user like this!');
     }
 
     const passwordMatch = await bcrypt.compare(dto.password, user.password);
-    console.log(passwordMatch)
 
     if (!passwordMatch) {
       throw new ForbiddenException('Invalid credentials');
@@ -564,7 +561,6 @@ export class AuthService {
       return currentUser;
     } else {
       const firstName = decodedToken.name.split(' ')
-      console.log(decodedToken.name)
 
       const newUser = await this.signUp({
         email: decodedToken.email,

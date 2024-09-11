@@ -71,7 +71,6 @@ export class AnnouncementsService {
         }
       })
 
-      console.log(users)
 
       if (users.length === 0) throw new NotFoundException('Users are not in this domain!');
 
