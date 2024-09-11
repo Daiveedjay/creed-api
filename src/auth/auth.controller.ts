@@ -72,9 +72,9 @@ export class AuthController {
    */
   @Post('google/login')
   public async googleLogin(
-    @Body() dto: GoogleSignInDto,
+    @Body() dto: GoogleSignUpDto,
   ) {
-    return this.authService.verifyAndUpdateUser(dto.accessToken)
+    return this.authService.verifyAndUpdateUser(dto.accessToken, dto.deviceToken)
   }
 
   @Post('google/signup')
