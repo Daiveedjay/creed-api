@@ -1,5 +1,5 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, MethodNotAllowedException } from '@nestjs/common';
-import { Task } from '@prisma/client';
 import { Collaborator } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DbService } from 'src/utils/db.service';
@@ -234,16 +234,18 @@ export class AnalyticsService {
     };
 
     filteredTasks.forEach((task) => {
-      const userAssignedId = task.assignedCollaborators.map(
-        (collaborators: Collaborator) => {
-          if (collaborators.user.id === user.id) {
-            return collaborators.createdAt;
-          }
+      const assignedDate = task.assignedCollaborators.filter((collaborator: Collaborator) => collaborator.user.id === user.id)[0].createdAt as Date
+      console.log(assignedDate)
+      // const userAssignedId = task.assignedCollaborators.map(
+      //   (collaborators: Collaborator) => {
+      //     if (collaborators.user.id === user.id) {
+      //       return collaborators.createdAt;
+      //     }
 
-          return;
-        },
-      ) as Date[];
-      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', {
+      //     return;
+      //   },
+      // ) as Date[];
+      const dayOfWeek = new Date(assignedDate).toLocaleString('en-US', {
         weekday: 'long',
       });
       dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
