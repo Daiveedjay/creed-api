@@ -92,8 +92,9 @@ export class StatusService {
 
     if (!existingStatus) throw new NotFoundException('Status not found')
 
-    await this.dbService.status.update({ where: { id: statusID, domainId: domainId }, data: { ...dto } });
-    return new HttpException('Updated', HttpStatus.ACCEPTED)
+    const updatedStatus = await this.dbService.status.update({ where: { id: statusID, domainId: domainId }, data: { ...dto } });
+    
+    return updatedStatus
 
   }
 

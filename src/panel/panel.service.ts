@@ -11,12 +11,12 @@ import { DbService } from 'src/utils/db.service';
 import { AddUsersDto, CreatePanelDTO, DeleteUserDto } from './panel.dto';
 @Injectable()
 export class PanelService {
-  constructor(private readonly dbService: DbService) { }
+  constructor(private readonly dbService: DbService) {}
 
   async getPanels(domainID: string, id: string) {
     const currentUser = await this.dbService.user.findUnique({
       where: {
-        id
+        id,
       },
     });
 
@@ -55,24 +55,23 @@ export class PanelService {
           panelMembers: {
             some: {
               domainId: domainID,
-              userId: currentUser.id
-            }
-          }
+              userId: currentUser.id,
+            },
+          },
         },
         orderBy: {
-          createdAt: 'desc'
-        }
+          createdAt: 'desc',
+        },
       });
 
       return panels;
-
     }
   }
 
   async getPanel(domainID: string, panelID: string, id: string) {
     const currentUser = await this.dbService.user.findUnique({
       where: {
-        id
+        id,
       },
     });
 
@@ -110,13 +109,13 @@ export class PanelService {
         userId: currentUser.id,
         domainId: domainID,
         panelId: panelID,
-      }
+      },
     });
 
-    if (!panelMembership) throw new UnauthorizedException('No access to this panel!')
+    if (!panelMembership)
+      throw new UnauthorizedException('No access to this panel!');
 
-
-    if (!panel) throw new NotFoundException('Thee did not find this request!')
+    if (!panel) throw new NotFoundException('Thee did not find this request!');
 
     const panelMembers = await this.dbService.panelMembership.findMany({
       where: {
@@ -134,19 +133,17 @@ export class PanelService {
             fullName: true,
             profilePicture: true,
             username: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     const payload = {
       panel_data: panel,
-      panel_members: panelMembers
-    }
+      panel_members: panelMembers,
+    };
 
     return payload;
-
-
   }
 
   async createPanel(domainID: string, userId: string, dto: CreatePanelDTO) {
@@ -161,9 +158,9 @@ export class PanelService {
 
     const particularDomain = await this.dbService.domain.findUnique({
       where: {
-        id: domainID
-      }
-    })
+        id: domainID,
+      },
+    });
 
     if (!currentUser) throw new UnauthorizedException('No access!');
 
@@ -182,8 +179,8 @@ export class PanelService {
         userId: currentUser.userId,
         domainId: domainID,
         panelId: panel.id,
-      }
-    })
+      },
+    });
 
     return panel;
   }
@@ -194,7 +191,6 @@ export class PanelService {
     id: string,
     addUsersDto: AddUsersDto,
   ) {
-
     const existingPanel = await this.dbService.panel.findUnique({
       where: {
         domainId: domainID,
@@ -232,8 +228,8 @@ export class PanelService {
           id: true,
           username: true,
           fullName: true,
-          profilePicture: true
-        }
+          profilePicture: true,
+        },
       });
 
       if (!availableUser) throw new NotFoundException('No user like this');
@@ -255,10 +251,11 @@ export class PanelService {
           userId: availableUser.id,
           panelId: panelID,
           domainId: domainID,
-        }
-      })
+        },
+      });
 
-      if (alreadyInPanel) throw new ConflictException('Thee is already in thy panel, kind sir')
+      if (alreadyInPanel)
+        throw new ConflictException('Thee is already in thy panel, kind sir');
     }
 
     await this.dbService.panelMembership.createMany({
@@ -269,7 +266,7 @@ export class PanelService {
       })),
     });
 
-    return new HttpException('Success', HttpStatus.CREATED)
+    return new HttpException('Success', HttpStatus.CREATED);
   }
 
   async removeAUserFromPanel(
@@ -278,7 +275,6 @@ export class PanelService {
     email: string,
     deleteUserDto: DeleteUserDto,
   ) {
-
     const existingPanel = await this.dbService.panel.findUnique({
       where: {
         domainId: domainID,
@@ -312,19 +308,19 @@ export class PanelService {
         where: {
           userId: id,
           domainId: domainID,
-          panelId: panelID
-        }
-      })
+          panelId: panelID,
+        },
+      });
 
-      if (panelMembership) throw new ConflictException('No such member here!')
+      if (panelMembership) throw new ConflictException('No such member here!');
 
       await this.dbService.panelMembership.delete({
         where: {
-          id: panelMembership.id
-        }
-      })
+          id: panelMembership.id,
+        },
+      });
 
-      return new HttpException('Success', HttpStatus.CREATED)
+      return new HttpException('Success', HttpStatus.CREATED);
     }
   }
 
@@ -338,7 +334,7 @@ export class PanelService {
 
     if (!existingPanel) throw new NotFoundException('Panel not found!');
 
-    await this.dbService.panel.update({
+    const updatedPanel = await this.dbService.panel.update({
       where: {
         id: panelID,
         domainId: domainID,
@@ -348,8 +344,7 @@ export class PanelService {
       },
     });
 
-    return new HttpException('Updated', HttpStatus.ACCEPTED);
-
+    return updatedPanel;
   }
 
   async deletePanel(doaminID: string, panelID: string) {
@@ -379,9 +374,5 @@ export class PanelService {
     });
 
     return new HttpException('Deleted', HttpStatus.ACCEPTED);
-
   }
-
-
-
 }
