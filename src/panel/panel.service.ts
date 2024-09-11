@@ -29,7 +29,6 @@ export class PanelService {
     });
 
     if (!domain) throw new NotFoundException('Domain does not exist!');
-    console.log(domain.ownerId === currentUser.id)
 
     if (domain.ownerId === currentUser.id) {
       return await this.dbService.panel.findMany({
@@ -236,7 +235,6 @@ export class PanelService {
           profilePicture: true
         }
       });
-      console.log({ availableUser, id })
 
       if (!availableUser) throw new NotFoundException('No user like this');
 

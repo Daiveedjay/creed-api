@@ -57,66 +57,64 @@ export class UserService {
 
     if (!currentUser) throw new UnauthorizedException('No access');
 
-    if (body.profilePicture) {
-      if (currentUser.profilePictureKey && currentUser.profilePicture) {
-        const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
+      // if (currentUser.profilePictureKey && currentUser.profilePicture) {
+      //   const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
 
-        if (deleteUrlFromAWS.success === true) {
-          const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
-          if (picture.success === true) {
-            await this.dbService.user.update({
-              where: {
-                email
-              },
-              data: {
-                username: body.username,
-                location: body.location,
-                language: body.language,
-                profilePicture: picture.url,
-                profilePictureKey: picture.key,
-                jobTitle: body.jobTitle,
-                fullName: body.fullName,
-                department: body.department,
-                availableHoursTo: body.availableHoursTo,
-                availableHoursFrom: body.availableHoursFrom
-              },
-            });
+      //   if (deleteUrlFromAWS.success === true) {
+      //     const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
+      //     if (picture.success === true) {
+      //       await this.dbService.user.update({
+      //         where: {
+      //           email
+      //         },
+      //         data: {
+      //           username: body.username,
+      //           location: body.location,
+      //           language: body.language,
+      //           profilePicture: picture.url,
+      //           profilePictureKey: picture.key,
+      //           jobTitle: body.jobTitle,
+      //           fullName: body.fullName,
+      //           department: body.department,
+      //           availableHoursTo: body.availableHoursTo,
+      //           availableHoursFrom: body.availableHoursFrom
+      //         },
+      //       });
 
-            return new HttpException('Profile updated', HttpStatus.ACCEPTED);
-          } else {
-            throw new InternalServerErrorException(picture.url)
-          }
-        } else {
-          throw new InternalServerErrorException(deleteUrlFromAWS.message)
-        }
-      } else {
-        const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
-        if (picture.success === true) {
-          await this.dbService.user.update({
-            where: {
-              email
-            },
-            data: {
-              username: body.username,
-              location: body.location,
-              language: body.language,
-              profilePicture: picture.url,
-              profilePictureKey: picture.key,
-              jobTitle: body.jobTitle,
-              fullName: body.fullName,
-              department: body.department,
-              availableHoursTo: body.availableHoursTo,
-              availableHoursFrom: body.availableHoursFrom
-            },
-          });
+      //       return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+      //     } else {
+      //       throw new InternalServerErrorException(picture.url)
+      //     }
+      //   } else {
+      //     throw new InternalServerErrorException(deleteUrlFromAWS.message)
+      //   }
+      // } else {
+      //   const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
+      //   if (picture.success === true) {
+      //     await this.dbService.user.update({
+      //       where: {
+      //         email
+      //       },
+      //       data: {
+      //         username: body.username,
+      //         location: body.location,
+      //         language: body.language,
+      //         profilePicture: picture.url,
+      //         profilePictureKey: picture.key,
+      //         jobTitle: body.jobTitle,
+      //         fullName: body.fullName,
+      //         department: body.department,
+      //         availableHoursTo: body.availableHoursTo,
+      //         availableHoursFrom: body.availableHoursFrom
+      //       },
+      //     });
 
-          return new HttpException('Profile updated', HttpStatus.ACCEPTED);
-        } else {
-          throw new InternalServerErrorException(picture.url)
-        }
+      //     return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+      //   } else {
+      //     throw new InternalServerErrorException(picture.url)
+      //   }
 
-      }
-    } else {
+      // }
       await this.dbService.user.update({
         where: {
           email
@@ -135,7 +133,6 @@ export class UserService {
 
       return new HttpException('Profile updated', HttpStatus.ACCEPTED);
 
-    }
   }
 
   async getProfileThroughEmail(email: string) {

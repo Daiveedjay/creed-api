@@ -8,11 +8,11 @@ import { DbService } from 'src/utils/db.service';
 export class AnalyticsService {
   constructor(
     private readonly dbService: DbService,
-    private readonly userService: UserService
-  ) { }
+    private readonly userService: UserService,
+  ) {}
   async getAnalyticsofDomain(domainId: string, email: string) {
-    const allAssignedTasks = []
-    const user = await this.userService.getProfileThroughEmail(email)
+    const allAssignedTasks = [];
+    const user = await this.userService.getProfileThroughEmail(email);
     if (!user) throw new MethodNotAllowedException('User not found!');
 
     const particularDomain = await this.dbService.domain.findUnique({
@@ -24,30 +24,34 @@ export class AnalyticsService {
         tasks: true,
         announcements: true,
         domainMembers: true,
-        panelMembers: true
-      }
-    })
+        panelMembers: true,
+      },
+    });
 
-    if (!particularDomain) throw new MethodNotAllowedException('No domain like this is found!')
+    if (!particularDomain)
+      throw new MethodNotAllowedException('No domain like this is found!');
 
     const panelsUserIsAssociatedInto = await this.dbService.panel.findMany({
       where: {
         panelMembers: {
           some: {
             domainId: particularDomain.id,
-            userId: user.id
-          }
-        }
-      }
-    })
+            userId: user.id,
+          },
+        },
+      },
+    });
 
     const allPanelsIfIAmAnOwner = await this.dbService.panel.findMany({
       where: {
         domainId: particularDomain.id,
-      }
-    })
+      },
+    });
 
-    const panels = particularDomain.ownerId === user.id ? allPanelsIfIAmAnOwner : panelsUserIsAssociatedInto
+    const panels =
+      particularDomain.ownerId === user.id
+        ? allPanelsIfIAmAnOwner
+        : panelsUserIsAssociatedInto;
 
     for (const panel of panels) {
       const assignedTasks = await this.dbService.task.findMany({
@@ -62,29 +66,35 @@ export class AnalyticsService {
                 select: {
                   id: true,
                   fullName: true,
-                  profilePicture: true
-                }
-              }
-            }
+                  profilePicture: true,
+                },
+              },
+            },
           },
-          subTasks: true
-        }
-      })
-      const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
+          subTasks: true,
+        },
+      });
+      const filteredAssignedTasks = assignedTasks.filter(
+        (at) => at.assignedCollaborators.length > 0,
+      );
 
-      allAssignedTasks.push(...filteredAssignedTasks)
+      allAssignedTasks.push(...filteredAssignedTasks);
     }
 
     return {
       allAssignedTasks,
       numberOfDomainMembers: particularDomain.domainMembers.length,
-      domainId
-    }
+      domainId,
+    };
   }
 
-  async getAverageTiemToCompleteATask(domainId: string, email: string, range: string) {
-    const allCompletedTasksArray: any[] = []
-    const user = await this.userService.getProfileThroughEmail(email)
+  async getAverageTiemToCompleteATask(
+    domainId: string,
+    email: string,
+    range: string,
+  ) {
+    const allCompletedTasksArray: any[] = [];
+    const user = await this.userService.getProfileThroughEmail(email);
     if (!user) throw new MethodNotAllowedException('User not found!');
 
     const particularDomain = await this.dbService.domain.findUnique({
@@ -96,37 +106,41 @@ export class AnalyticsService {
         tasks: true,
         announcements: true,
         domainMembers: true,
-        panelMembers: true
-      }
-    })
+        panelMembers: true,
+      },
+    });
 
-    if (!particularDomain) throw new MethodNotAllowedException('No domain like this is found!')
+    if (!particularDomain)
+      throw new MethodNotAllowedException('No domain like this is found!');
 
     const allPanelsIfIAmAnOwner = await this.dbService.panel.findMany({
       where: {
         domainId: particularDomain.id,
-      }
-    })
+      },
+    });
 
     const panelsUserIsAssociatedInto = await this.dbService.panel.findMany({
       where: {
         panelMembers: {
           some: {
             domainId: particularDomain.id,
-            userId: user.id
-          }
-        }
-      }
-    })
+            userId: user.id,
+          },
+        },
+      },
+    });
 
     const completedStatus = await this.dbService.status.findFirst({
       where: {
         domainId: particularDomain.id,
-        name: 'completed'
-      }
-    })
+        name: 'completed',
+      },
+    });
 
-    const panels = particularDomain.ownerId === user.id ? allPanelsIfIAmAnOwner : panelsUserIsAssociatedInto
+    const panels =
+      particularDomain.ownerId === user.id
+        ? allPanelsIfIAmAnOwner
+        : panelsUserIsAssociatedInto;
 
     for (const panel of panels) {
       const assignedTasks = await this.dbService.task.findMany({
@@ -142,32 +156,37 @@ export class AnalyticsService {
                 select: {
                   id: true,
                   fullName: true,
-                  profilePicture: true
-                }
-              }
-            }
+                  profilePicture: true,
+                },
+              },
+            },
           },
-          subTasks: true
-        }
-      })
+          subTasks: true,
+        },
+      });
 
-      const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
-      const completedTasks = filteredAssignedTasks.filter((fa) => fa.statusId === completedStatus.id)
+      const filteredAssignedTasks = assignedTasks.filter(
+        (at) => at.assignedCollaborators.length > 0,
+      );
+      const completedTasks = filteredAssignedTasks.filter(
+        (fa) => fa.statusId === completedStatus.id,
+      );
 
-      allCompletedTasksArray.push(...completedTasks)
+      allCompletedTasksArray.push(...completedTasks);
     }
 
     //
     // Calculate total time for each task
-    const completedTasksWithTime = allCompletedTasksArray.map(task => {
-      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
-        if (collaborators.user.id === user.id) {
-          return collaborators.createdAt
-        }
+    const completedTasksWithTime = allCompletedTasksArray.map((task) => {
+      const userAssignedId = task.assignedCollaborators.map(
+        (collaborators: Collaborator) => {
+          if (collaborators.user.id === user.id) {
+            return collaborators.createdAt;
+          }
 
-        return
-      }) as Date[]
-      console.log(userAssignedId[0])
+          return;
+        },
+      ) as Date[];
       const createdDate = new Date(userAssignedId[0]);
       const modifiedDate = new Date(task.updatedAt);
 
@@ -185,7 +204,7 @@ export class AnalyticsService {
 
     // Filter tasks based on the desired date range
     const now = new Date();
-    const filteredTasks = completedTasksWithTime.filter(task => {
+    const filteredTasks = completedTasksWithTime.filter((task) => {
       const completedDate = new Date(task.updatedAt);
       switch (range) {
         case 'last5Days':
@@ -214,23 +233,22 @@ export class AnalyticsService {
       Sunday: { totalTime: 0, taskCount: 0 },
     };
 
-    console.log({ filteredTasks })
+    filteredTasks.forEach((task) => {
+      const userAssignedId = task.assignedCollaborators.map(
+        (collaborators: Collaborator) => {
+          if (collaborators.user.id === user.id) {
+            return collaborators.createdAt;
+          }
 
-    filteredTasks.forEach(task => {
-      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
-        if (collaborators.user.id === user.id) {
-          return collaborators.createdAt
-        }
-
-        return
-      }) as Date[]
-      console.log({ userAssignedId })
-      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', { weekday: 'long' });
+          return;
+        },
+      ) as Date[];
+      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', {
+        weekday: 'long',
+      });
       dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
       dayCounts[dayOfWeek].taskCount++;
     });
-
-    console.log(dayCounts)
 
     // Calculate the average time for each day
     const dayAverages: Record<string, number> = {};
@@ -239,14 +257,16 @@ export class AnalyticsService {
       dayAverages[day] = taskCount > 0 ? totalTime / taskCount : 0;
     }
 
-    console.log({ dayAverages });
     return dayAverages;
-
   }
 
-  async getTotalTimeToCompleteATask(domainId: string, email: string, range: string) {
-    const allCompletedTasksArray: any[] = []
-    const user = await this.userService.getProfileThroughEmail(email)
+  async getTotalTimeToCompleteATask(
+    domainId: string,
+    email: string,
+    range: string,
+  ) {
+    const allCompletedTasksArray: any[] = [];
+    const user = await this.userService.getProfileThroughEmail(email);
     if (!user) throw new MethodNotAllowedException('User not found!');
 
     const particularDomain = await this.dbService.domain.findUnique({
@@ -258,37 +278,41 @@ export class AnalyticsService {
         tasks: true,
         announcements: true,
         domainMembers: true,
-        panelMembers: true
-      }
-    })
+        panelMembers: true,
+      },
+    });
 
-    if (!particularDomain) throw new MethodNotAllowedException('No domain like this is found!')
+    if (!particularDomain)
+      throw new MethodNotAllowedException('No domain like this is found!');
 
     const allPanelsIfIAmAnOwner = await this.dbService.panel.findMany({
       where: {
         domainId: particularDomain.id,
-      }
-    })
+      },
+    });
 
     const panelsUserIsAssociatedInto = await this.dbService.panel.findMany({
       where: {
         panelMembers: {
           some: {
             domainId: particularDomain.id,
-            userId: user.id
-          }
-        }
-      }
-    })
+            userId: user.id,
+          },
+        },
+      },
+    });
 
     const completedStatus = await this.dbService.status.findFirst({
       where: {
         domainId: particularDomain.id,
-        name: 'completed'
-      }
-    })
+        name: 'completed',
+      },
+    });
 
-    const panels = particularDomain.ownerId === user.id ? allPanelsIfIAmAnOwner : panelsUserIsAssociatedInto
+    const panels =
+      particularDomain.ownerId === user.id
+        ? allPanelsIfIAmAnOwner
+        : panelsUserIsAssociatedInto;
 
     for (const panel of panels) {
       const assignedTasks = await this.dbService.task.findMany({
@@ -304,32 +328,37 @@ export class AnalyticsService {
                 select: {
                   id: true,
                   fullName: true,
-                  profilePicture: true
-                }
-              }
-            }
+                  profilePicture: true,
+                },
+              },
+            },
           },
-          subTasks: true
-        }
-      })
+          subTasks: true,
+        },
+      });
 
-      const filteredAssignedTasks = assignedTasks.filter((at) => at.assignedCollaborators.length > 0)
-      const completedTasks = filteredAssignedTasks.filter((fa) => fa.statusId === completedStatus.id)
+      const filteredAssignedTasks = assignedTasks.filter(
+        (at) => at.assignedCollaborators.length > 0,
+      );
+      const completedTasks = filteredAssignedTasks.filter(
+        (fa) => fa.statusId === completedStatus.id,
+      );
 
-      allCompletedTasksArray.push(...completedTasks)
+      allCompletedTasksArray.push(...completedTasks);
     }
 
     //
     // Calculate total time for each task
-    const completedTasksWithTime = allCompletedTasksArray.map(task => {
-      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
-        if (collaborators.user.id === user.id) {
-          return collaborators.createdAt
-        }
+    const completedTasksWithTime = allCompletedTasksArray.map((task) => {
+      const userAssignedId = task.assignedCollaborators.map(
+        (collaborators: Collaborator) => {
+          if (collaborators.user.id === user.id) {
+            return collaborators.createdAt;
+          }
 
-        return
-      }) as Date[]
-      console.log(userAssignedId[0])
+          return;
+        },
+      ) as Date[];
       const createdDate = new Date(userAssignedId[0]);
       const modifiedDate = new Date(task.updatedAt);
 
@@ -347,7 +376,7 @@ export class AnalyticsService {
 
     // Filter tasks based on the desired date range
     const now = new Date();
-    const filteredTasks = completedTasksWithTime.filter(task => {
+    const filteredTasks = completedTasksWithTime.filter((task) => {
       const completedDate = new Date(task.updatedAt);
       switch (range) {
         case 'last5Days':
@@ -376,24 +405,22 @@ export class AnalyticsService {
       Sunday: 0,
     };
 
-    console.log({ filteredTasks })
+    filteredTasks.forEach((task) => {
+      const userAssignedId = task.assignedCollaborators.map(
+        (collaborators: Collaborator) => {
+          if (collaborators.user.id === user.id) {
+            return collaborators.createdAt;
+          }
 
-    filteredTasks.forEach(task => {
-      const userAssignedId = task.assignedCollaborators.map((collaborators: Collaborator) => {
-        if (collaborators.user.id === user.id) {
-          return collaborators.createdAt
-        }
-
-        return
-      }) as Date[]
-      console.log({ userAssignedId })
-      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', { weekday: 'long' });
+          return;
+        },
+      ) as Date[];
+      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', {
+        weekday: 'long',
+      });
       dayCounts[dayOfWeek] += task.totalTimeInHours;
     });
 
     return dayCounts;
-
   }
 }
-
-
