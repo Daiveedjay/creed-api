@@ -491,7 +491,7 @@ export class TaskService {
       },
     });
 
-    await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
+    //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return new HttpException('Deleted', HttpStatus.ACCEPTED);
   }
