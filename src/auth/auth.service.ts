@@ -177,8 +177,8 @@ export class AuthService {
         panels: [],
         analytics: {
           analytics,
-          totalTimeAnalyticsFor5Days,
-          averageTimeAnalyticsFor5Days
+          // totalTimeAnalyticsFor5Days,
+          // averageTimeAnalyticsFor5Days
         }
       }
     };
@@ -316,8 +316,8 @@ export class AuthService {
         panels: domains[0].ownerId === userObj.id ? allPanels : panels,
         analytics: {
           analytics,
-          totalTimeAnalyticsFor5Days,
-          averageTimeAnalyticsFor5Days
+          // totalTimeAnalyticsFor5Days,
+          // averageTimeAnalyticsFor5Days
         }
       },
     };
