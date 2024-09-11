@@ -94,12 +94,12 @@ export class AuthService {
     })
 
 
-    await this.dbService.device.create({
-      data: {
-        userId: user.id,
-        deviceToken: dto.deviceToken
-      }
-    })
+    // await this.dbService.device.create({
+    //   data: {
+    //     userId: user.id,
+    //     deviceToken: dto.deviceToken
+    //   }
+    // })
 
     const token = this.jwtService.sign(
       { uid: user.id },
@@ -297,13 +297,14 @@ export class AuthService {
     })
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
-    const deviceToken = await this.notifyService.getDeviceTokens([user.id])
+    // const deviceToken = await this.notifyService.getDeviceTokens([user.id])
     const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(domains[0].id, userObj.email, 'last5Days')
     const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(domains[0].id, userObj.email, 'last5Days')
+    await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
-    if (deviceToken[0] === null) {
-      await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
-    }
+    // if (deviceToken[0] === null) {
+    //   await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
+    // }
 
     return {
       message: 'Access Token',
@@ -520,7 +521,7 @@ export class AuthService {
 
   }
 
-  async verifyAndUpdateUser(accessToken: string) {
+  async verifyAndUpdateUser(accessToken: string, deviceToken: string) {
     const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
     const userInfo = await this.dbService.user.findUnique({
@@ -536,6 +537,7 @@ export class AuthService {
     const user = await this.signIn({
       email: decodedToken.email,
       password: decodedToken.sub,
+      deviceToken,
       rememberMe: true
     })
 
@@ -555,6 +557,7 @@ export class AuthService {
       const currentUser = await this.signIn({
         email: decodedToken.email,
         password: decodedToken.sub,
+        deviceToken,
         rememberMe: true
       })
 

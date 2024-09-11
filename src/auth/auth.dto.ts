@@ -87,6 +87,13 @@ export class UserSigninDTOType {
   @IsNotEmpty()
   password: string;
 
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsNotEmpty()
+  deviceToken: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
