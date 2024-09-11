@@ -178,16 +178,9 @@ export class AnalyticsService {
     //
     // Calculate total time for each task
     const completedTasksWithTime = allCompletedTasksArray.map((task) => {
-      const userAssignedId = task.assignedCollaborators.map(
-        (collaborators: Collaborator) => {
-          if (collaborators.user.id === user.id) {
-            return collaborators.createdAt;
-          }
+      const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
 
-          return;
-        },
-      ) as Date[];
-      const createdDate = new Date(userAssignedId[0]);
+      const createdDate = new Date(assignedCollaborator.createdAt);
       const modifiedDate = new Date(task.updatedAt);
 
       // Difference in milliseconds
@@ -234,21 +227,16 @@ export class AnalyticsService {
     };
 
     filteredTasks.forEach((task) => {
-      const assignedDate = task.assignedCollaborators.filter((collaborator: Collaborator) => collaborator.user.id === user.id)[0].createdAt as Date
-      console.log(assignedDate)
-      // const userAssignedId = task.assignedCollaborators.map(
-      //   (collaborators: Collaborator) => {
-      //     if (collaborators.user.id === user.id) {
-      //       return collaborators.createdAt;
-      //     }
+      const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
+      console.log(assignedCollaborator)
 
-      //     return;
-      //   },
-      // ) as Date[];
-      const dayOfWeek = new Date(assignedDate).toLocaleString('en-US', {
+      // Get the day of the week from the assigned date
+      const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
         weekday: 'long',
       });
-      dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
+    
+      // Update the dayCounts object with the total time and task count
+      dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;        
       dayCounts[dayOfWeek].taskCount++;
     });
 
@@ -352,16 +340,8 @@ export class AnalyticsService {
     //
     // Calculate total time for each task
     const completedTasksWithTime = allCompletedTasksArray.map((task) => {
-      const userAssignedId = task.assignedCollaborators.map(
-        (collaborators: Collaborator) => {
-          if (collaborators.user.id === user.id) {
-            return collaborators.createdAt;
-          }
-
-          return;
-        },
-      ) as Date[];
-      const createdDate = new Date(userAssignedId[0]);
+      const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
+      const createdDate = new Date(assignedCollaborator.createdAt);
       const modifiedDate = new Date(task.updatedAt);
 
       // Difference in milliseconds
@@ -408,16 +388,9 @@ export class AnalyticsService {
     };
 
     filteredTasks.forEach((task) => {
-      const userAssignedId = task.assignedCollaborators.map(
-        (collaborators: Collaborator) => {
-          if (collaborators.user.id === user.id) {
-            return collaborators.createdAt;
-          }
+      const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
 
-          return;
-        },
-      ) as Date[];
-      const dayOfWeek = new Date(userAssignedId[0]).toLocaleString('en-US', {
+      const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
         weekday: 'long',
       });
       dayCounts[dayOfWeek] += task.totalTimeInHours;
