@@ -9,7 +9,7 @@ export class AnalyticsService {
   constructor(
     private readonly dbService: DbService,
     private readonly userService: UserService,
-  ) {}
+  ) { }
   async getAnalyticsofDomain(domainId: string, email: string) {
     const allAssignedTasks = [];
     const user = await this.userService.getProfileThroughEmail(email);
@@ -234,9 +234,9 @@ export class AnalyticsService {
       const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
         weekday: 'long',
       });
-    
+
       // Update the dayCounts object with the total time and task count
-      dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;        
+      dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
       dayCounts[dayOfWeek].taskCount++;
     });
 

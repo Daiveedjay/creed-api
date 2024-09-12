@@ -162,8 +162,8 @@ export class AuthService {
       }
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
-    // const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
-    // const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
+    const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
+    const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
     //await this.emailService.sendWelcomeEmail(userObj.email)
     await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
@@ -177,8 +177,8 @@ export class AuthService {
         panels: [],
         analytics: {
           analytics,
-          // totalTimeAnalyticsFor5Days,
-          // averageTimeAnalyticsFor5Days
+          totalTimeAnalyticsFor5Days,
+          averageTimeAnalyticsFor5Days
         }
       }
     };
@@ -297,9 +297,9 @@ export class AuthService {
     })
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
-    // const deviceToken = await this.notifyService.getDeviceTokens([user.id])
-    // const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(domains[0].id, userObj.email, 'last5Days')
-    // const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(domains[0].id, userObj.email, 'last5Days')
+    //const deviceToken = await this.notifyService.getDeviceTokens([user.id])
+    const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(domains[0].id, userObj.email, 'last5Days')
+    const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(domains[0].id, userObj.email, 'last5Days')
     await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
     // if (deviceToken[0] === null) {
@@ -316,8 +316,8 @@ export class AuthService {
         panels: domains[0].ownerId === userObj.id ? allPanels : panels,
         analytics: {
           analytics,
-          // totalTimeAnalyticsFor5Days,
-          // averageTimeAnalyticsFor5Days
+          totalTimeAnalyticsFor5Days,
+          averageTimeAnalyticsFor5Days
         }
       },
     };
@@ -563,7 +563,8 @@ export class AuthService {
 
       return currentUser;
     } else {
-      const firstName = decodedToken.name.split(' ')
+      const firstName = decodedToken.name.split(' ').split(' ')
+      console.log(firstName)
 
       const newUser = await this.signUp({
         email: decodedToken.email,

@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  MethodNotAllowedException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -48,7 +49,7 @@ export class UserService {
 
   }
 
-  async editProfile(email: string, profilePicture: Express.Multer.File, body: UserUpdateDTOType) {
+  async editProfile(email: string, body: UserUpdateDTOType) {
     const currentUser = await this.dbService.user.findUnique({
       where: {
         email
@@ -57,82 +58,24 @@ export class UserService {
 
     if (!currentUser) throw new UnauthorizedException('No access');
 
-      // if (currentUser.profilePictureKey && currentUser.profilePicture) {
-      //   const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
+    // }
+    await this.dbService.user.update({
+      where: {
+        email
+      },
+      data: {
+        username: body.username,
+        location: body.location,
+        language: body.language,
+        jobTitle: body.jobTitle,
+        fullName: body.fullName,
+        department: body.department,
+        availableHoursTo: body.availableHoursTo,
+        availableHoursFrom: body.availableHoursFrom
+      },
+    });
 
-      //   if (deleteUrlFromAWS.success === true) {
-      //     const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
-      //     if (picture.success === true) {
-      //       await this.dbService.user.update({
-      //         where: {
-      //           email
-      //         },
-      //         data: {
-      //           username: body.username,
-      //           location: body.location,
-      //           language: body.language,
-      //           profilePicture: picture.url,
-      //           profilePictureKey: picture.key,
-      //           jobTitle: body.jobTitle,
-      //           fullName: body.fullName,
-      //           department: body.department,
-      //           availableHoursTo: body.availableHoursTo,
-      //           availableHoursFrom: body.availableHoursFrom
-      //         },
-      //       });
-
-      //       return new HttpException('Profile updated', HttpStatus.ACCEPTED);
-      //     } else {
-      //       throw new InternalServerErrorException(picture.url)
-      //     }
-      //   } else {
-      //     throw new InternalServerErrorException(deleteUrlFromAWS.message)
-      //   }
-      // } else {
-      //   const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
-      //   if (picture.success === true) {
-      //     await this.dbService.user.update({
-      //       where: {
-      //         email
-      //       },
-      //       data: {
-      //         username: body.username,
-      //         location: body.location,
-      //         language: body.language,
-      //         profilePicture: picture.url,
-      //         profilePictureKey: picture.key,
-      //         jobTitle: body.jobTitle,
-      //         fullName: body.fullName,
-      //         department: body.department,
-      //         availableHoursTo: body.availableHoursTo,
-      //         availableHoursFrom: body.availableHoursFrom
-      //       },
-      //     });
-
-      //     return new HttpException('Profile updated', HttpStatus.ACCEPTED);
-      //   } else {
-      //     throw new InternalServerErrorException(picture.url)
-      //   }
-
-      // }
-      await this.dbService.user.update({
-        where: {
-          email
-        },
-        data: {
-          username: body.username,
-          location: body.location,
-          language: body.language,
-          jobTitle: body.jobTitle,
-          fullName: body.fullName,
-          department: body.department,
-          availableHoursTo: body.availableHoursTo,
-          availableHoursFrom: body.availableHoursFrom
-        },
-      });
-
-      return new HttpException('Profile updated', HttpStatus.ACCEPTED);
-
+    return new HttpException('Profile updated', HttpStatus.ACCEPTED);
   }
 
   async getProfileThroughEmail(email: string) {
@@ -159,6 +102,61 @@ export class UserService {
     if (!profile) throw new NotFoundException('No profile like this')
 
     return profile
+
+  }
+
+  async updateProfilePicture(email: string, profilePicture: Express.Multer.File) {
+    const currentUser = await this.dbService.user.findUnique({
+      where: {
+        email
+      }
+    })
+
+    if (!currentUser) {
+      throw new MethodNotAllowedException('You lost?');
+    };
+
+    if (currentUser.profilePictureKey !== null && currentUser.profilePicture !== null) {
+      const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
+
+      if (deleteUrlFromAWS.success === true) {
+        const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
+        if (picture.success === true) {
+          await this.dbService.user.update({
+            where: {
+              email
+            },
+            data: {
+              profilePicture: picture.url,
+              profilePictureKey: picture.key,
+            },
+          });
+
+          return picture.url
+        } else {
+          throw new InternalServerErrorException(picture.url)
+        }
+      } else {
+        throw new InternalServerErrorException(deleteUrlFromAWS.message)
+      }
+    } else {
+      const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
+      if (picture.success === true) {
+        await this.dbService.user.update({
+          where: {
+            email
+          },
+          data: {
+            profilePicture: picture.url,
+            profilePictureKey: picture.key,
+          },
+        });
+
+        return picture.url
+      } else {
+        throw new InternalServerErrorException(picture.url)
+      }
+    }
 
   }
 }
