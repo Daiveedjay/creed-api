@@ -180,74 +180,93 @@ export class AnalyticsService {
     const completedTasksWithTime = allCompletedTasksArray.map((task) => {
       const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
 
-      const createdDate = new Date(assignedCollaborator.createdAt);
-      const modifiedDate = new Date(task.updatedAt);
+      if (!assignedCollaborator) {
+        return {
+          task: [],
+          totalTimeInHours: 0
+        }
+      } else {
+        const createdDate = new Date(assignedCollaborator.createdAt);
+        const modifiedDate = new Date(task.updatedAt);
 
-      // Difference in milliseconds
-      const timeDifference = modifiedDate.getTime() - createdDate.getTime();
+        // Difference in milliseconds
+        const timeDifference = modifiedDate.getTime() - createdDate.getTime();
 
-      // Convert milliseconds to hours
-      const totalTimeInHours = timeDifference / (1000 * 60 * 60);
+        // Convert milliseconds to hours
+        const totalTimeInHours = timeDifference / (1000 * 60 * 60);
 
-      return {
-        ...task,
-        totalTimeInHours,
-      };
-    });
-
-    // Filter tasks based on the desired date range
-    const now = new Date();
-    const filteredTasks = completedTasksWithTime.filter((task) => {
-      const completedDate = new Date(task.updatedAt);
-      switch (range) {
-        case 'last5Days':
-          return completedDate >= new Date(now.setDate(now.getDate() - 5));
-        case 'last2Weeks':
-          return completedDate >= new Date(now.setDate(now.getDate() - 14));
-        case 'last1Month':
-          return completedDate >= new Date(now.setMonth(now.getMonth() - 1));
-        case 'last6Weeks':
-          return completedDate >= new Date(now.setMonth(now.getDate() - 42));
-        case 'last3Months':
-          return completedDate >= new Date(now.setMonth(now.getMonth() - 3));
-        default:
-          return false;
+        return {
+          ...task,
+          totalTimeInHours,
+        };
       }
     });
 
-    // Group tasks by the day of the week
-    const dayCounts = {
-      Monday: { totalTime: 0, taskCount: 0 },
-      Tuesday: { totalTime: 0, taskCount: 0 },
-      Wednesday: { totalTime: 0, taskCount: 0 },
-      Thursday: { totalTime: 0, taskCount: 0 },
-      Friday: { totalTime: 0, taskCount: 0 },
-      Saturday: { totalTime: 0, taskCount: 0 },
-      Sunday: { totalTime: 0, taskCount: 0 },
-    };
-
-    filteredTasks.forEach((task) => {
-      const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
-      console.log(assignedCollaborator)
-
-      // Get the day of the week from the assigned date
-      const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
-        weekday: 'long',
+    if (completedTasksWithTime.length > 0) {
+      // Filter tasks based on the desired date range
+      const now = new Date();
+      const filteredTasks = completedTasksWithTime.filter((task) => {
+        const completedDate = new Date(task.updatedAt);
+        switch (range) {
+          case 'last5Days':
+            return completedDate >= new Date(now.setDate(now.getDate() - 5));
+          case 'last2Weeks':
+            return completedDate >= new Date(now.setDate(now.getDate() - 14));
+          case 'last1Month':
+            return completedDate >= new Date(now.setMonth(now.getMonth() - 1));
+          case 'last6Weeks':
+            return completedDate >= new Date(now.setMonth(now.getDate() - 42));
+          case 'last3Months':
+            return completedDate >= new Date(now.setMonth(now.getMonth() - 3));
+          default:
+            return false;
+        }
       });
 
-      // Update the dayCounts object with the total time and task count
-      dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
-      dayCounts[dayOfWeek].taskCount++;
-    });
+      // Group tasks by the day of the week
+      const dayCounts = {
+        Monday: { totalTime: 0, taskCount: 0 },
+        Tuesday: { totalTime: 0, taskCount: 0 },
+        Wednesday: { totalTime: 0, taskCount: 0 },
+        Thursday: { totalTime: 0, taskCount: 0 },
+        Friday: { totalTime: 0, taskCount: 0 },
+        Saturday: { totalTime: 0, taskCount: 0 },
+        Sunday: { totalTime: 0, taskCount: 0 },
+      };
 
-    // Calculate the average time for each day
-    const dayAverages: Record<string, number> = {};
-    for (const day in dayCounts) {
-      const { totalTime, taskCount } = dayCounts[day];
-      dayAverages[day] = taskCount > 0 ? totalTime / taskCount : 0;
+      filteredTasks.forEach((task) => {
+        const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
+        console.log(assignedCollaborator)
+
+        // Get the day of the week from the assigned date
+        const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
+          weekday: 'long',
+        });
+
+        // Update the dayCounts object with the total time and task count
+        dayCounts[dayOfWeek].totalTime += task.totalTimeInHours;
+        dayCounts[dayOfWeek].taskCount++;
+      });
+
+      // Calculate the average time for each day
+      const dayAverages: Record<string, number> = {};
+      for (const day in dayCounts) {
+        const { totalTime, taskCount } = dayCounts[day];
+        dayAverages[day] = taskCount > 0 ? totalTime / taskCount : 0;
+      }
+
+      return dayAverages;
+    } else {
+      return {
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0,
+        Sunday: 0,
+      }
     }
-
-    return dayAverages;
   }
 
   async getTotalTimeToCompleteATask(
@@ -341,8 +360,22 @@ export class AnalyticsService {
     // Calculate total time for each task
     const completedTasksWithTime = allCompletedTasksArray.map((task) => {
       const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
+
+      if (!assignedCollaborator) {
+        return {
+          task: [],
+          totalTimeInHours: 0
+        }
+      }
       const createdDate = new Date(assignedCollaborator.createdAt);
       const modifiedDate = new Date(task.updatedAt);
+
+      if (!assignedCollaborator) {
+        return {
+          task: [],
+          totalTimeInHours: 0
+        }
+      }
 
       // Difference in milliseconds
       const timeDifference = modifiedDate.getTime() - createdDate.getTime();
@@ -356,46 +389,61 @@ export class AnalyticsService {
       };
     });
 
-    // Filter tasks based on the desired date range
-    const now = new Date();
-    const filteredTasks = completedTasksWithTime.filter((task) => {
-      const completedDate = new Date(task.updatedAt);
-      switch (range) {
-        case 'last5Days':
-          return completedDate >= new Date(now.setDate(now.getDate() - 5));
-        case 'last2Weeks':
-          return completedDate >= new Date(now.setDate(now.getDate() - 14));
-        case 'last1Month':
-          return completedDate >= new Date(now.setMonth(now.getMonth() - 1));
-        case 'last6Weeks':
-          return completedDate >= new Date(now.setMonth(now.getDate() - 42));
-        case 'last3Months':
-          return completedDate >= new Date(now.setMonth(now.getMonth() - 3));
-        default:
-          return false;
-      }
-    });
+    console.log(completedTasksWithTime)
 
-    // Group tasks by the day of the week
-    const dayCounts: Record<string, number> = {
-      Monday: 0,
-      Tuesday: 0,
-      Wednesday: 0,
-      Thursday: 0,
-      Friday: 0,
-      Saturday: 0,
-      Sunday: 0,
-    };
-
-    filteredTasks.forEach((task) => {
-      const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
-
-      const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
-        weekday: 'long',
+    if (completedTasksWithTime.length > 0) {
+      // Filter tasks based on the desired date range
+      const now = new Date();
+      const filteredTasks = completedTasksWithTime.filter((task) => {
+        const completedDate = new Date(task.updatedAt);
+        switch (range) {
+          case 'last5Days':
+            return completedDate >= new Date(now.setDate(now.getDate() - 5));
+          case 'last2Weeks':
+            return completedDate >= new Date(now.setDate(now.getDate() - 14));
+          case 'last1Month':
+            return completedDate >= new Date(now.setMonth(now.getMonth() - 1));
+          case 'last6Weeks':
+            return completedDate >= new Date(now.setMonth(now.getDate() - 42));
+          case 'last3Months':
+            return completedDate >= new Date(now.setMonth(now.getMonth() - 3));
+          default:
+            return false;
+        }
       });
-      dayCounts[dayOfWeek] += task.totalTimeInHours;
-    });
 
-    return dayCounts;
+      // Group tasks by the day of the week
+      const dayCounts: Record<string, number> = {
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0,
+        Sunday: 0,
+      };
+
+      filteredTasks.forEach((task) => {
+        const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
+
+        const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
+          weekday: 'long',
+        });
+        dayCounts[dayOfWeek] += task.totalTimeInHours;
+      });
+
+      return dayCounts;
+
+    } else {
+      return {
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0,
+        Sunday: 0,
+      }
+    }
   }
 }
