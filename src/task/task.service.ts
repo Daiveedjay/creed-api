@@ -424,20 +424,15 @@ export class TaskService {
   ) {
     const authorOfTask = await this.dbService.task.findUnique({
       where: {
+        domainId: doaminID,
         id: taskID,
         authorId: userId,
       }
     })
 
-    const ownerOfDomain = await this.dbService.domain.findUnique({
-      where: {
-        ownerId: userId,
-        id: doaminID,
-      }
-    })
-
     const adminAccess = await this.dbService.domainMembership.findFirst({
       where: {
+        userId,
         memberRole: {
           in: [
             'admin',
@@ -448,7 +443,7 @@ export class TaskService {
       }
     })
 
-    if (!authorOfTask || !ownerOfDomain || !adminAccess) {
+    if (!authorOfTask && !adminAccess) {
       throw new MethodNotAllowedException('No access to this')
     };
 

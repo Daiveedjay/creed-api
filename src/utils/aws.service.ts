@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { DbService } from './db.service';
@@ -35,26 +35,13 @@ export class AWSService {
       }
     })
 
-    const putObjectCommand = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: key,
-      Body: file.buffer,
-      ACL: 'public-read', // or 'private' depending on your use case
-      CacheControl: "max-age=86400",
-      ContentType: file.mimetype,
-    })
-
     try {
       await uploader.done()
-      const url = await getSignedUrl(
-        this.s3Client,
-        putObjectCommand,
-        { expiresIn: 60 * 60 } // 60 seconds
-      );
+      const url = await this.getUrl(key)
 
       return {
         success: true,
-        url: url.split("?")[0],
+        url,
         key: key
       };
     } catch (error) {
@@ -96,6 +83,15 @@ export class AWSService {
         message: 'Deleting the picture unsuccessfully'
       }
     }
+  }
+
+  public async getUrl(key: string) {
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: key, // The image file name
+    });
+
+    return await getSignedUrl(this.s3Client, command);
   }
 }
 

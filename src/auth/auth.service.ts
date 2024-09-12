@@ -125,10 +125,16 @@ export class AuthService {
 
     const allDomains = await this.dbService.domain.findMany({
       where: {
-        ownerId: user.id
+        domainMembers: {
+          some: {
+            userId: user.id
+          }
+        }
       },
       include: {
-        status: true
+        status: true,
+        tasks: true,
+        panels: true
       }
     })
 
@@ -177,11 +183,28 @@ export class AuthService {
         panels: [],
         analytics: {
           analytics,
-          totalTimeAnalyticsFor5Days,
-          averageTimeAnalyticsFor5Days
+          totalTimeAnalyticsFor5Days: {
+            Monday: 0,
+            Tuesday: 0,
+            Wednesday: 0,
+            Thursday: 0,
+            Friday: 0,
+            Saturday: 0,
+            Sunday: 0,
+
+          },
+          averageTimeAnalyticsFor5Days: {
+            Monday: 0,
+            Tuesday: 0,
+            Wednesday: 0,
+            Thursday: 0,
+            Friday: 0,
+            Saturday: 0,
+            Sunday: 0,
+          }
         }
       }
-    };
+    }
 
   }
 
@@ -233,12 +256,15 @@ export class AuthService {
 
     const domains = await this.dbService.domain.findMany({
       where: {
-        OR: [
-          { ownerId: user.id },
-          { domainMembers: { some: { userId: user.id } } }
-        ]
+        domainMembers: {
+          some: {
+            userId: user.id
+          }
+        }
       },
       include: {
+        tasks: true,
+        panels: true,
         status: true,
       }
     });
@@ -306,21 +332,56 @@ export class AuthService {
     //   await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
     // }
 
-    return {
-      message: 'Access Token',
-      access_token: token,
-      user_data: userObj,
-      domains: {
-        domains,
-        members,
-        panels: domains[0].ownerId === userObj.id ? allPanels : panels,
-        analytics: {
-          analytics,
-          totalTimeAnalyticsFor5Days,
-          averageTimeAnalyticsFor5Days
+    if (domains[0].panels.length < 0 || domains[0].tasks.length < 0) {
+      return {
+        message: 'Signup successful',
+        access_token: token,
+        user_data: userObj,
+        domains: {
+          domains,
+          members,
+          panels: domains[0].ownerId === userObj.id ? allPanels : panels,
+          analytics: {
+            analytics,
+            totalTimeAnalyticsFor5Days: {
+              Monday: 0,
+              Tuesday: 0,
+              Wednesday: 0,
+              Thursday: 0,
+              Friday: 0,
+              Saturday: 0,
+              Sunday: 0,
+
+            },
+            averageTimeAnalyticsFor5Days: {
+              Monday: 0,
+              Tuesday: 0,
+              Wednesday: 0,
+              Thursday: 0,
+              Friday: 0,
+              Saturday: 0,
+              Sunday: 0,
+            }
+          }
         }
-      },
-    };
+      }
+    } else {
+      return {
+        message: 'Access Token',
+        access_token: token,
+        user_data: userObj,
+        domains: {
+          domains,
+          members,
+          panels: domains[0].ownerId === userObj.id ? allPanels : panels,
+          analytics: {
+            analytics,
+            totalTimeAnalyticsFor5Days,
+            averageTimeAnalyticsFor5Days
+          }
+        },
+      };
+    }
 
   }
 
@@ -534,14 +595,12 @@ export class AuthService {
       throw new MethodNotAllowedException('No account like this!')
     }
 
-    const user = await this.signIn({
+    return await this.signIn({
       email: decodedToken.email,
       password: decodedToken.sub,
       deviceToken,
       rememberMe: true
     })
-
-    return user
   }
 
   async verifyAndCreateUser(accessToken: string, deviceToken: string) {
