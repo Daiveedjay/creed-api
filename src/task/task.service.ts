@@ -430,20 +430,22 @@ export class TaskService {
       }
     })
 
-    const adminAccess = await this.dbService.domainMembership.findFirst({
+    const domain = await this.dbService.domain.findUnique({
       where: {
-        userId,
-        memberRole: {
-          in: [
-            'admin',
-            'owner'
-          ]
-        },
-        domainId: doaminID,
+        id: doaminID,
+      },
+      select: {
+        domainMembers: true
       }
     })
 
-    if (!authorOfTask && !adminAccess) {
+    const domainMembership = domain?.domainMembers.some((member) =>
+      member.userId === userId && ['owner', 'admin'].includes(member.memberRole)
+    );
+
+    console.log(!authorOfTask && !domainMembership)
+
+    if (!authorOfTask && !domainMembership) {
       throw new MethodNotAllowedException('No access to this')
     };
 
@@ -451,7 +453,8 @@ export class TaskService {
       where: { domainId: doaminID, id: taskID, panelId: panelID },
       include: {
         assignedCollaborators: true,
-        subTasks: true
+        subTasks: true,
+        Notifications: true
       },
     });
 
@@ -477,12 +480,21 @@ export class TaskService {
       }
     }
 
+    if (existingTask.Notifications) {
+      for (const notification of existingTask.Notifications) {
+        await this.dbService.notifications.delete({
+          where: {
+            id: notification.id
+          }
+        })
+      }
+    }
+
     await this.dbService.task.delete({
       where: {
         domainId: doaminID,
         id: taskID,
         panelId: panelID,
-        authorId: userId,
       },
     });
 

@@ -321,16 +321,17 @@ export class AuthService {
 
       }
     })
+    //console.log(domains[0])
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
     //const deviceToken = await this.notifyService.getDeviceTokens([user.id])
-    const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(domains[0].id, userObj.email, 'last5Days')
-    const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(domains[0].id, userObj.email, 'last5Days')
     await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
     // if (deviceToken[0] === null) {
     //   await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
     // }
+
+
 
     if (domains[0].panels.length < 0 || domains[0].tasks.length < 0) {
       return {
@@ -366,6 +367,11 @@ export class AuthService {
         }
       }
     } else {
+      const [averageTimeAnalyticsFor5Days, totalTimeAnalyticsFor5Days] = await Promise.all([
+        this.analyticService.getAverageTiemToCompleteATask(domains[0].id, userObj.email, 'last5Days'),
+        this.analyticService.getTotalTimeToCompleteATask(domains[0].id, userObj.email, 'last5Days')
+      ])
+
       return {
         message: 'Access Token',
         access_token: token,
