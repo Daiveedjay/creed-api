@@ -22,7 +22,8 @@ export class AWSService {
     url: string,
     key: string
   }> {
-    const key = `profile-pictures/${userId}/${file.originalname}`
+    const rearrangedName = encodeURI(file.originalname)
+    const key = `profile-pictures/${userId}/${rearrangedName}`
     const uploader = new Upload({
       client: this.s3Client,
       params: {

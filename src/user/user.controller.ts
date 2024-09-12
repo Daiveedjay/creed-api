@@ -4,7 +4,7 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserUpdateDTOType } from './user.dto';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('User')
 @Controller('user')
@@ -29,12 +29,19 @@ export class UserController {
   @Patch('/')
   @ApiSecurity('bearerAuth')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('profilePicture'))
   public async editProfile(
     @CurrentUser('email') email: string,
-    @UploadedFile() profilePicture: Express.Multer.File,
     @Body() body: UserUpdateDTOType,
   ) {
-    return await this.userService.editProfile(email, profilePicture, body);
+    return await this.userService.editProfile(email, body);
   }
+
+  @Patch('/upload')
+  @ApiSecurity('bearerAuth')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('profilePicture'))
+  public async uploadFile(@UploadedFile() profilePicture: Express.Multer.File, @CurrentUser('email') email: string) {
+    return await this.userService.updateProfilePicture(email, profilePicture)
+  }
+
 }
