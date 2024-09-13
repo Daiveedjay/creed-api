@@ -236,8 +236,6 @@ export class AnalyticsService {
 
       filteredTasks.forEach((task) => {
         const assignedCollaborator = task.assignedCollaborators.find((collaborator: Collaborator) => collaborator.user.id === user.id)
-        console.log(assignedCollaborator)
-
         // Get the day of the week from the assigned date
         const dayOfWeek = new Date(assignedCollaborator.createdAt).toLocaleString('en-US', {
           weekday: 'long',
@@ -388,8 +386,6 @@ export class AnalyticsService {
         totalTimeInHours,
       };
     });
-
-    console.log(completedTasksWithTime)
 
     if (completedTasksWithTime.length > 0) {
       // Filter tasks based on the desired date range
