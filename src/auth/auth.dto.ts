@@ -50,13 +50,6 @@ export class UserSignupDTOType {
   // @IsNotEmpty()
   country: string;
 
-  @ApiProperty({
-    type: String
-  })
-  @IsString()
-  @IsNotEmpty()
-  deviceToken: string;
-
   @ApiProperty()
   @IsString()
   // @IsNotEmpty()
@@ -87,13 +80,6 @@ export class UserSigninDTOType {
   @IsNotEmpty()
   password: string;
 
-  @ApiProperty({
-    type: String,
-    required: true
-  })
-  @IsNotEmpty()
-  deviceToken: string;
-
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
@@ -116,7 +102,7 @@ export class PasswordResetDTO {
   otp: string;
 }
 
-export class GoogleSignInDto {
+export class GoogleDto {
   @ApiProperty({
     type: String,
     required: true
@@ -134,12 +120,4 @@ export class GoogleSignUpDto {
   @IsString()
   @IsNotEmpty()
   accessToken: string
-
-  @ApiProperty({
-    type: String,
-    required: true
-  })
-  @IsString()
-  @IsNotEmpty()
-  deviceToken: string
 }
