@@ -440,8 +440,6 @@ export class TaskService {
       member.userId === userId && ['owner', 'admin'].includes(member.memberRole)
     );
 
-    console.log(!authorOfTask && !domainMembership)
-
     if (!authorOfTask && !domainMembership) {
       throw new MethodNotAllowedException('No access to this')
     };

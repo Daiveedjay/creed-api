@@ -17,7 +17,7 @@ export class CustomRedisService {
     if (Array.isArray(parsedParams) === true) {
       parsedParams.forEach(async ({ userId, domainId }) => {
         // Add the user to the room in Redis
-        await this.redis.hset(`room:${domainId}`, userId, client.id);
+        await this.redis.hset(`Domain:${domainId}`, userId, client.id);
       });
     } else {
       const { userId, domainId } = parsedParams
@@ -29,16 +29,16 @@ export class CustomRedisService {
     if (Array.isArray(parsedParams) === true) {
       parsedParams.forEach(async ({ userId, domainId }) => {
         // Remove the user from Redis
-        await this.redis.hdel(`room:${domainId}`, userId);
+        await this.redis.hdel(`Domain:${domainId}`, userId);
       });
     } else {
       const { userId, domainId } = parsedParams
-      await this.redis.hdel(`room:${domainId}`, userId);
+      await this.redis.hdel(`Domain:${domainId}`, userId);
     }
   }
 
   async getOnlineUsers(domainId: string) {
-    return await this.redis.hgetall(`${domainId}`);
+    return await this.redis.hgetall(`Domain:${domainId}`);
   }
 
   async isUserOnline(userId: string, domainId: string): Promise<boolean> {

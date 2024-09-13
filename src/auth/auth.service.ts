@@ -310,7 +310,6 @@ export class AuthService {
 
       }
     })
-    //console.log(domains[0])
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
 
@@ -469,7 +468,6 @@ export class AuthService {
       return currentUser;
     } else {
       const firstName = decodedToken.name.split(' ').split(' ')
-      console.log(firstName)
 
       const newUser = await this.signUp({
         email: decodedToken.email,

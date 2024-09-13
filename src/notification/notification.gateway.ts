@@ -32,27 +32,41 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   constructor(private readonly redisService: CustomRedisService) { }
 
   async handleConnection(client: Socket) {
-    const params = client.handshake.query.params as string; // Get user ID from the query params
-    const parsedParams: Params[] | Params = JSON.parse(params);
-    await this.redisService.setUserOnline(parsedParams, client)
+    try {
+      const params = client.handshake.query.params as string; // Get user ID from the query params
+      const parsedParams: Params[] | Params = JSON.parse(params);
+      await this.redisService.setUserOnline(parsedParams, client)
+
+    } catch (error) {
+      this.logger.error('Error connecting: ', error)
+    }
   }
 
   async handleDisconnect(client: Socket) {
-    const params = client.handshake.query.params as string; // Get user ID from the query params
-    const parsedParams: Params[] | Params = JSON.parse(params);
-    await this.redisService.setUserOffline(parsedParams)
+    try {
+      const params = client.handshake.query.params as string; // Get user ID from the query params
+      const parsedParams: Params[] | Params = JSON.parse(params);
+      await this.redisService.setUserOffline(parsedParams)
+    } catch (error) {
+      this.logger.error('Error disconnecting: ', error)
+    }
   }
 
   @SubscribeMessage('send-announcement')
   async sendAnnouncement(payload: INotification) {
-    // Get all users from the Redis room
-    const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
+    try {
+      // Get all users from the Redis room
+      const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
 
-    // Send the message to each user in the room
-    Object.values(usersInRoom).forEach(socketId => {
-      console.log(socketId)
-      this.server.to(socketId).emit('announcement', payload.message);
-    });
+      // Send the message to each user in the room
+      Object.values(usersInRoom).forEach(socketId => {
+        console.log({ socketId })
+        this.server.to(socketId).emit('announcement', payload.message);
+      });
+
+    } catch (error) {
+      this.logger.error('Couldnt not send announcement: ', error)
+    }
   }
 
   // actions
