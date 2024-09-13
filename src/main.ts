@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { SwaggerThemeNameEnum } from 'swagger-themes/build/enums/swagger-theme-name';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
+import { RedisIoAdapter } from './adapters/redis.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,6 +31,11 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document, {
     customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
   });
+
+  //RedisIoAdapter Connection
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   // Enable cors
   app.enableCors({

@@ -93,14 +93,6 @@ export class AuthService {
       }
     })
 
-
-    // await this.dbService.device.create({
-    //   data: {
-    //     userId: user.id,
-    //     deviceToken: dto.deviceToken
-    //   }
-    // })
-
     const token = this.jwtService.sign(
       { uid: user.id },
       {
@@ -168,10 +160,7 @@ export class AuthService {
       }
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
-    const averageTimeAnalyticsFor5Days = await this.analyticService.getAverageTiemToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
-    const totalTimeAnalyticsFor5Days = await this.analyticService.getTotalTimeToCompleteATask(allDomains[0].id, userObj.email, 'last5Days')
     //await this.emailService.sendWelcomeEmail(userObj.email)
-    await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
 
     return {
       message: 'Signup successful',
@@ -324,14 +313,6 @@ export class AuthService {
     //console.log(domains[0])
 
     const analytics = await this.analyticService.getAnalyticsofDomain(domains[0].id, userObj.email)
-    //const deviceToken = await this.notifyService.getDeviceTokens([user.id])
-    await this.notifyService.storeDeviceToken(user.id, dto.deviceToken)
-
-    // if (deviceToken[0] === null) {
-    //   await this.notifyService.storeDeviceToken(user.id, user.Device.deviceToken)
-    // }
-
-
 
     if (domains[0].panels.length < 0 || domains[0].tasks.length < 0) {
       return {
@@ -449,146 +430,7 @@ export class AuthService {
 
   }
 
-  private async getUserData(
-    access_token: string,
-    credentials: Record<string, any>,
-  ) {
-    const response = await fetch(
-      `${this.configService.get('GOOGLE_API_BASE_URL')}/oauth2/v3/userinfo?access_token=${access_token}`,
-    );
-
-    if (!response.ok) throw new NotFoundException('User nor found!');
-
-    const data = await response.json()
-    return {
-      googleId: data.sub,
-      name: data.name,
-      email: data.email,
-      picture: data.picture, // Users who use google signin have verified email automatically,
-      googleCredentials: credentials,
-    };
-
-  }
-
-  async signGoogleLink(redirectURLi: string) {
-    const oAuth2Client = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-      this.configService.get('GOOGLE_CLIENT_SECRET'),
-      redirectURLi,
-    );
-
-    const authorizedUrl = oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: `${this.configService.get('GOOGLE_API_BASE_URL')}/auth/userinfo.profile openid ${this.configService.get('GOOGLE_API_BASE_URL')}/auth/userinfo.email`,
-      prompt: 'consent',
-    });
-
-    return {
-      success: true,
-      message: 'Authorized url',
-      data: authorizedUrl,
-    };
-
-  }
-
-  async signInGoogle(redirectURLi: string, code: string) {
-    const oAuth2Client = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-      this.configService.get('GOOGLE_CLIENT_SECRET'),
-      redirectURLi,
-    );
-    const r = await oAuth2Client.getToken(code);
-    // Make sure to set the credentials on the OAuth2 client.
-    oAuth2Client.setCredentials(r.tokens);
-    const user = oAuth2Client.credentials;
-    const cred = await this.getUserData(
-      oAuth2Client.credentials.access_token!,
-      user,
-    );
-
-    if (!cred) throw new InternalServerErrorException();
-
-    const oldUser = await this.dbService.user.findUnique({
-      where: { googleId: cred.googleId },
-    });
-    if (!oldUser) throw new ForbiddenException('Account does not exist');
-
-    const token = this.jwtService.sign(
-      { uid: oldUser.id },
-      {
-        expiresIn: '12h',
-      },
-    );
-    return { success: true, message: 'Signin successful', data: token };
-
-  }
-
-  async signUpGoogle(
-    dto: Record<string, any>,
-    redirectURLi: string,
-    code: string,
-  ) {
-    const oAuth2Client = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-      this.configService.get('GOOGLE_CLIENT_SECRET'),
-      redirectURLi,
-    );
-    const r = await oAuth2Client.getToken(code);
-    // Make sure to set the credentials on the OAuth2 client.
-    oAuth2Client.setCredentials(r.tokens);
-    const user = oAuth2Client.credentials;
-
-    const cred = await this.getUserData(
-      oAuth2Client.credentials.access_token!,
-      user,
-    );
-
-    if (!cred) throw new InternalServerErrorException();
-
-    // no duplicate user check
-    const oldUser = await this.dbService.user.findUnique({
-      where: { googleId: cred.googleId },
-    });
-    if (oldUser) throw new ForbiddenException('User already exist');
-
-    const newUser = await this.dbService.user.create({
-      data: {
-        email: cred.email,
-        fullName: cred.name,
-        password: '',
-        googleId: cred.googleId,
-        profilePicture: cred.picture,
-        emailVerified: true,
-      },
-    });
-
-    // Setup default domain
-    await this.dbService.domain.create({
-      data: {
-        name: dto.domainName,
-        ownerId: newUser.id,
-
-        domainMembers: {
-          create: {
-            memberRole: Roles.owner,
-            userId: newUser.id
-          }
-        }
-      },
-    })
-
-    const token = this.jwtService.sign(
-      { uid: newUser.id },
-      {
-        expiresIn: '12h',
-      },
-    );
-
-    return { success: true, message: 'Signup successful', data: token };
-
-  }
-
-  async verifyAndUpdateUser(accessToken: string, deviceToken: string) {
+  async verifyAndUpdateUser(accessToken: string) {
     const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
     const userInfo = await this.dbService.user.findUnique({
@@ -604,12 +446,11 @@ export class AuthService {
     return await this.signIn({
       email: decodedToken.email,
       password: decodedToken.sub,
-      deviceToken,
       rememberMe: true
     })
   }
 
-  async verifyAndCreateUser(accessToken: string, deviceToken: string) {
+  async verifyAndCreateUser(accessToken: string) {
     const decodedToken = await admin.auth().verifyIdToken(accessToken);
 
     const userInfo = await this.dbService.user.findUnique({
@@ -622,7 +463,6 @@ export class AuthService {
       const currentUser = await this.signIn({
         email: decodedToken.email,
         password: decodedToken.sub,
-        deviceToken,
         rememberMe: true
       })
 
@@ -637,7 +477,6 @@ export class AuthService {
         profilePicture: decodedToken.picture,
         password: decodedToken.sub,
         phone: '',
-        deviceToken: deviceToken,
         domainName: `${firstName}'s Domain`,
         country: ''
       });

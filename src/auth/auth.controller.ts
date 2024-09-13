@@ -3,28 +3,17 @@ import {
   Body,
   Controller,
   Get,
-  Header,
   Post,
   Query,
-  Req,
-  Res,
-  UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import {
-  GoogleSignInDto,
-  GoogleSignUpDto,
+  GoogleDto,
   PasswordResetDTO,
   UserSigninDTOType,
   UserSignupDTOType,
 } from './auth.dto';
 import { AuthService } from './auth.service';
-import { Request as ExpressRequest, Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
-import CONSTANTS from 'src/lib/constants';
-import { OAuth2Client } from 'google-auth-library';
-import { admin } from 'src/lib/firebase';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -72,16 +61,16 @@ export class AuthController {
    */
   @Post('google/login')
   public async googleLogin(
-    @Body() dto: GoogleSignUpDto,
+    @Body() dto: GoogleDto,
   ) {
-    return this.authService.verifyAndUpdateUser(dto.accessToken, dto.deviceToken)
+    return this.authService.verifyAndUpdateUser(dto.accessToken)
   }
 
   @Post('google/signup')
   public async googleSignUp(
-    @Body() dto: GoogleSignUpDto,
+    @Body() dto: GoogleDto,
   ) {
-    return this.authService.verifyAndCreateUser(dto.accessToken, dto.deviceToken)
+    return this.authService.verifyAndCreateUser(dto.accessToken)
   }
 
 }
