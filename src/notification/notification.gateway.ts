@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -53,7 +54,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   @SubscribeMessage('send-announcement')
-  async sendAnnouncement(payload: INotification) {
+  async sendAnnouncement(@MessageBody() payload: INotification) {
     try {
       // Get all users from the Redis room
       const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
