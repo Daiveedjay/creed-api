@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, PayloadTooLargeException } from '@nestjs/common';
 import {
   MessageBody,
   OnGatewayConnection,
@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import {
   INotification,
   NotificationAssignedTasks,
+  NotificationCreatedPanels,
   NotificationTasks
 } from './notification.types';
 import { CustomRedisService } from 'src/utils/redis.service';
@@ -58,7 +59,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   //For all users in a domain
-  @SubscribeMessage('send-announcement')
+  @SubscribeMessage('send-gen-announcement')
   async sendAnnouncement(@MessageBody() payload: INotification) {
     try {
       // Get all users from the Redis room
@@ -67,7 +68,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       // Send the message to each user in the room
       Object.values(usersInRoom).forEach(socketId => {
         //console.log({ socketId })
-        this.server.to(socketId).emit('announcement', payload.message);
+        this.server.to(socketId).emit('gen-announcement', payload.message);
       });
 
     } catch (error) {
@@ -129,6 +130,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
         payload.assignedUsers.includes(onlineId)
       );
 
+      console.log(onlinePanelMembers)
       const onlinePanelMembersSocketIds = await this.redisService.getSocketIds(onlinePanelMembers, payload.domain)
       console.log(onlinePanelMembersSocketIds)
 
@@ -143,4 +145,53 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
   }
 
+  @SubscribeMessage('send-created-panel')
+  async sendCreatedPanelNotifications(@MessageBody() payload: NotificationCreatedPanels) {
+    try {
+      // Get all users from the Redis room
+      const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
+      const allOnlineUsersIds = Object.keys(usersInRoom)
+      const particularDomain = await this.dbService.domain.findUnique({
+        where: {
+          id: payload.domain
+        },
+        select: {
+          ownerId: true,
+          domainMembers: {
+            select: {
+              userId: true,
+              memberRole: true
+            }
+          }
+        }
+      })
+
+      const author = await this.dbService.user.findUnique({
+        where: {
+          id: payload.authorId
+        },
+        select: {
+          fullName: true,
+          username: true
+        }
+      })
+      const everyoneNeededToSend = [particularDomain.ownerId]
+      // Filter online users who are also panel members
+      const onlinePanelMembers = allOnlineUsersIds.filter((onlineId) =>
+        everyoneNeededToSend.includes(onlineId)
+      );
+
+      const onlinePanelMembersSocketIds = await this.redisService.getSocketIds(onlinePanelMembers, payload.domain)
+
+      // Send the message to each user in the room
+      onlinePanelMembersSocketIds.map((socketId: string) => {
+        //console.log({ socketId })
+        this.server.to(socketId).emit('created-panel', `${author.fullName} has created a new panel: ${payload.message}`);
+      });
+
+    } catch (error) {
+      this.logger.error('Couldnt not send announcement: ', error)
+    }
+
+  }
 }

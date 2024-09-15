@@ -21,7 +21,6 @@ import { OAuth2Client } from 'google-auth-library';
 import { UserPayload } from 'src/types';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
-import { NotifyService } from 'src/utils/notify.service';
 import { UserService } from 'src/user/user.service';
 import { InjectRedis } from 'nestjs-redis-fork';
 import { Redis } from "ioredis";
@@ -36,7 +35,6 @@ export class AuthService {
     @InjectRedis() private readonly redis: Redis,
     private readonly userService: UserService,
     private readonly dbService: DbService,
-    private readonly notifyService: NotifyService,
     private readonly analyticService: AnalyticsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
