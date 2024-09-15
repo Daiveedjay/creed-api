@@ -10,14 +10,12 @@ import {
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { NotificationGateway } from 'src/notification/notification.gateway';
-import { NotifyService } from 'src/utils/notify.service';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly notificationGateway: NotificationGateway,
     private readonly dbService: DbService,
-    private readonly notifyService: NotifyService,
   ) { }
 
   async getTasks(domainID: string, panelID: string) {
@@ -228,7 +226,6 @@ export class TaskService {
       return tasksWithMentions;
     }
 
-    await this.notifyService.notifyUser(panelMembers.map((pm) => pm.userId), { body: 'Changes', title: 'You might wanna refresh' })
     return tasks;
   }
 
@@ -336,7 +333,6 @@ export class TaskService {
         }))
       })
 
-      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
@@ -407,7 +403,6 @@ export class TaskService {
       }
     });
 
-    await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return updatedTask;
 
@@ -492,8 +487,6 @@ export class TaskService {
         panelId: panelID,
       },
     });
-
-    //await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
     return new HttpException('Deleted', HttpStatus.ACCEPTED);
   }
@@ -682,7 +675,6 @@ export class TaskService {
           }))
         })
 
-        await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
         if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
@@ -753,7 +745,6 @@ export class TaskService {
         }
       });
 
-      await this.notifyService.notifyUser(dto.usersToAssignIds, { body: 'Changes', title: 'You might wanna refresh' })
 
       updatedTasks.add(updatedTask)
     }

@@ -7,6 +7,8 @@ import { Params } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class CustomRedisService {
+  private readonly redisPrefix = 'offline-messages'
+
   constructor(
     @InjectRedis()
     private readonly redis: Redis,

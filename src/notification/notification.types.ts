@@ -14,3 +14,9 @@ export interface NotificationAssignedTasks {
   message: string;
   assignedUsers: string[];
 }
+
+export interface NotificationCreatedPanels {
+  domain: string;
+  authorId: string;
+  message: string;
+}
