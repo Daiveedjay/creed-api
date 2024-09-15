@@ -41,6 +41,16 @@ export class CustomRedisService {
     return await this.redis.hgetall(`Domain:${domainId}`);
   }
 
+  async getSocketIds(userIds: string[], domainId: string) {
+    const socketIds = new Set()
+    for (const id of userIds) {
+      const socketId = await this.redis.hget(`Domain:${domainId}`, id)
+      socketIds.add(socketId)
+    }
+
+    return Array.from(socketIds);
+  }
+
   async isUserOnline(userId: string, domainId: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
       this.redis.hexists(`${domainId}`, userId, (err, reply) => {
