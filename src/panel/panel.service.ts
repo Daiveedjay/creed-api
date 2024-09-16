@@ -349,7 +349,13 @@ export class PanelService {
         },
       });
 
-      if (panelMembership) throw new ConflictException('No such member here!');
+      if (!panelMembership) throw new ConflictException('No such member here!');
+
+      await this.dbService.assignedCollaborators.deleteMany({
+        where: {
+          userId: id,
+        }
+      })
 
       await this.dbService.panelMembership.delete({
         where: {
