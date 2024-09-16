@@ -58,9 +58,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
   }
 
-  //For all users in a domain
-  @SubscribeMessage('send-gen-announcement')
-  async sendAnnouncement(@MessageBody() payload: INotification) {
+  async globalWebSocketFunction(payload: INotification, emitString: string) {
     try {
       // Get all users from the Redis room
       const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
@@ -68,12 +66,34 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       // Send the message to each user in the room
       Object.values(usersInRoom).forEach(socketId => {
         //console.log({ socketId })
-        this.server.to(socketId).emit('gen-announcement', payload.message);
+        this.server.to(socketId).emit(emitString, payload.message);
       });
 
     } catch (error) {
-      this.logger.error('Couldnt not send announcement: ', error)
+      this.logger.error(`Couldnt send to ${emitString}: `, error)
     }
+
+  }
+
+  //For all users in a domain
+  @SubscribeMessage('send-gen-announcement')
+  async sendAnnouncement(@MessageBody() payload: INotification) {
+    await this.globalWebSocketFunction(payload, 'gen-announcement')
+  }
+
+  @SubscribeMessage('send-column-announcement')
+  async sendColumnAnnouncement(@MessageBody() payload: INotification) {
+    await this.globalWebSocketFunction(payload, 'column-announcement')
+  }
+
+  @SubscribeMessage('send-panel-announcement')
+  async sendPaneAnnouncement(@MessageBody() payload: INotification) {
+    await this.globalWebSocketFunction(payload, 'panel-announcement')
+  }
+
+  @SubscribeMessage('send-collab-announcement')
+  async sendCollaboratorsAnnouncement(@MessageBody() payload: INotification) {
+    await this.globalWebSocketFunction(payload, 'collab-announcement')
   }
 
   //For all users in a particular panel
@@ -138,6 +158,33 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       onlinePanelMembersSocketIds.map((socketId: string) => {
         //console.log({ socketId })
         this.server.to(socketId).emit('to-assigned', payload.message);
+      });
+
+    } catch (error) {
+      this.logger.error('Couldnt not send announcement: ', error)
+    }
+  }
+
+  @SubscribeMessage('send-to-mentioned')
+  async sendTaggedAnnouncements(@MessageBody() payload: NotificationAssignedTasks) {
+    try {
+      // Get all users from the Redis room
+      const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
+      const allOnlineUsersIds = Object.keys(usersInRoom)
+      //
+      // Filter online users who are also panel members
+      const onlinePanelMembers = allOnlineUsersIds.filter((onlineId) =>
+        payload.assignedUsers.includes(onlineId)
+      );
+
+      console.log(onlinePanelMembers)
+      const onlinePanelMembersSocketIds = await this.redisService.getSocketIds(onlinePanelMembers, payload.domain)
+      console.log(onlinePanelMembersSocketIds)
+
+      // Send the message to each user in the room
+      onlinePanelMembersSocketIds.map((socketId: string) => {
+        //console.log({ socketId })
+        this.server.to(socketId).emit('to-mentioned', payload.message);
       });
 
     } catch (error) {

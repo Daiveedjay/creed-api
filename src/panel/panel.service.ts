@@ -11,7 +11,7 @@ import { DbService } from 'src/utils/db.service';
 import { AddUsersDto, CreatePanelDTO, DeleteUserDto } from './panel.dto';
 @Injectable()
 export class PanelService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(private readonly dbService: DbService) { }
 
   async getPanels(domainID: string, id: string) {
     const currentUser = await this.dbService.user.findUnique({
@@ -101,49 +101,86 @@ export class PanelService {
       },
     });
 
+    const ownerOfDomain = await this.dbService.domain.findUnique({
+      where: {
+        ownerId: currentUser.id,
+        id: domainID
+      }
+    })
+
     if (!domainMembership)
       throw new UnauthorizedException('No access to this domain!');
 
-    const panelMembership = await this.dbService.panelMembership.findFirst({
-      where: {
-        userId: currentUser.id,
-        domainId: domainID,
-        panelId: panelID,
-      },
-    });
+    if (!ownerOfDomain) {
+      const panelMembership = await this.dbService.panelMembership.findFirst({
+        where: {
+          userId: currentUser.id,
+          domainId: domainID,
+          panelId: panelID,
+        },
+      });
 
-    if (!panelMembership)
-      throw new UnauthorizedException('No access to this panel!');
+      if (!panelMembership)
+        throw new UnauthorizedException('No access to this panel!');
 
-    if (!panel) throw new NotFoundException('Thee did not find this request!');
+      if (!panel) throw new NotFoundException('Thee did not find this request!');
 
-    const panelMembers = await this.dbService.panelMembership.findMany({
-      where: {
-        panelId: panelID,
-        domainId: domainID,
-      },
-      select: {
-        createdAt: true,
-        domainId: true,
-        id: true,
-        panelId: true,
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            profilePicture: true,
-            username: true,
+      const panelMembers = await this.dbService.panelMembership.findMany({
+        where: {
+          panelId: panelID,
+          domainId: domainID,
+        },
+        select: {
+          createdAt: true,
+          domainId: true,
+          id: true,
+          panelId: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              profilePicture: true,
+              username: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    const payload = {
-      panel_data: panel,
-      panel_members: panelMembers,
-    };
+      const payload = {
+        panel_data: panel,
+        panel_members: panelMembers,
+      };
 
-    return payload;
+      return payload;
+    } else {
+      const panelMembers = await this.dbService.panelMembership.findMany({
+        where: {
+          panelId: panelID,
+          domainId: domainID,
+        },
+        select: {
+          createdAt: true,
+          domainId: true,
+          id: true,
+          panelId: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              profilePicture: true,
+              username: true,
+            },
+          },
+        },
+      });
+
+      const payload = {
+        panel_data: panel,
+        panel_members: panelMembers,
+      };
+
+      return payload
+    }
   }
 
   async createPanel(domainID: string, userId: string, dto: CreatePanelDTO) {

@@ -63,7 +63,7 @@ export class AuthController {
   public async googleLogin(
     @Body() dto: GoogleDto,
   ) {
-    return this.authService.verifyAndUpdateUser(dto.accessToken)
+    return this.authService.verifyAndCreateUser(dto.accessToken)
   }
 
   @Post('google/signup')
