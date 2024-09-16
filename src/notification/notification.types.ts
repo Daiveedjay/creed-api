@@ -20,3 +20,10 @@ export interface NotificationCreatedPanels {
   authorId: string;
   message: string;
 }
+
+export interface NotificationPanelModify {
+  domain: string;
+  panel: string;
+  users: string[];
+  message: string;
+}

@@ -12,6 +12,7 @@ import {
   INotification,
   NotificationAssignedTasks,
   NotificationCreatedPanels,
+  NotificationPanelModify,
   NotificationTasks
 } from './notification.types';
 import { CustomRedisService } from 'src/utils/redis.service';
@@ -185,6 +186,42 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       onlinePanelMembersSocketIds.map((socketId: string) => {
         //console.log({ socketId })
         this.server.to(socketId).emit('to-mentioned', payload.message);
+      });
+
+    } catch (error) {
+      this.logger.error('Couldnt not send announcement: ', error)
+    }
+  }
+
+  @SubscribeMessage('panel-modify-announcement')
+  async sendToUpdatesPanelAnnouncement(@MessageBody() payload: NotificationPanelModify) {
+    try {
+      // Get all users from the Redis room
+      const usersInRoom = await this.redisService.getOnlineUsers(payload.domain);
+      const allOnlineUsersIds = Object.keys(usersInRoom)
+      const particularPanel = await this.dbService.panel.findUnique({
+        where: {
+          id: payload.panel,
+          domainId: payload.domain
+        }
+      })
+
+      const particularDomain = await this.dbService.domain.findUnique({
+        where: {
+          id: payload.domain
+        },
+      })
+      // Filter online users who are also panel members
+      const onlinePanelMembers = allOnlineUsersIds.filter((onlineId) =>
+        payload.users.includes(onlineId)
+      );
+
+      const onlinePanelMembersSocketIds = await this.redisService.getSocketIds(onlinePanelMembers, payload.domain)
+
+      // Send the message to each user in the room
+      onlinePanelMembersSocketIds.map((socketId: string) => {
+        //console.log({ socketId })
+        this.server.to(socketId).emit('modify-announcement', `You have been ${payload.message} from panel: ${particularPanel.name} in domain: ${particularDomain.name}`);
       });
 
     } catch (error) {
