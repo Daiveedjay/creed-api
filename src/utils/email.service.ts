@@ -44,8 +44,8 @@ export class EmailService {
   }
 
   async sendEmail(to: string, subject: string, body: string) {
-    const params = {
-      Source: 'your-email@example.com', // Verified SES email
+    const params: SendEmailCommandInput = {
+      Source: 'jajadavidjid@gmail.com', // Verified SES email
       Destination: {
         ToAddresses: [to],
       },
@@ -72,7 +72,7 @@ export class EmailService {
 
   async sendMultipleEmails(to: string[], subject: string, body: string) {
     const params = {
-      Source: 'your-email@example.com', // Verified SES email
+      Source: 'jajadavidjid@gmail.com', // Verified SES email
       Destination: {
         ToAddresses: to,
       },
