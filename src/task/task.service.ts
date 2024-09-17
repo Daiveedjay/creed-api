@@ -360,21 +360,23 @@ export class TaskService {
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
-      await this.dbService.notifications.createMany({
-        data: users.map((user) => ({
-          taskId: existingTask.id,
-          userId: user.userId,
-          hasRead: false
-        }))
-      })
+      await Promise.all([
+        this.dbService.notifications.createMany({
+          data: users.map((user) => ({
+            taskId: existingTask.id,
+            userId: user.userId,
+            hasRead: false
+          }))
+        }),
 
-      await this.emailQueue.add('sendEmail', {
-        email: usersEmails,
-        subject: 'You have been assigned a task senior boy!',
-        body: 'I hail you!!!!!!!!!'
-      }, {
-        delay: 300000,
-      })
+        this.emailQueue.add('sendEmail', {
+          email: usersEmails,
+          subject: 'You have been assigned a task senior boy!',
+          body: 'I hail you!!!!!!!!!'
+        }, {
+          delay: 300000,
+        })
+      ])
     }
 
     if (dto.toBeDeletedSubTaskIds?.length > 0) {

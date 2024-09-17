@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { APP_PIPE } from '@nestjs/core';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateCollaboratorDto {
   name: string
@@ -110,4 +110,13 @@ export class RemovingCollaboratorsDto {
   @IsString()
   @IsNotEmpty()
   userToBeRemovedId: string
+}
+
+export class InviteEmailsDto extends PartialType(AddCollaboratorDto) {
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsArray()
+  usersEmails: string[]
 }

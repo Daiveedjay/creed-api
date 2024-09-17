@@ -9,9 +9,15 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { AddUsersDto, CreatePanelDTO, DeleteUserDto } from './panel.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 @Injectable()
 export class PanelService {
-  constructor(private readonly dbService: DbService) { }
+  constructor(
+    @InjectQueue('emailQueue')
+    private readonly emailQueue: Queue,
+    private readonly dbService: DbService
+  ) { }
 
   async getPanels(domainID: string, id: string) {
     const currentUser = await this.dbService.user.findUnique({
@@ -264,6 +270,7 @@ export class PanelService {
         select: {
           id: true,
           username: true,
+          email: true,
           fullName: true,
           profilePicture: true,
         },
@@ -295,13 +302,35 @@ export class PanelService {
         throw new ConflictException('Thee is already in thy panel, kind sir');
     }
 
-    await this.dbService.panelMembership.createMany({
-      data: addUsersDto.userIds?.map((user) => ({
-        userId: user,
-        domainId: domainID,
-        panelId: panelID,
-      })),
-    });
+    const users = await this.dbService.user.findMany({
+      where: {
+        id: {
+          in: addUsersDto.userIds
+        }
+      },
+      select: {
+        email: true
+      }
+    })
+    const usersEmails = users.map((user) => user.email)
+
+    await Promise.all([
+      this.dbService.panelMembership.createMany({
+        data: addUsersDto.userIds?.map((user) => ({
+          userId: user,
+          domainId: domainID,
+          panelId: panelID,
+        })),
+      }),
+
+      this.emailQueue.add('sendEmail', {
+        email: usersEmails,
+        subject: 'You have been assigned a task senior boy!',
+        body: 'I hail you!!!!!!!!!'
+      }, {
+        delay: 300000,
+      })
+    ])
 
     return new HttpException('Success', HttpStatus.CREATED);
   }
@@ -347,21 +376,38 @@ export class PanelService {
           domainId: domainID,
           panelId: panelID,
         },
+        include: {
+          user: {
+            select: {
+              email: true
+            }
+          }
+        }
       });
 
       if (!panelMembership) throw new ConflictException('No such member here!');
 
-      await this.dbService.assignedCollaborators.deleteMany({
-        where: {
-          userId: id,
-        }
-      })
+      await Promise.all([
+        this.dbService.assignedCollaborators.deleteMany({
+          where: {
+            userId: id,
+          }
+        }),
 
-      await this.dbService.panelMembership.delete({
-        where: {
-          id: panelMembership.id,
-        },
-      });
+        this.dbService.panelMembership.delete({
+          where: {
+            id: panelMembership.id,
+          },
+        }),
+
+        this.emailQueue.add('sendEmail', {
+          email: panelMembership.user.email,
+          subject: 'You have been assigned a task senior boy!',
+          body: 'I hail you!!!!!!!!!'
+        }, {
+          delay: 300000,
+        })
+      ])
 
       return new HttpException('Success', HttpStatus.CREATED);
     }

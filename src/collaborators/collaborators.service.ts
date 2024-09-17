@@ -4,12 +4,11 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  InternalServerErrorException,
   MethodNotAllowedException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AddCollaboratorDto, DemotingAndPromotingCollaboratorsDto, JoinCollaboratorDto, RemovingCollaboratorsDto } from './collaborator.dto';
+import { AddCollaboratorDto, DemotingAndPromotingCollaboratorsDto, InviteEmailsDto, JoinCollaboratorDto, RemovingCollaboratorsDto } from './collaborator.dto';
 import { DbService } from 'src/utils/db.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -18,10 +17,12 @@ import { InvitePayload } from 'src/types';
 import { UserService } from 'src/user/user.service';
 import { DomainService } from 'src/domain/domain.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
+import { EmailService } from 'src/utils/email.service';
 
 @Injectable()
 export class CollaboratorsService {
   constructor(
+    private readonly emailService: EmailService,
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
@@ -80,10 +81,14 @@ export class CollaboratorsService {
   }
 
   async joinThroughLink(joinCollaboratorDto: JoinCollaboratorDto) {
-    const todaysDate = new Date()
     const inviteeUser = await this.userService.getProfileThroughEmail(
       joinCollaboratorDto.email,
     );
+    const invitedByUser = await this.dbService.user.findUnique({
+      where: {
+        id: joinCollaboratorDto.invitedBy
+      }
+    })
 
     const thereIsDomain = await this.domainService.getUserDomain(
       joinCollaboratorDto.invitedBy,
@@ -130,6 +135,11 @@ export class CollaboratorsService {
         memberRole: joinCollaboratorDto.role,
       }
     });
+
+    await this.notificationGateway.globalWebSocketFunction({
+      domain: thereIsDomain.id,
+      message: `${invitedByUser.fullName} invited ${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`
+    }, 'joined-domain')
 
     return new HttpException(
       `You have successfully joined a domain: ${thereIsDomain.name}`,
@@ -221,6 +231,8 @@ export class CollaboratorsService {
         }
       })
 
+      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, 'You have been made admin? Senior boy', 'ANother upgrade for you o!')
+
       return new HttpException(`${userToBePromotedOrDemoted.fullName} has leveled up!`, HttpStatus.ACCEPTED)
 
     } else if (dto.action === 'promoting' && (currentDomainMembership.memberRole === 'admin' || currentDomainMembership.memberRole === 'owner')) {
@@ -237,6 +249,8 @@ export class CollaboratorsService {
           memberRole: 'member'
         }
       })
+
+      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, 'Omo man dem don bench you!', 'You have been made a member boss. No cry!')
 
       return new HttpException(`${userToBePromotedOrDemoted.fullName} has been benched`, HttpStatus.ACCEPTED)
 
@@ -266,6 +280,18 @@ export class CollaboratorsService {
       where: {
         userId: dto.userToBeRemovedId,
         domainId,
+      },
+      include: {
+        user: {
+          select: {
+            email: true
+          }
+        },
+        domain: {
+          select: {
+            name: true
+          }
+        }
       }
     })
 
@@ -344,6 +370,30 @@ export class CollaboratorsService {
         id: userToBeRemoved.id
       }
     })
+
+    await this.emailService.sendEmail(userToBeRemoved.user.email, `You have been removed from "${userToBeRemoved.domain.name}" `, 'You don comot this domain o. Wetin you do?')
+  }
+
+  async sendCollaborationInviteEmails(userEmail: string, dto: InviteEmailsDto) {
+    const domain = await this.dbService.domain.findUnique({
+      where: {
+        id: dto.domainId
+      }
+    })
+    for (const email of dto.usersEmails) {
+      const link = await this.createLinkForJoining({
+        domainId: dto.domainId,
+        role: dto.role,
+      }, userEmail)
+
+      await this.emailService.sendEmail(
+        email,
+        'You have been invited',
+        `You have been invited to join this particular domain called "${domain.name}", where they excell in whatever. Do create an account before joining. CLick on the link below to join the domain: \n ${link}`
+      )
+
+      return new HttpException('Email sent!', HttpStatus.OK)
+    }
   }
 }
 
