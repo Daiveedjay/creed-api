@@ -23,6 +23,7 @@ import { AnnouncementsController } from './announcements/announcements.controlle
 import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
 import { RedisModule } from 'nestjs-redis-fork';
+import { BullModule } from '@nestjs/bull';
 
 
 @Module({
@@ -32,6 +33,13 @@ import { RedisModule } from 'nestjs-redis-fork';
         host: 'redis',
         //host: '127.0.0.1', // Redis server host
         port: 6379,
+      }
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: 'redis',
+        //host: '127.0.0.1', // Redis server host
+        port: 6379
       }
     }),
     AuthModule,

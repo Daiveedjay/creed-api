@@ -36,7 +36,7 @@ export class EmailService {
 
     try {
       const command = new SendEmailCommand(params);
-      const response = await this.sesClient.send(command);
+      await this.sesClient.send(command);
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
       console.error('Error sending email:', error);
@@ -63,7 +63,7 @@ export class EmailService {
 
     try {
       const command = new SendEmailCommand(params);
-      const response = await this.sesClient.send(command);
+      await this.sesClient.send(command);
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
       console.error('Error sending email:', error);
@@ -90,7 +90,7 @@ export class EmailService {
 
     try {
       const command = new SendEmailCommand(params);
-      const response = await this.sesClient.send(command);
+      await this.sesClient.send(command);
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
       console.error('Error sending email:', error);

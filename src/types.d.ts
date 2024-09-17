@@ -3,6 +3,7 @@ import { type Request } from "express";
 import { Role } from "./collaborators/collaborator.dto";
 import { Socket } from 'socket.io';
 import { $Enums, Task } from "@prisma/client";
+import { Job } from "bull";
 
 export interface AuthRequest extends Request {
   auth?: { uid: string }; // Adjust with the properties you need from User
@@ -80,3 +81,9 @@ export interface Collaborator {
     profilePicture: string | null
   },
 }
+
+export interface QueueJob extends Job {
+  email: string[] | string,
+  subject: string,
+  body: string
+} 

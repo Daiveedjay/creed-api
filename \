@@ -661,15 +661,7 @@ export class TaskService {
         },
         include: {
           subTasks: true,
-          assignedCollaborators: {
-            include: {
-              user: {
-                select: {
-                  email: true
-                }
-              }
-            }
-          },
+          assignedCollaborators: true,
         },
       });
 
@@ -747,13 +739,6 @@ export class TaskService {
             },
             taskId: existingTask.id,
           },
-          include: {
-            user: {
-              select: {
-                email: true
-              }
-            }
-          }
         })
 
         if (allreadyAssignedUsers.length > 0) throw new ConflictException('A user is already assigned to this task');
@@ -764,7 +749,6 @@ export class TaskService {
             taskId: existingTask.id,
           }))
         })
-        const usersEmails = allreadyAssignedUsers.map((user) => user.user.email)
 
 
         if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
@@ -809,7 +793,6 @@ export class TaskService {
           const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
             (assigned) => assigned.userId === id,
           );
-          const usersEmail = existingAssignedCollaborators.user.email
 
           if (!existingAssignedCollaborators) {
             throw new NotFoundException('Subtask not found!')
@@ -819,14 +802,6 @@ export class TaskService {
             where: {
               id: existingAssignedCollaborators.id
             }
-          })
-
-          await this.emailQueue.add('sendEmail', {
-            email: usersEmail,
-            subject: 'You have been deleted from a task senior boy!',
-            body: 'No vex abeg!!!!!!!!!'
-          }, {
-            delay: 300000,
           })
         }
       }
