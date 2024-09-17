@@ -59,7 +59,7 @@ export class UserService {
     if (!currentUser) throw new UnauthorizedException('No access');
 
     // }
-    await this.dbService.user.update({
+    const updatedProfile = await this.dbService.user.update({
       where: {
         email
       },
@@ -75,7 +75,7 @@ export class UserService {
       },
     });
 
-    return new HttpException('Profile updated', HttpStatus.ACCEPTED);
+    return updatedProfile;
   }
 
   async getProfileThroughEmail(email: string) {
