@@ -97,6 +97,11 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     await this.globalWebSocketFunction(payload, 'collab-announcement')
   }
 
+  @SubscribeMessage('send-domain-announcement')
+  async sendEditDomainAnnouncement(@MessageBody() payload: INotification) {
+    await this.globalWebSocketFunction(payload, 'domain-announcement')
+  }
+
   //For all users in a particular panel
   @SubscribeMessage('send-info')
   async sendAnnouncementToOnlineUsers(@MessageBody() payload: NotificationTasks) {

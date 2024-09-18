@@ -33,13 +33,15 @@ import { BullModule } from '@nestjs/bull';
         host: 'redis',
         //host: '127.0.0.1', // Redis server host
         port: 6379,
+        db: 0
       }
     }),
     BullModule.forRoot({
       redis: {
         host: 'redis',
         //host: '127.0.0.1', // Redis server host
-        port: 6379
+        port: 6379,
+        db: 0
       }
     }),
     AuthModule,

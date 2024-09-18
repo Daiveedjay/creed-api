@@ -84,6 +84,13 @@ export class CollaboratorsService {
     const inviteeUser = await this.userService.getProfileThroughEmail(
       joinCollaboratorDto.email,
     );
+
+    const inviteeDomains = await this.domainService.getUserDomains(inviteeUser.id)
+
+    if (inviteeDomains.length === 3) {
+      throw new ConflictException('Max number amount of domains exceeded')
+    }
+
     const invitedByUser = await this.dbService.user.findUnique({
       where: {
         id: joinCollaboratorDto.invitedBy

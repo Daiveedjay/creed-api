@@ -4,11 +4,13 @@ import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
 import { Roles } from '@prisma/client';
 import CONSTANTS from 'src/lib/constants';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class DomainService {
   constructor(
-    private readonly dbService: DbService
+    private readonly dbService: DbService,
+    private readonly notificationGateway: NotificationGateway
   ) { }
 
   async getUserDomains(userID: string) {
@@ -90,22 +92,15 @@ export class DomainService {
       where: { id: domainID, ownerId: currentUser.id },
       data: {
         ...dto,
-        // domainMembers: {
-        //   updateMany: {
-        //     where: {
-        //       domainId: domainID
-        //     },
-        //     data: dto.domainMembers.map(member => ({
-        //       userId: member
-        //     }))
-        //   }
-        // }
       },
     });
 
+    await this.notificationGateway.globalWebSocketFunction({
+      domain: domainID,
+      message: `Some information has been changed in the domain`
+    }, 'domain-announcement')
+
     throw new HttpException('Updated', HttpStatus.ACCEPTED)
-
-
   }
 
   async create(userID: string, dto: CreateDomainDTO) {
