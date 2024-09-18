@@ -36,7 +36,8 @@ export class EmailService {
 
     try {
       const command = new SendEmailCommand(params);
-      await this.sesClient.send(command);
+      const response = await this.sesClient.send(command);
+      console.log(response)
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
       console.error('Error sending email:', error);
@@ -63,7 +64,8 @@ export class EmailService {
 
     try {
       const command = new SendEmailCommand(params);
-      await this.sesClient.send(command);
+      const response = await this.sesClient.send(command);
+      console.log(response)
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
       console.error('Error sending email:', error);
@@ -71,6 +73,7 @@ export class EmailService {
   }
 
   async sendMultipleEmails(to: string[], subject: string, body: string) {
+    console.log(to)
     const params = {
       Source: 'jajadavidjid@gmail.com', // Verified SES email
       Destination: {
@@ -90,7 +93,8 @@ export class EmailService {
 
     try {
       const command = new SendEmailCommand(params);
-      await this.sesClient.send(command);
+      const response = await this.sesClient.send(command);
+      console.log(response)
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
       console.error('Error sending email:', error);

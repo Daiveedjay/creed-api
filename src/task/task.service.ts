@@ -402,6 +402,7 @@ export class TaskService {
         const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
           (assigned) => assigned.userId === id,
         );
+        console.log(existingAssignedCollaborators)
         const usersEmail = existingAssignedCollaborators.user.email
 
         if (!existingAssignedCollaborators) {

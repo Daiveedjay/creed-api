@@ -58,6 +58,11 @@ export class AnalyticsService {
         where: {
           domainId,
           panelId: panel.id,
+          assignedCollaborators: {
+            some: {
+              userId: user.id
+            }
+          }
         },
         include: {
           assignedCollaborators: {

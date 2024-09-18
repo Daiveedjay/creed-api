@@ -9,13 +9,12 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { AddUsersDto, CreatePanelDTO, DeleteUserDto } from './panel.dto';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { EmailService } from 'src/utils/email.service';
+
 @Injectable()
 export class PanelService {
   constructor(
-    @InjectQueue('emailQueue')
-    private readonly emailQueue: Queue,
+    private readonly emailService: EmailService,
     private readonly dbService: DbService
   ) { }
 
@@ -323,13 +322,7 @@ export class PanelService {
         })),
       }),
 
-      this.emailQueue.add('sendEmail', {
-        email: usersEmails,
-        subject: 'You have been assigned a task senior boy!',
-        body: 'I hail you!!!!!!!!!'
-      }, {
-        delay: 300000,
-      })
+      this.emailService.sendMultipleEmails(usersEmails, 'ANything abeg!', 'Free me you have been added to panel abeg!')
     ])
 
     return new HttpException('Success', HttpStatus.CREATED);
@@ -400,13 +393,9 @@ export class PanelService {
           },
         }),
 
-        this.emailQueue.add('sendEmail', {
-          email: panelMembership.user.email,
-          subject: 'You have been assigned a task senior boy!',
-          body: 'I hail you!!!!!!!!!'
-        }, {
-          delay: 300000,
-        })
+
+        this.emailService.sendEmail(panelMembership.user.email, 'ANything abeg!', 'You have been rremoved abeg, Fuvk off!')
+
       ])
 
       return new HttpException('Success', HttpStatus.CREATED);
