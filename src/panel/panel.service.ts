@@ -216,13 +216,33 @@ export class PanelService {
       },
     });
 
-    await this.dbService.panelMembership.create({
-      data: {
-        userId: currentUser.userId,
-        domainId: domainID,
-        panelId: panel.id,
-      },
-    });
+    if (currentUser.userId !== particularDomain.ownerId) {
+      await Promise.all([
+        await this.dbService.panelMembership.create({
+          data: {
+            userId: currentUser.userId,
+            domainId: domainID,
+            panelId: panel.id,
+          },
+        }),
+
+        await this.dbService.panelMembership.create({
+          data: {
+            userId: particularDomain.ownerId,
+            domainId: domainID,
+            panelId: panel.id,
+          },
+        })
+      ])
+    } else {
+      await this.dbService.panelMembership.create({
+        data: {
+          userId: currentUser.userId,
+          domainId: domainID,
+          panelId: panel.id,
+        },
+      });
+    }
 
     return panel;
   }
