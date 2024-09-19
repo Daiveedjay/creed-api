@@ -9,7 +9,17 @@ const CONSTANTS = {
   OTP_LENGTH: 6,
   OTP_TTL: 1, // in minutes
   RATE_LIMIT_FEEDBACK: 5, // in minutes
-  MAXIMUM_DOMAINS: 3
+  MAXIMUM_DOMAINS: 3,
+  JOIN_DOMAIN: 'join-domain',
+  LEAVE_DOMAIN: 'leave-domain',
+  REMOVED_DOMAIN: 'removed-domain',
+  INVITED_TO_PANEL: 'invited-to-panel',
+  REMOVED_FROM_PANEL: 'removed-from-panel',
+  ASSIGNED_TO_TASK: 'assigned-to-task',
+  REMOVED_FROM_TASK: 'removed-from-task',
+  MENTIONED_ON_CHAT: 'mentioned-on-chat',
+  GETTING_PROMOTED: 'getting promoted',
+  GETTING_DEMOTED: 'getting-demoted',
 };
 
 export default CONSTANTS;

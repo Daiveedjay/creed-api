@@ -92,6 +92,11 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     await this.globalWebSocketFunction(payload, 'panel-announcement')
   }
 
+  @SubscribeMessage('send-profile-update-announcement')
+  async sendProfileUpdateAnnouncement(@MessageBody() payload: INotification) {
+    await this.globalWebSocketFunction(payload, 'profile-update-announcement')
+  }
+
   @SubscribeMessage('send-collab-announcement')
   async sendCollaboratorsAnnouncement(@MessageBody() payload: INotification) {
     await this.globalWebSocketFunction(payload, 'collab-announcement')
