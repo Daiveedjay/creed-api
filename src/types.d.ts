@@ -86,4 +86,5 @@ export interface QueueJob extends Job {
   email: string[] | string,
   subject: string,
   body: string
-} 
+}
+

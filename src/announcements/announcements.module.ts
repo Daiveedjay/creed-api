@@ -8,5 +8,6 @@ import { UserModule } from 'src/user/user.module';
   imports: [DomainModule, UserModule],
   controllers: [AnnouncementsController],
   providers: [AnnouncementsService],
+  exports: [AnnouncementsService]
 })
 export class AnnouncementsModule { }

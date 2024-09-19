@@ -18,6 +18,9 @@ import { UserService } from 'src/user/user.service';
 import { DomainService } from 'src/domain/domain.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { EmailService } from 'src/utils/email.service';
+import { AnnouncementsService } from 'src/announcements/announcements.service';
+import { getEmailSubject, getEmailTemplate } from 'src/utils/email-template';
+import { Format } from 'src/utils/email-template';
 
 @Injectable()
 export class CollaboratorsService {
@@ -28,6 +31,7 @@ export class CollaboratorsService {
     private readonly userService: UserService,
     private readonly domainService: DomainService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly announcementService: AnnouncementsService
   ) { }
 
   async createLinkForJoining(
@@ -135,18 +139,25 @@ export class CollaboratorsService {
       throw new ConflictException('User is already in the domain!')
     };
 
-    await this.dbService.domainMembership.create({
-      data: {
-        domainId: thereIsDomain.id,
-        userId: inviteeUser.id,
-        memberRole: joinCollaboratorDto.role,
-      }
-    });
+    await Promise.all([
+      await this.dbService.domainMembership.create({
+        data: {
+          domainId: thereIsDomain.id,
+          userId: inviteeUser.id,
+          memberRole: joinCollaboratorDto.role,
+        }
+      }),
 
-    await this.notificationGateway.globalWebSocketFunction({
-      domain: thereIsDomain.id,
-      message: `${invitedByUser.fullName} invited ${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`
-    }, 'joined-domain')
+      await this.notificationGateway.globalWebSocketFunction({
+        domain: thereIsDomain.id,
+        message: `${invitedByUser.fullName} invited ${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`
+      }, 'joined-domain'),
+
+      await this.announcementService.create(invitedByUser.email, joinCollaboratorDto.domainId, {
+        content: `${invitedByUser.fullName} invited ${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`,
+        mentions: [inviteeUser.id]
+      })
+    ])
 
     return new HttpException(
       `You have successfully joined a domain: ${thereIsDomain.name}`,
@@ -238,7 +249,15 @@ export class CollaboratorsService {
         }
       })
 
-      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, 'You have been made admin? Senior boy', 'ANother upgrade for you o!')
+      const userToBePromotedOrDemotedName = userToBePromotedOrDemoted.fullName.split(' ')
+      const subject = getEmailSubject(Format.GETTING_PROMOTED, {
+        domainName: currentDomainAndAccess.name
+      })
+      const body = getEmailTemplate(Format.GETTING_PROMOTED, userToBePromotedOrDemotedName[0], {
+        domainName: currentDomainAndAccess.name,
+        domainUrl: ''
+      })
+      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, subject, body)
 
       return new HttpException(`${userToBePromotedOrDemoted.fullName} has leveled up!`, HttpStatus.ACCEPTED)
 
@@ -257,7 +276,14 @@ export class CollaboratorsService {
         }
       })
 
-      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, 'Omo man dem don bench you!', 'You have been made a member boss. No cry!')
+      const userToBePromotedOrDemotedName = userToBePromotedOrDemoted.fullName.split(' ')
+      const subject = getEmailSubject(Format.GETTING_DEMOTED, {
+        domainName: currentDomainAndAccess.name
+      })
+      const body = getEmailTemplate(Format.GETTING_DEMOTED, userToBePromotedOrDemotedName[0], {
+        domainName: currentDomainAndAccess.name,
+      })
+      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, subject, body)
 
       return new HttpException(`${userToBePromotedOrDemoted.fullName} has been benched`, HttpStatus.ACCEPTED)
 
@@ -291,7 +317,8 @@ export class CollaboratorsService {
       include: {
         user: {
           select: {
-            email: true
+            email: true,
+            fullName: true
           }
         },
         domain: {
@@ -378,7 +405,14 @@ export class CollaboratorsService {
       }
     })
 
-    await this.emailService.sendEmail(userToBeRemoved.user.email, `You have been removed from "${userToBeRemoved.domain.name}" `, 'You don comot this domain o. Wetin you do?')
+    const userToBePromotedOrDemotedName = userToBeRemoved.user.fullName.split(' ')
+    const subject = getEmailSubject(Format.REMOVED_DOMAIN, {
+      domainName: particularDomain.name
+    })
+    const body = getEmailTemplate(Format.REMOVED_DOMAIN, userToBePromotedOrDemotedName[0], {
+      domainName: particularDomain.name,
+    })
+    await this.emailService.sendEmail(userToBeRemoved.user.email, subject, body)
   }
 
   async sendCollaborationInviteEmails(userEmail: string, dto: InviteEmailsDto) {
@@ -392,6 +426,12 @@ export class CollaboratorsService {
         domainId: dto.domainId,
         role: dto.role,
       }, userEmail)
+
+      //const userToBePromotedOrDemotedName = userToBeRemoved.user.fullName.split(' ')
+      //const subject = getEmailSubject(Format.REMOVED_DOMAIN, domain.name)
+      //const body = getEmailTemplate(Format.REMOVED_DOMAIN, userToBePromotedOrDemotedName[0], {
+      //domainName: domain.name,
+      //})
 
       await this.emailService.sendEmail(
         email,

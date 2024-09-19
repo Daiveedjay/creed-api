@@ -11,6 +11,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { Queue } from 'bull';
+import { Format, getEmailSubject, getEmailTemplate } from 'src/utils/email-template';
 
 @Injectable()
 export class TaskService {
@@ -116,6 +117,19 @@ export class TaskService {
 
     if (!currentUser) throw new NotFoundException('No user found!');
 
+    const panel = await this.dbService.panel.findUnique({
+      where: {
+        id: panelID
+      },
+      include: {
+        domain: {
+          select: {
+            name: true
+          }
+        }
+      }
+    })
+
     const tasks = await this.dbService.task.create({
       data: {
         description: dto.description,
@@ -185,7 +199,8 @@ export class TaskService {
         include: {
           user: {
             select: {
-              email: true
+              email: true,
+              fullName: true
             }
           }
         }
@@ -222,15 +237,28 @@ export class TaskService {
 
       const tasksWithMentions = await this.getTask(domainID, panelID, tasks.id)
       const usersEmails = users.map((user) => user.user.email)
-      console.log(usersEmails)
-
-      await this.emailQueue.add('sendEmail', {
-        email: usersEmails,
-        subject: 'You have been assigned a task senior boy!',
-        body: 'I hail you!!!!!!!!!'
-      }, {
-        delay: 300000,
+      const subject = getEmailSubject(Format.ASSIGNED_TO_TASK, {
+        panelName: panel.name
       })
+
+      for (const user of users) {
+        const firstName = user.user.fullName.split(' ')
+        const body = getEmailTemplate(Format.ASSIGNED_TO_TASK, firstName[0], {
+          domainName: panel.domain.name,
+          panelName: panel.name,
+          taskTitle: dto.title
+        })
+        console.log(usersEmails)
+
+        await this.emailQueue.add('sendEmail', {
+          email: usersEmails,
+          subject: subject,
+          body: body
+        }, {
+          delay: 300000,
+        })
+      }
+
       return tasksWithMentions;
     }
 
@@ -256,11 +284,22 @@ export class TaskService {
           include: {
             user: {
               select: {
-                email: true
+                email: true,
+                fullName: true
               }
             }
           }
         },
+        domain: {
+          select: {
+            name: true,
+          }
+        },
+        panel: {
+          select: {
+            name: true
+          }
+        }
       },
     });
 
@@ -320,7 +359,8 @@ export class TaskService {
         include: {
           user: {
             select: {
-              email: true
+              email: true,
+              fullName: true
             }
           }
         }
@@ -360,23 +400,35 @@ export class TaskService {
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
-      await Promise.all([
-        this.dbService.notifications.createMany({
-          data: users.map((user) => ({
-            taskId: existingTask.id,
-            userId: user.userId,
-            hasRead: false
-          }))
-        }),
+      await this.dbService.notifications.createMany({
+        data: users.map((user) => ({
+          taskId: existingTask.id,
+          userId: user.userId,
+          hasRead: false
+        }))
+      });
 
-        this.emailQueue.add('sendEmail', {
+      const subject = getEmailSubject(Format.ASSIGNED_TO_TASK, {
+        panelName: existingTask.panel.name
+      })
+
+      for (const user of users) {
+        const firstName = user.user.fullName.split(' ')
+        const body = getEmailTemplate(Format.ASSIGNED_TO_TASK, firstName[0], {
+          domainName: existingTask.domain.name,
+          panelName: existingTask.panel.name,
+          taskTitle: dto.title
+        })
+        console.log(usersEmails)
+
+        await this.emailQueue.add('sendEmail', {
           email: usersEmails,
-          subject: 'You have been assigned a task senior boy!',
-          body: 'I hail you!!!!!!!!!'
+          subject: subject,
+          body: body
         }, {
           delay: 300000,
         })
-      ])
+      }
     }
 
     if (dto.toBeDeletedSubTaskIds?.length > 0) {
@@ -415,11 +467,21 @@ export class TaskService {
           }
         })
 
+        const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
+          panelName: existingTask.panel.name
+        })
+
+        const firstName = existingAssignedCollaborators.user.fullName.split(' ')
+        const body = getEmailTemplate(Format.REMOVED_FROM_TASK, firstName[0], {
+          panelName: existingTask.panel.name,
+          taskTitle: dto.title
+        })
+        console.log(usersEmail)
 
         await this.emailQueue.add('sendEmail', {
           email: usersEmail,
-          subject: 'You have been deleted from a task senior boy!',
-          body: 'No vex abeg!!!!!!!!!'
+          subject: subject,
+          body: body
         }, {
           delay: 300000,
         })
@@ -528,6 +590,26 @@ export class TaskService {
         }, {
           delay: 300000,
         })
+
+
+        //const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
+        //panelName: existingTask.panel.name
+        //})
+
+        //const firstName = existingAssignedCollaborators.user.fullName.split(' ')
+        //const body = getEmailTemplate(Format.REMOVED_FROM_TASK, firstName[0], {
+        //panelName: existingTask.panel.name,
+        //taskTitle: dto.title
+        //})
+        //console.log(usersEmail)
+
+        //await this.emailQueue.add('sendEmail', {
+        //email: usersEmail,
+        //subject: subject,
+        //body: body
+        //}, {
+        //delay: 300000,
+        //})
       }
     }
 
@@ -668,11 +750,22 @@ export class TaskService {
             include: {
               user: {
                 select: {
-                  email: true
+                  email: true,
+                  fullName: true
                 }
-              }
+              },
             }
           },
+          panel: {
+            select: {
+              name: true,
+            }
+          },
+          domain: {
+            select: {
+              name: true
+            }
+          }
         },
       });
 
@@ -728,6 +821,15 @@ export class TaskService {
               in: dto.usersToAssignIds
             },
             domainId: domainID,
+          },
+          select: {
+            user: {
+              select: {
+                email: true,
+                fullName: true,
+              }
+            },
+            userId: true
           }
         })
 
@@ -780,89 +882,115 @@ export class TaskService {
           }))
         })
 
-        await this.emailQueue.add('sendEmail', {
-          email: usersEmails,
-          subject: 'You have been assigned a task senior boy!',
-          body: 'I hail you!!!!!!!!!'
-        }, {
-          delay: 300000,
+        const subject = getEmailSubject(Format.ASSIGNED_TO_TASK, {
+          panelName: existingTask.panel.name
         })
-      }
 
-      if (dto.toBeDeletedSubTaskIds?.length > 0) {
-        for (const id of dto.toBeDeletedSubTaskIds) {
-          const existingSubtask = existingTask.subTasks.find(
-            (subtask) => subtask.id === id,
-          );
-
-          if (!existingSubtask) {
-            throw new NotFoundException('Subtask not found!')
-          }
-
-          await this.dbService.subTask.delete({
-            where: {
-              id: existingSubtask.id
-            }
+        for (const user of users) {
+          const firstName = user.user.fullName.split(' ')
+          const body = getEmailTemplate(Format.ASSIGNED_TO_TASK, firstName[0], {
+            domainName: existingTask.domain.name,
+            panelName: existingTask.panel.name,
+            taskTitle: dto.title
           })
-        }
-      }
-
-      if (dto.usersToDeleteFromAssigned?.length > 0) {
-        for (const id of dto.usersToDeleteFromAssigned) {
-          const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
-            (assigned) => assigned.userId === id,
-          );
-          const usersEmail = existingAssignedCollaborators.user.email
-
-          if (!existingAssignedCollaborators) {
-            throw new NotFoundException('Subtask not found!')
-          }
-
-          await this.dbService.assignedCollaborators.delete({
-            where: {
-              id: existingAssignedCollaborators.id
-            }
-          })
+          console.log(usersEmails)
 
           await this.emailQueue.add('sendEmail', {
-            email: usersEmail,
-            subject: 'You have been deleted from a task senior boy!',
-            body: 'No vex abeg!!!!!!!!!'
+            email: usersEmails,
+            subject: subject,
+            body: body
           }, {
             delay: 300000,
           })
+
         }
+
+        if (dto.toBeDeletedSubTaskIds?.length > 0) {
+          for (const id of dto.toBeDeletedSubTaskIds) {
+            const existingSubtask = existingTask.subTasks.find(
+              (subtask) => subtask.id === id,
+            );
+
+            if (!existingSubtask) {
+              throw new NotFoundException('Subtask not found!')
+            }
+
+            await this.dbService.subTask.delete({
+              where: {
+                id: existingSubtask.id
+              }
+            })
+          }
+        }
+
+        if (dto.usersToDeleteFromAssigned?.length > 0) {
+          for (const id of dto.usersToDeleteFromAssigned) {
+            const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
+              (assigned) => assigned.userId === id,
+            );
+            const usersEmail = existingAssignedCollaborators.user.email
+
+            if (!existingAssignedCollaborators) {
+              throw new NotFoundException('Subtask not found!')
+            }
+
+            await this.dbService.assignedCollaborators.delete({
+              where: {
+                id: existingAssignedCollaborators.id
+              }
+            })
+
+            const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
+              panelName: existingTask.panel.name
+            })
+
+            const firstName = existingAssignedCollaborators.user.fullName.split(' ')
+            const body = getEmailTemplate(Format.REMOVED_FROM_TASK, firstName[0], {
+              panelName: existingTask.panel.name,
+              taskTitle: dto.title
+            })
+            console.log(usersEmail)
+
+            await this.emailQueue.add('sendEmail', {
+              email: usersEmail,
+              subject: subject,
+              body: body
+            }, {
+              delay: 300000,
+            })
+
+          }
+        }
+
+
+        const updatedTask = await this.dbService.task.update({
+          where: {
+            id,
+            panelId: panelID,
+            domainId: domainID,
+          },
+          data: {
+            title: existingTask.title,
+            description: existingTask.description,
+            statusId: existingTask.statusId,
+            order: existingTask.order,
+            assignedTo: existingTask.assignedTo,
+            assignedFrom: existingTask.assignedFrom,
+          },
+          include: {
+            subTasks: true,
+            Status: true
+          }
+        });
+
+
+        updatedTasks.add(updatedTask)
       }
 
-
-      const updatedTask = await this.dbService.task.update({
-        where: {
-          id,
-          panelId: panelID,
-          domainId: domainID,
-        },
-        data: {
-          title: existingTask.title,
-          description: existingTask.description,
-          statusId: existingTask.statusId,
-          order: existingTask.order,
-          assignedTo: existingTask.assignedTo,
-          assignedFrom: existingTask.assignedFrom,
-        },
-        include: {
-          subTasks: true,
-          Status: true
-        }
-      });
-
-
-      updatedTasks.add(updatedTask)
+      return Array.from(updatedTasks);
     }
 
-    return Array.from(updatedTasks);
   }
 
+
 }
-
-
-

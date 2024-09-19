@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { UserUpdateDTOType } from './user.dto';
-import { UserPayload } from 'src/types';
 import { AWSService } from 'src/utils/aws.service';
 
 @Injectable()
@@ -73,6 +72,22 @@ export class UserService {
         availableHoursTo: body.availableHoursTo,
         availableHoursFrom: body.availableHoursFrom
       },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        email: true,
+        fullName: true,
+        username: true,
+        jobTitle: true,
+        department: true,
+        location: true,
+        language: true,
+        availableHoursFrom: true,
+        availableHoursTo: true,
+        profilePicture: true,
+        emailVerified: true,
+      }
     });
 
     return updatedProfile;

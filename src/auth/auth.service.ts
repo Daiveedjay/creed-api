@@ -18,7 +18,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OTPReason, Roles } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
-import { UserPayload } from 'src/types';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
 import { UserService } from 'src/user/user.service';
@@ -60,7 +59,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // await this.emailService.sendWelcomeEmail(dto.email, firstName[0])
 
     const user = await this.dbService.user.create({
       data: {
@@ -158,7 +156,8 @@ export class AuthService {
       }
     })
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
-    //await this.emailService.sendWelcomeEmail(userObj.email)
+    const firstName = dto.fullName.split(' ')
+    await this.emailService.sendWelcomeEmail(userObj.email, firstName[0])
 
     return {
       message: 'Signup successful',
@@ -465,7 +464,7 @@ export class AuthService {
 
       return currentUser;
     } else {
-      const firstName = decodedToken.name.split(' ').split(' ')
+      const firstName = decodedToken.name.split(' ')
 
       const newUser = await this.signUp({
         email: decodedToken.email,
@@ -473,7 +472,7 @@ export class AuthService {
         profilePicture: decodedToken.picture,
         password: decodedToken.sub,
         phone: '',
-        domainName: `${firstName}'s Domain`,
+        domainName: `${firstName[0]}'s Domain`,
         country: ''
       });
 
