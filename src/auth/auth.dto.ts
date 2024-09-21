@@ -28,6 +28,14 @@ export class UserSignupDTOType {
   email: string;
 
   @ApiProperty({
+    type: Boolean,
+    required: false,
+    default: false
+  })
+  @IsOptional()
+  emailVerified?: boolean;
+
+  @ApiProperty({
     type: String,
     required: false,
   })
@@ -79,11 +87,6 @@ export class UserSigninDTOType {
   })
   @IsNotEmpty()
   password: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsBoolean()
-  rememberMe?: boolean;
 }
 
 export class PasswordResetDTO {

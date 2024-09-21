@@ -1,10 +1,9 @@
 import { Processor, Process } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { EmailService } from './utils/email.service';
+import { EmailService } from 'src/utils/email.service';
 
-@Processor('emailQueue')
-export class AppProcessor {
+@Processor('collaboratorEmailQueue')
+export class CollaboratorProcessor {
   constructor(
     private readonly emailService: EmailService
   ) { }
@@ -21,4 +20,5 @@ export class AppProcessor {
     }
   }
 }
+
 

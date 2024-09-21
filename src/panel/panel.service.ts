@@ -15,7 +15,7 @@ import { EmailService } from 'src/utils/email.service';
 export class PanelService {
   constructor(
     private readonly emailService: EmailService,
-    private readonly dbService: DbService
+    private readonly dbService: DbService,
   ) { }
 
   async getPanels(domainID: string, id: string) {
@@ -377,6 +377,13 @@ export class PanelService {
             in: ['admin', 'owner'],
           },
         },
+        include: {
+          domain: {
+            select: {
+              name: true
+            }
+          }
+        }
       });
 
     if (!currentUser || !currentUserMembership)
@@ -392,11 +399,15 @@ export class PanelService {
         include: {
           user: {
             select: {
-              email: true
+              fullName: true,
+              email: true,
+              availableHoursFrom: true,
+              availableHoursTo: true
             }
           }
         }
       });
+      const name = panelMembership.user.fullName.split(' ')
 
       if (!panelMembership) throw new ConflictException('No such member here!');
 
@@ -414,7 +425,88 @@ export class PanelService {
         }),
 
 
-        this.emailService.sendEmail(panelMembership.user.email, 'ANything abeg!', 'You have been rremoved abeg, Fuvk off!')
+        this.emailService.sendEmail(panelMembership.user.email, `You've Been Removed from the ${existingPanel.name} Panel`,
+          `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            max-width: 100px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            background-color: #635fc7;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+        </div>
+        <p>Hi ${name[0]},</p>
+
+        <p>
+You’ve been removed from the ${existingPanel.name} panel within the ${currentUserMembership.domain.name} domain. You will no longer have access to the tasks and progress in this panel.
+
+If you have any questions or believe this was a mistake, feel free to contact the panel admin.        </p>
+
+        <p>Best regards,<br>The Kreed Team</p>
+
+        <div class="footer">
+<p>Want to learn more about Kreed and how to make the most of it?</p>
+            <p class="social-links">
+                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
+                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                for the latest updates, tutorials, and community engagement.
+            </p>
+
+            <small>© 2024 Kreed, All Rights Reserved.</small>
+        </div>
+    </div>
+</body>
+</html>
+`
+        )
 
       ])
 

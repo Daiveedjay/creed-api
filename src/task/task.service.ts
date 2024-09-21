@@ -12,13 +12,16 @@ import { DbService } from 'src/utils/db.service';
 import { CreateTaskDTO, DeleteMultipleTasksDto, UpdateMultipleTasksDto, UpdateTaskDto } from './task.dto';
 import { Queue } from 'bull';
 import { Format, getEmailSubject, getEmailTemplate } from 'src/utils/email-template';
+import { TimeService } from 'src/utils/time.service';
+import { TimeSeriesBucketTimestamp } from 'redis';
 
 @Injectable()
 export class TaskService {
   constructor(
-    @InjectQueue('emailQueue')
+    @InjectQueue('taskEmailQueue')
     private readonly emailQueue: Queue,
     private readonly dbService: DbService,
+    private readonly timeService: TimeService
   ) { }
 
   async getTasks(domainID: string, panelID: string) {
@@ -200,7 +203,9 @@ export class TaskService {
           user: {
             select: {
               email: true,
-              fullName: true
+              fullName: true,
+              availableHoursFrom: true,
+              availableHoursTo: true
             }
           }
         }
@@ -248,15 +253,32 @@ export class TaskService {
           panelName: panel.name,
           taskTitle: dto.title
         })
-        console.log(usersEmails)
 
-        await this.emailQueue.add('sendEmail', {
-          email: usersEmails,
-          subject: subject,
-          body: body
-        }, {
-          delay: 300000,
-        })
+        const now = new Date()
+        if (this.timeService.isWithinAvailableHours(now, {
+          start: user.user.availableHoursFrom,
+          end: user.user.availableHoursTo
+        })) {
+          await this.emailQueue.add('sendEmail', {
+            email: usersEmails,
+            subject: subject,
+            body: body
+          }, {
+            delay: 300000,
+          })
+        } else {
+          const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+            start: user.user.availableHoursFrom,
+            end: user.user.availableHoursTo
+          });
+          const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+          await this.emailQueue.add(
+            'sendEmail',
+            { email: user.user.email, subject, body },
+            { delay }
+          );
+        }
       }
 
       return tasksWithMentions;
@@ -285,7 +307,9 @@ export class TaskService {
             user: {
               select: {
                 email: true,
-                fullName: true
+                fullName: true,
+                availableHoursTo: true,
+                availableHoursFrom: true
               }
             }
           }
@@ -360,7 +384,9 @@ export class TaskService {
           user: {
             select: {
               email: true,
-              fullName: true
+              fullName: true,
+              availableHoursTo: true,
+              availableHoursFrom: true
             }
           }
         }
@@ -395,8 +421,6 @@ export class TaskService {
           taskId: existingTask.id,
         }))
       })
-      const usersEmails = users.map((user) => user.user.email)
-
 
       if (assignedUsers.count === 0) throw new ConflictException('Could not assign these users!')
 
@@ -419,15 +443,32 @@ export class TaskService {
           panelName: existingTask.panel.name,
           taskTitle: dto.title
         })
-        console.log(usersEmails)
 
-        await this.emailQueue.add('sendEmail', {
-          email: usersEmails,
-          subject: subject,
-          body: body
-        }, {
-          delay: 300000,
-        })
+        const now = new Date()
+        if (this.timeService.isWithinAvailableHours(now, {
+          start: user.user.availableHoursFrom,
+          end: user.user.availableHoursTo
+        })) {
+          await this.emailQueue.add('sendEmail', {
+            email: user.user.email,
+            subject: subject,
+            body: body
+          }, {
+            delay: 300000,
+          })
+        } else {
+          const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+            start: user.user.availableHoursFrom,
+            end: user.user.availableHoursTo
+          });
+          const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+          await this.emailQueue.add(
+            'sendEmail',
+            { email: user.user.email, subject, body },
+            { delay }
+          );
+        }
       }
     }
 
@@ -455,7 +496,6 @@ export class TaskService {
           (assigned) => assigned.userId === id,
         );
         console.log(existingAssignedCollaborators)
-        const usersEmail = existingAssignedCollaborators.user.email
 
         if (!existingAssignedCollaborators) {
           throw new NotFoundException('Subtask not found!')
@@ -476,15 +516,32 @@ export class TaskService {
           panelName: existingTask.panel.name,
           taskTitle: dto.title
         })
-        console.log(usersEmail)
 
-        await this.emailQueue.add('sendEmail', {
-          email: usersEmail,
-          subject: subject,
-          body: body
-        }, {
-          delay: 300000,
-        })
+        const now = new Date()
+        if (this.timeService.isWithinAvailableHours(now, {
+          start: existingAssignedCollaborators.user.availableHoursFrom,
+          end: existingAssignedCollaborators.user.availableHoursTo
+        })) {
+          await this.emailQueue.add('sendEmail', {
+            email: existingAssignedCollaborators.user.email,
+            subject: subject,
+            body: body
+          }, {
+            delay: 300000,
+          })
+        } else {
+          const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+            start: existingAssignedCollaborators.user.availableHoursFrom,
+            end: existingAssignedCollaborators.user.availableHoursTo
+          });
+          const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+          await this.emailQueue.add(
+            'sendEmail',
+            { email: existingAssignedCollaborators.user.email, subject, body },
+            { delay }
+          );
+        }
       }
     }
 
@@ -552,7 +609,10 @@ export class TaskService {
           include: {
             user: {
               select: {
-                email: true
+                email: true,
+                fullName: true,
+                availableHoursFrom: true,
+                availableHoursTo: true
               }
             }
           }
@@ -583,13 +643,33 @@ export class TaskService {
           }
         })
 
-        await this.emailQueue.add('sendEmail', {
-          email: usersEmail,
-          subject: 'This task has been deleted from the project!',
-          body: 'SIKE!!!!!!!!!!!'
-        }, {
-          delay: 300000,
-        })
+        const subject = 'This task has been deleted from the project!'
+        const body = 'SIKE!!!!!!!!!!!'
+        const now = new Date()
+        if (this.timeService.isWithinAvailableHours(now, {
+          start: collaborators.user.availableHoursFrom,
+          end: collaborators.user.availableHoursTo
+        })) {
+          await this.emailQueue.add('sendEmail', {
+            email: collaborators.user.email,
+            subject: subject,
+            body: body
+          }, {
+            delay: 300000,
+          })
+        } else {
+          const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+            start: collaborators.user.availableHoursFrom,
+            end: collaborators.user.availableHoursTo
+          });
+          const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+          await this.emailQueue.add(
+            'sendEmail',
+            { email: collaborators.user.email, subject, body },
+            { delay }
+          );
+        }
 
 
         //const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
@@ -674,7 +754,10 @@ export class TaskService {
             include: {
               user: {
                 select: {
-                  email: true
+                  email: true,
+                  fullName: true,
+                  availableHoursFrom: true,
+                  availableHoursTo: true
                 }
               }
             }
@@ -705,13 +788,33 @@ export class TaskService {
             }
           })
 
-          await this.emailQueue.add('sendEmail', {
-            email: usersEmail,
-            subject: 'This task has been deleted from the project!',
-            body: 'SIKE!!!!!!!!!!!'
-          }, {
-            delay: 300000,
-          })
+          const subject = 'This task has been deleted from the project!'
+          const body = 'SIKE!!!!!!!!!!!'
+          const now = new Date()
+          if (this.timeService.isWithinAvailableHours(now, {
+            start: collaborators.user.availableHoursFrom,
+            end: collaborators.user.availableHoursTo
+          })) {
+            await this.emailQueue.add('sendEmail', {
+              email: collaborators.user.email,
+              subject: subject,
+              body: body
+            }, {
+              delay: 300000,
+            })
+          } else {
+            const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+              start: collaborators.user.availableHoursFrom,
+              end: collaborators.user.availableHoursTo
+            });
+            const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+            await this.emailQueue.add(
+              'sendEmail',
+              { email: collaborators.user.email, subject, body },
+              { delay }
+            );
+          }
         }
       }
 
@@ -751,7 +854,9 @@ export class TaskService {
               user: {
                 select: {
                   email: true,
-                  fullName: true
+                  fullName: true,
+                  availableHoursFrom: true,
+                  availableHoursTo: true
                 }
               },
             }
@@ -827,6 +932,8 @@ export class TaskService {
               select: {
                 email: true,
                 fullName: true,
+                availableHoursTo: true,
+                availableHoursFrom: true
               }
             },
             userId: true
@@ -893,15 +1000,32 @@ export class TaskService {
             panelName: existingTask.panel.name,
             taskTitle: dto.title
           })
-          console.log(usersEmails)
 
-          await this.emailQueue.add('sendEmail', {
-            email: usersEmails,
-            subject: subject,
-            body: body
-          }, {
-            delay: 300000,
-          })
+          const now = new Date()
+          if (this.timeService.isWithinAvailableHours(now, {
+            start: user.user.availableHoursFrom,
+            end: user.user.availableHoursTo
+          })) {
+            await this.emailQueue.add('sendEmail', {
+              email: user.user.email,
+              subject: subject,
+              body: body
+            }, {
+              delay: 300000,
+            })
+          } else {
+            const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+              start: user.user.availableHoursFrom,
+              end: user.user.availableHoursTo
+            });
+            const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+            await this.emailQueue.add(
+              'sendEmail',
+              { email: user.user.email, subject, body },
+              { delay }
+            );
+          }
 
         }
 
@@ -928,7 +1052,6 @@ export class TaskService {
             const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
               (assigned) => assigned.userId === id,
             );
-            const usersEmail = existingAssignedCollaborators.user.email
 
             if (!existingAssignedCollaborators) {
               throw new NotFoundException('Subtask not found!')
@@ -949,15 +1072,32 @@ export class TaskService {
               panelName: existingTask.panel.name,
               taskTitle: dto.title
             })
-            console.log(usersEmail)
 
-            await this.emailQueue.add('sendEmail', {
-              email: usersEmail,
-              subject: subject,
-              body: body
-            }, {
-              delay: 300000,
-            })
+            const now = new Date()
+            if (this.timeService.isWithinAvailableHours(now, {
+              start: existingAssignedCollaborators.user.availableHoursFrom,
+              end: existingAssignedCollaborators.user.availableHoursTo
+            })) {
+              await this.emailQueue.add('sendEmail', {
+                email: existingAssignedCollaborators.user.email,
+                subject: subject,
+                body: body
+              }, {
+                delay: 300000,
+              })
+            } else {
+              const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+                start: existingAssignedCollaborators.user.availableHoursFrom,
+                end: existingAssignedCollaborators.user.availableHoursTo
+              });
+              const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+              await this.emailQueue.add(
+                'sendEmail',
+                { email: existingAssignedCollaborators.user.email, subject, body },
+                { delay }
+              );
+            }
 
           }
         }

@@ -51,8 +51,8 @@ export class CollaboratorsController {
 
   @Patch('/:domainId/role-change')
   @UseGuards(AuthGuard)
-  async demoteAndPromoteACollaboratorInADomain(@Body() dto: DemotingAndPromotingCollaboratorsDto, @Param('domainId') domainId: string) {
-    return await this.collaboratorsService.demotingAndPromotingAUser(domainId, dto)
+  async demoteAndPromoteACollaboratorInADomain(@Body() dto: DemotingAndPromotingCollaboratorsDto, @Param('domainId') domainId: string, @CurrentUser('email') email: string) {
+    return await this.collaboratorsService.demotingAndPromotingAUser(domainId, dto, email)
   }
 
   @Patch('/:domainId/remove-collaborator')

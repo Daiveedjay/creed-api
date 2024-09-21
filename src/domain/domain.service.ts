@@ -61,7 +61,17 @@ export class DomainService {
         }
       },
       include: {
-        domainMembers: true,
+        domainMembers: {
+          include: {
+            user: {
+              select: {
+                email: true,
+                fullName: true,
+                id: true
+              }
+            }
+          }
+        }
       }
     });
 

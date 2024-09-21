@@ -43,14 +43,6 @@ export class UserUpdateDTOType {
   location?: string;
 
   @ApiProperty({
-    type: String,
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  language?: string;
-
-  @ApiProperty({
     type: Date,
     required: false,
   })

@@ -21,17 +21,23 @@ import { EmailService } from 'src/utils/email.service';
 import { AnnouncementsService } from 'src/announcements/announcements.service';
 import { getEmailSubject, getEmailTemplate } from 'src/utils/email-template';
 import { Format } from 'src/utils/email-template';
+import { TimeService } from 'src/utils/time.service';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class CollaboratorsService {
   constructor(
+    @InjectQueue('collaboratorEmailQueue')
+    private readonly emailQueue: Queue,
     private readonly emailService: EmailService,
     private readonly dbService: DbService,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly domainService: DomainService,
     private readonly notificationGateway: NotificationGateway,
-    private readonly announcementService: AnnouncementsService
+    private readonly announcementService: AnnouncementsService,
+    private readonly timeService: TimeService
   ) { }
 
   async createLinkForJoining(
@@ -140,7 +146,7 @@ export class CollaboratorsService {
     };
 
     await Promise.all([
-      await this.dbService.domainMembership.create({
+      this.dbService.domainMembership.create({
         data: {
           domainId: thereIsDomain.id,
           userId: inviteeUser.id,
@@ -148,14 +154,15 @@ export class CollaboratorsService {
         }
       }),
 
-      await this.notificationGateway.globalWebSocketFunction({
+      this.notificationGateway.globalWebSocketFunction({
         domain: thereIsDomain.id,
-        message: `${invitedByUser.fullName} invited ${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`
+        message: `@${invitedByUser.fullName} invited @${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`
       }, 'joined-domain'),
 
-      await this.announcementService.create(invitedByUser.email, joinCollaboratorDto.domainId, {
-        content: `${invitedByUser.fullName} invited ${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`,
-        mentions: [inviteeUser.id]
+      this.announcementService.create(invitedByUser.email, joinCollaboratorDto.domainId, {
+        content: `@${invitedByUser.fullName} invited @${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`,
+        mentions: [inviteeUser.id],
+        isAutomated: false,
       })
     ])
 
@@ -196,13 +203,14 @@ export class CollaboratorsService {
         user: {
           select: {
             id: true,
-            email: true,
             fullName: true,
             username: true,
             jobTitle: true,
             department: true,
             location: true,
             profilePicture: true,
+            availableHoursTo: true,
+            availableHoursFrom: true
           }
         }
 
@@ -212,11 +220,35 @@ export class CollaboratorsService {
     return members;
   }
 
-  async demotingAndPromotingAUser(domainId: string, dto: DemotingAndPromotingCollaboratorsDto) {
+  async demotingAndPromotingAUser(domainId: string, dto: DemotingAndPromotingCollaboratorsDto, email: string) {
+    const currentUser = await this.dbService.domainMembership.findFirst({
+      where: {
+        user: {
+          email
+        },
+        domainId,
+        memberRole: {
+          in: ['owner', 'admin']
+        }
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true
+          }
+        }
+      }
+    })
+    if (!currentUser) {
+      throw new UnauthorizedException('You do not have access boss')
+    };
+
     const userToBePromotedOrDemoted = await this.dbService.user.findUnique({
       where: {
         id: dto.userToBeModifiedId
-      }
+      },
     });
 
     if (!userToBePromotedOrDemoted) throw new UnauthorizedException('Need to be logged in');
@@ -228,7 +260,7 @@ export class CollaboratorsService {
       );
 
     if (!currentDomainAndAccess)
-      throw new UnauthorizedException('You do not have access!');
+      throw new UnauthorizedException('This user doesnt exist here!');
 
     const currentDomainMembership = await this.dbService.domainMembership.findFirst({
       where: {
@@ -237,17 +269,30 @@ export class CollaboratorsService {
       }
     })
 
-    if (!currentDomainMembership) throw new UnauthorizedException('There is no access i guess!')
+    if (!currentDomainMembership) throw new UnauthorizedException('This man is not in this domain')
 
     if (dto.action === 'promoting' && currentDomainMembership.memberRole === 'member') {
-      await this.dbService.domainMembership.update({
-        where: {
-          id: currentDomainMembership.id
-        },
-        data: {
-          memberRole: 'admin'
-        }
-      })
+      await Promise.all([
+        this.dbService.domainMembership.update({
+          where: {
+            id: currentDomainMembership.id
+          },
+          data: {
+            memberRole: 'admin'
+          }
+        }),
+
+        this.notificationGateway.globalWebSocketFunction({
+          domain: domainId,
+          message: `@${currentUser.user.fullName} promoted @${userToBePromotedOrDemoted.fullName} to Admin`
+        }, 'update-role'),
+
+        this.announcementService.create(currentUser.user.email, domainId, {
+          content: `@${currentUser.user.fullName} promoted @${userToBePromotedOrDemoted.fullName} to Admin`,
+          mentions: [userToBePromotedOrDemoted.id],
+          isAutomated: true
+        })
+      ])
 
       const userToBePromotedOrDemotedName = userToBePromotedOrDemoted.fullName.split(' ')
       const subject = getEmailSubject(Format.GETTING_PROMOTED, {
@@ -257,7 +302,26 @@ export class CollaboratorsService {
         domainName: currentDomainAndAccess.name,
         domainUrl: ''
       })
-      await this.emailService.sendEmail(userToBePromotedOrDemoted.email, subject, body)
+      const now = new Date()
+
+      if (this.timeService.isWithinAvailableHours(now, {
+        start: userToBePromotedOrDemoted.availableHoursFrom,
+        end: userToBePromotedOrDemoted.availableHoursTo
+      })) {
+        await this.emailService.sendEmail(userToBePromotedOrDemoted.email, subject, body)
+      } else {
+        const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+          start: userToBePromotedOrDemoted.availableHoursFrom,
+          end: userToBePromotedOrDemoted.availableHoursTo
+        });
+        const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+        await this.emailQueue.add(
+          'sendEmail',
+          { email: userToBePromotedOrDemoted.email, subject, body },
+          { delay }
+        );
+      }
 
       return new HttpException(`${userToBePromotedOrDemoted.fullName} has leveled up!`, HttpStatus.ACCEPTED)
 
@@ -267,14 +331,27 @@ export class CollaboratorsService {
 
     } else if (dto.action === 'demoting' && currentDomainMembership.memberRole === 'admin') {
 
-      await this.dbService.domainMembership.update({
-        where: {
-          id: currentDomainMembership.id
-        },
-        data: {
-          memberRole: 'member'
-        }
-      })
+      await Promise.all([
+        this.dbService.domainMembership.update({
+          where: {
+            id: currentDomainMembership.id
+          },
+          data: {
+            memberRole: 'member'
+          }
+        }),
+
+        this.notificationGateway.globalWebSocketFunction({
+          domain: domainId,
+          message: `@${currentUser.user.fullName} demoted @${userToBePromotedOrDemoted.fullName} to Member`
+        }, 'update-role'),
+
+        this.announcementService.create(currentUser.user.email, domainId, {
+          content: `@${currentUser.user.fullName} demoted @${userToBePromotedOrDemoted.fullName} to Member`,
+          mentions: [userToBePromotedOrDemoted.id],
+          isAutomated: true
+        })
+      ])
 
       const userToBePromotedOrDemotedName = userToBePromotedOrDemoted.fullName.split(' ')
       const subject = getEmailSubject(Format.GETTING_DEMOTED, {
@@ -399,11 +476,24 @@ export class CollaboratorsService {
       })
     }
 
-    await this.dbService.domainMembership.delete({
-      where: {
-        id: userToBeRemoved.id
-      }
-    })
+    await Promise.all([
+      this.dbService.domainMembership.delete({
+        where: {
+          id: userToBeRemoved.id
+        }
+      }),
+
+      this.notificationGateway.globalWebSocketFunction({
+        domain: domainId,
+        message: `@${currentUser.fullName} removed ${userToBeRemoved.user.fullName} from the "${particularDomain.name}" domain`
+      }, 'removed-domain'),
+
+      this.announcementService.create(currentUser.email, domainId, {
+        content: `@${currentUser.fullName} removed ${userToBeRemoved.user.fullName} from the "${particularDomain.name}" domain`,
+        mentions: [userToBeRemoved.id],
+        isAutomated: true
+      })
+    ])
 
     const userToBePromotedOrDemotedName = userToBeRemoved.user.fullName.split(' ')
     const subject = getEmailSubject(Format.REMOVED_DOMAIN, {
