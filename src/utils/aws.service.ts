@@ -17,26 +17,22 @@ export class AWSService {
     private readonly dbService: DbService
   ) { }
 
-  public async uploadFile(file: Express.Multer.File, userId: string): Promise<{
+  public async uploadFile(file: Express.Multer.File): Promise<{
     success: boolean,
     url: string,
     key: string
   }> {
     const rearrangedName = encodeURI(file.originalname)
-    const key = `profile-pictures/${userId}/${rearrangedName}`
-    const uploader = new Upload({
-      client: this.s3Client,
-      params: {
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: key,
-        Body: file.buffer,
-        CacheControl: "max-age=86400",
-        ContentType: file.mimetype,
-      }
-    })
+    const key = `profile-pictures/${rearrangedName}`
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: key,
+      Body: file.buffer,
+    }
 
     try {
-      await uploader.done()
+      const command = new PutObjectCommand(params)
+      await this.s3Client.send(command);
       const url = await this.getUrl(key)
 
       return {

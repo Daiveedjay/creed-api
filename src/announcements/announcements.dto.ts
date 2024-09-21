@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { User } from "@prisma/client";
-import { IsArray, IsOptional, IsString } from "class-validator";
+import { IsArray, IsOptional, IsString, IsBoolean } from "class-validator";
 
 export class CreateAnnouncementDto {
   @ApiProperty({
@@ -17,4 +16,11 @@ export class CreateAnnouncementDto {
   @IsArray()
   @IsOptional()
   mentions: string[];
+
+  @ApiProperty({
+    type: Boolean,
+    required: true
+  })
+  @IsBoolean()
+  isAutomated: boolean;
 }

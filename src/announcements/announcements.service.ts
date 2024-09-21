@@ -42,7 +42,8 @@ export class AnnouncementsService {
       data: {
         content: createAnnouncementDto.content,
         authorId: currentUser.id,
-        domainId
+        domainId,
+        isAutomated: createAnnouncementDto.isAutomated
       },
       select: {
         id: true,

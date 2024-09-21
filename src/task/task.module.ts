@@ -2,14 +2,15 @@ import { Module } from '@nestjs/common';
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 import { BullModule } from '@nestjs/bull';
-import { AppProcessor } from 'src/app.processor';
+import { TaskProcessor } from './task.processor';
+
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'emailQueue'
+      name: 'taskEmailQueue'
     })
   ],
   controllers: [TaskController],
-  providers: [TaskService, AppProcessor]
+  providers: [TaskService, TaskProcessor]
 })
 export class TaskModule { }

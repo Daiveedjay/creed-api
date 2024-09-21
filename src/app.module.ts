@@ -24,7 +24,6 @@ import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
 import { RedisModule } from 'nestjs-redis-fork';
 import { BullModule } from '@nestjs/bull';
-import { AppProcessor } from './app.processor';
 
 
 @Module({

@@ -32,7 +32,6 @@ export class UserService {
         jobTitle: true,
         department: true,
         location: true,
-        language: true,
         availableHoursFrom: true,
         availableHoursTo: true,
         profilePicture: true,
@@ -65,7 +64,6 @@ export class UserService {
       data: {
         username: body.username,
         location: body.location,
-        language: body.language,
         jobTitle: body.jobTitle,
         fullName: body.fullName,
         department: body.department,
@@ -135,7 +133,7 @@ export class UserService {
       const deleteUrlFromAWS = await this.awsService.deleteFile(currentUser.id)
 
       if (deleteUrlFromAWS.success === true) {
-        const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
+        const picture = await this.awsService.uploadFile(profilePicture)
         if (picture.success === true) {
           await this.dbService.user.update({
             where: {
@@ -155,7 +153,7 @@ export class UserService {
         throw new InternalServerErrorException(deleteUrlFromAWS.message)
       }
     } else {
-      const picture = await this.awsService.uploadFile(profilePicture, currentUser.id)
+      const picture = await this.awsService.uploadFile(profilePicture)
       if (picture.success === true) {
         await this.dbService.user.update({
           where: {

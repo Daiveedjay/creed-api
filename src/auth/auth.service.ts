@@ -1,11 +1,8 @@
 /* eslint-disable prettier/prettier */
 import {
-  ConflictException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   MethodNotAllowedException,
-  NotFoundException,
 } from '@nestjs/common';
 import {
   PasswordResetDTO,
@@ -16,7 +13,7 @@ import { DbService } from 'src/utils/db.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { OTPReason, Roles } from '@prisma/client';
+import { OTPReason } from '@prisma/client';
 import { OAuth2Client } from 'google-auth-library';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
@@ -28,8 +25,6 @@ import { admin } from 'src/lib/firebase';
 
 @Injectable()
 export class AuthService {
-  private oAuth2Client: OAuth2Client
-
   constructor(
     @InjectRedis() private readonly redis: Redis,
     private readonly userService: UserService,
@@ -39,11 +34,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
   ) {
-    this.oAuth2Client = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-      this.configService.get('GOOGLE_CLIENT_SECRET'),
-      this.configService.get('GOOGLE_REDIRECT_URI'),
-    );
   }
 
   async signUp(dto: UserSignupDTOType) {
@@ -64,6 +54,7 @@ export class AuthService {
       data: {
         email: dto.email,
         password: hashedPassword,
+        emailVerified: dto.emailVerified,
         fullName: dto.fullName,
       },
     });
@@ -104,7 +95,6 @@ export class AuthService {
       jobTitle: user.jobTitle,
       department: user.department,
       location: user.location,
-      language: user.language,
       availableHoursFrom: user.availableHoursFrom,
       availableHoursTo: user.availableHoursTo,
       profilePicture: user.profilePicture,
@@ -233,7 +223,6 @@ export class AuthService {
       jobTitle: user.jobTitle,
       department: user.department,
       location: user.location,
-      language: user.language,
       availableHoursFrom: user.availableHoursFrom,
       availableHoursTo: user.availableHoursTo,
       profilePicture: user.profilePicture,
@@ -442,7 +431,6 @@ export class AuthService {
     return await this.signIn({
       email: decodedToken.email,
       password: decodedToken.sub,
-      rememberMe: true
     })
   }
 
@@ -459,7 +447,6 @@ export class AuthService {
       const currentUser = await this.signIn({
         email: decodedToken.email,
         password: decodedToken.sub,
-        rememberMe: true
       })
 
       return currentUser;
@@ -473,7 +460,8 @@ export class AuthService {
         password: decodedToken.sub,
         phone: '',
         domainName: `${firstName[0]}'s Domain`,
-        country: ''
+        country: '',
+        emailVerified: true
       });
 
       await admin.auth().setCustomUserClaims(decodedToken.uid, {
