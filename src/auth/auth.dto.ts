@@ -37,6 +37,14 @@ export class UserSignupDTOType {
 
   @ApiProperty({
     type: String,
+    minLength: 3,
+    required: false
+  })
+  @IsOptional()
+  googleId?: string;
+
+  @ApiProperty({
+    type: String,
     required: false,
   })
   @IsOptional()

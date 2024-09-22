@@ -19,7 +19,6 @@ model User {
   jobTitle              String?
   department            String?
   location              String?
-  language              String?
   availableHoursFrom    DateTime?
   availableHoursTo      DateTime?
   profilePicture        String?
@@ -38,7 +37,6 @@ model User {
   panelMembership       PanelMembership[]
   subTasks              SubTask[]
   tasks                 Task[]
-  Device                Device?
 }
 
 model Domain {
@@ -177,13 +175,6 @@ model Notifications {
   announcements  Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   tasks          Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Device {
-  id          String @id @default(uuid())
-  userId      String @unique
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deviceToken String @unique
 }
 
 enum Roles {

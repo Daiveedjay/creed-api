@@ -9,7 +9,7 @@ export class EmailService {
 
   constructor() {
     this.transporter = createTransport({
-      host: 'mail.privateemail.com',
+      host: 'mx1.privateemail.com',
       secure: true,
       port: 465,
       auth: {
