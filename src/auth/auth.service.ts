@@ -56,6 +56,7 @@ export class AuthService {
         password: hashedPassword,
         emailVerified: dto.emailVerified,
         fullName: dto.fullName,
+        googleId: dto.googleId !== null ? dto.googleId : null
       },
     });
 
@@ -133,13 +134,14 @@ export class AuthService {
         user: {
           select: {
             id: true,
-            email: true,
             fullName: true,
             username: true,
             jobTitle: true,
             department: true,
             location: true,
             profilePicture: true,
+            availableHoursFrom: true,
+            availableHoursTo: true
           }
         }
 
@@ -284,13 +286,14 @@ export class AuthService {
         user: {
           select: {
             id: true,
-            email: true,
             fullName: true,
             username: true,
             jobTitle: true,
             department: true,
             location: true,
             profilePicture: true,
+            availableHoursTo: true,
+            availableHoursFrom: true
           }
         }
 
@@ -367,6 +370,7 @@ export class AuthService {
     const otp = crypto
       .randomUUID()
       .slice(0, this.configService.get('OTP_LENGTH'));
+
     await this.dbService.user.update({
       where: { email },
       data: {
@@ -390,6 +394,7 @@ export class AuthService {
     otpTimeToLive.setMinutes(
       otpTimeToLive.getMinutes() - this.configService.get('OTP_TTL'),
     );
+
     const user = await this.dbService.user.findFirst({
       where: {
         otp,
@@ -461,7 +466,8 @@ export class AuthService {
         phone: '',
         domainName: `${firstName[0]}'s Domain`,
         country: '',
-        emailVerified: true
+        emailVerified: true,
+        googleId: decodedToken.uid
       });
 
       await admin.auth().setCustomUserClaims(decodedToken.uid, {

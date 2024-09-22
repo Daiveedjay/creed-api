@@ -318,7 +318,7 @@ export class PanelService {
       });
 
       if (alreadyInPanel)
-        throw new ConflictException('Thee is already in thy panel, kind sir');
+        throw new ConflictException('User is already in this panel!');
     }
 
     const users = await this.dbService.user.findMany({
