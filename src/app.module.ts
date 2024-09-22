@@ -76,6 +76,6 @@ export class AppModule {
       { path: 'collaborators/:domainId', method: RequestMethod.PATCH },
       { path: 'collaborators/:domainId', method: RequestMethod.GET },
       { path: 'collaborators/create-link', method: RequestMethod.POST }
-    ); // Apply to all routes or specific ones
+    );
   }
 }
