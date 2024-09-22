@@ -17,7 +17,6 @@ CREATE TABLE "User" (
     "jobTitle" TEXT,
     "department" TEXT,
     "location" TEXT,
-    "language" TEXT,
     "availableHoursFrom" TIMESTAMP(3),
     "availableHoursTo" TIMESTAMP(3),
     "profilePicture" TEXT,
@@ -163,26 +162,11 @@ CREATE TABLE "Notifications" (
     CONSTRAINT "Notifications_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "Device" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "deviceToken" TEXT NOT NULL,
-
-    CONSTRAINT "Device_pkey" PRIMARY KEY ("id")
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Device_userId_key" ON "Device"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Device_deviceToken_key" ON "Device"("deviceToken");
 
 -- AddForeignKey
 ALTER TABLE "Domain" ADD CONSTRAINT "Domain_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -255,7 +239,4 @@ ALTER TABLE "Notifications" ADD CONSTRAINT "Notifications_taskId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "Notifications" ADD CONSTRAINT "Notifications_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Device" ADD CONSTRAINT "Device_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

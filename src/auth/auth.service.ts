@@ -189,13 +189,6 @@ export class AuthService {
   async signIn(dto: UserSigninDTOType) {
     const user = await this.dbService.user.findUnique({
       where: { email: dto.email },
-      include: {
-        Device: {
-          select: {
-            deviceToken: true
-          }
-        }
-      }
     });
 
     if (!user) {
