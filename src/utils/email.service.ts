@@ -1,29 +1,34 @@
-import { SESClient, SES, SendEmailCommand, SendEmailCommandInput } from '@aws-sdk/client-ses';
+import { SESClient, SendEmailCommand, SendEmailCommandInput } from '@aws-sdk/client-ses';
 import { HttpException, Injectable } from '@nestjs/common';
 import { HttpStatusCode } from 'axios';
-import { Transporter, createTransport } from 'nodemailer'
 
 @Injectable()
 export class EmailService {
-  private transporter: Transporter
+  private sesClient: SESClient;
 
   constructor() {
-    this.transporter = createTransport({
-      host: 'mx1.privateemail.com',
-      secure: true,
-      port: 465,
-      auth: {
-        user: process.env.PRIVATE_EMAIL,
-        pass: process.env.PRIVATE_EMAIL_PASS
-      }
-    })
+    this.sesClient = new SESClient({
+      region: 'us-east-1', // Specify your AWS region
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+      },
+    });
   }
 
   async sendWelcomeEmail(to: string, name: string) {
-    try {
-      const response = await this.transporter.sendMail({
-        subject: 'Welcome to Kreed!',
-        html: `
+    const params: SendEmailCommandInput = {
+      Source: 'kreednotifications@gmail.com', // Verified SES email
+      Destination: {
+        ToAddresses: [to],
+      },
+      Message: {
+        Subject: {
+          Data: 'Welcome to Kreed!'
+        },
+        Body: {
+          Html: {
+            Data: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,10 +126,15 @@ export class EmailService {
     </div>
 </body>
 </html>
-`,
-        to,
-        from: process.env.PRIVATE_EMAIL
-      })
+`
+          }
+        }
+      },
+    };
+
+    try {
+      const command = new SendEmailCommand(params);
+      const response = await this.sesClient.send(command);
       console.log(response)
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {
@@ -133,13 +143,26 @@ export class EmailService {
   }
 
   async sendEmail(to: string, subject: string, body: string) {
+    const params: SendEmailCommandInput = {
+      Source: 'kreednotifications@gmail.com', // Verified SES email
+      Destination: {
+        ToAddresses: [to],
+      },
+      Message: {
+        Subject: {
+          Data: subject,
+        },
+        Body: {
+          Text: {
+            Data: body,
+          },
+        },
+      },
+    };
+
     try {
-      const response = await this.transporter.sendMail({
-        from: process.env.PRIVATE_EMAIL,
-        to,
-        subject,
-        html: body
-      })
+      const command = new SendEmailCommand(params);
+      const response = await this.sesClient.send(command);
       console.log(response)
       return new HttpException('Email sent!', HttpStatusCode.Created)
     } catch (error) {

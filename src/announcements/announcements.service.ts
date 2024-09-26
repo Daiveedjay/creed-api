@@ -54,6 +54,7 @@ export class AnnouncementsService {
             fullName: true
           }
         },
+        isAutomated: true,
         sentAt: true,
         content: true,
         mentions: true
@@ -115,6 +116,7 @@ export class AnnouncementsService {
           }
         },
         sentAt: true,
+        isAutomated: true,
         content: true,
         mentions: true
       }
@@ -137,6 +139,7 @@ export class AnnouncementsService {
           }
         },
         sentAt: true,
+        isAutomated: true,
         content: true,
         mentions: {
           select: {
