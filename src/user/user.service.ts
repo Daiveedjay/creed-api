@@ -9,14 +9,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
-import { UserUpdateDTOType } from './user.dto';
+import { UserUpdateDTOType, VerifyEmailDto } from './user.dto';
 import { AWSService } from 'src/utils/aws.service';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { EmailService } from 'src/utils/email.service';
+import { Format, getEmailSubject, getEmailTemplate } from 'src/utils/email-template';
 
 @Injectable()
 export class UserService {
   constructor(
+    private readonly configService: ConfigService,
     private readonly dbService: DbService,
-    private readonly awsService: AWSService
+    private readonly awsService: AWSService,
+    private readonly emailService: EmailService
   ) { }
 
   async getProfile(email: string) {
@@ -169,5 +175,47 @@ export class UserService {
       }
     }
 
+  }
+
+  async sendVerificationEmailLink(email: string) {
+    const user = await this.getProfile(email)
+
+    if (!user) {
+      throw new MethodNotAllowedException('No user is found!')
+    } else if (user.user_data.emailVerified === true) {
+      throw new MethodNotAllowedException('You are already verified!')
+    }
+
+    const hashedPayload = new JwtService().sign(email, {
+      secret: this.configService.get('JWT_SECRET'),
+    });
+
+    const subject = getEmailSubject(Format.VERIFYING_EMAIL, {})
+    const firstName = user.user_data.fullName.split(' ')
+    const body = getEmailTemplate(Format.VERIFYING_EMAIL, firstName[0], {
+      verifyEmailLink: `https://app.kreed.tech/email_verify?payload=${hashedPayload}`
+    })
+    await this.emailService.sendEmail(email, subject, body);
+  }
+
+  async verifyEmail(body: VerifyEmailDto) {
+    const user = await this.getProfile(body.email)
+
+    if (!user) {
+      throw new MethodNotAllowedException('No user is found!')
+    } else if (user.user_data.emailVerified === true) {
+      throw new MethodNotAllowedException('You are already verified!')
+    }
+
+    await this.dbService.user.update({
+      where: {
+        email: body.email
+      },
+      data: {
+        emailVerified: true
+      }
+    })
+
+    return new HttpException('Email verified!', HttpStatus.OK)
   }
 }

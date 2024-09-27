@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsOptional, IsString } from 'class-validator';
 export class UserUpdateDTOType {
   @ApiProperty({
     type: String,
@@ -57,4 +57,13 @@ export class UserUpdateDTOType {
   @IsOptional()
   @IsDateString()
   availableHoursTo?: Date;
+}
+
+export class VerifyEmailDto {
+  @ApiProperty({
+    type: String,
+    required: true
+  })
+  @IsEmail()
+  email: string
 }

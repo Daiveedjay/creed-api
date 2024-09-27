@@ -2,9 +2,9 @@
 import { Body, Controller, Get, Patch, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { UserUpdateDTOType } from './user.dto';
+import { UserUpdateDTOType, VerifyEmailDto } from './user.dto';
 import { AuthGuard, CurrentUser } from 'src/auth/auth.guard';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('User')
 @Controller('user')
@@ -44,4 +44,8 @@ export class UserController {
     return await this.userService.updateProfilePicture(email, profilePicture)
   }
 
+  @Patch('/verify-email')
+  public async verifyEmail(@Body() dto: VerifyEmailDto) {
+    return await this.userService.verifyEmail(dto)
+  }
 }

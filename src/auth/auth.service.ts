@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   MethodNotAllowedException,
@@ -150,6 +151,11 @@ export class AuthService {
     const analytics = await this.analyticService.getAnalyticsofDomain(allDomains[0].id, userObj.email)
     const firstName = dto.fullName.split(' ')
     await this.emailService.sendWelcomeEmail(userObj.email, firstName[0])
+
+    if (userObj.emailVerified !== true) {
+      await this.userService.sendVerificationEmailLink(userObj.email)
+      throw new ConflictException('Please verify your email')
+    }
 
     return {
       message: 'Signup successful',
@@ -434,6 +440,46 @@ export class AuthService {
 
   async verifyAndCreateUser(accessToken: string) {
     const decodedToken = await admin.auth().verifyIdToken(accessToken);
+
+    const userInfo = await this.dbService.user.findUnique({
+      where: {
+        email: decodedToken.email,
+      },
+    });
+
+    if (userInfo) {
+      const currentUser = await this.signIn({
+        email: decodedToken.email,
+        password: decodedToken.sub,
+      })
+
+      return currentUser;
+    } else {
+      const firstName = decodedToken.name.split(' ')
+
+      const newUser = await this.signUp({
+        email: decodedToken.email,
+        fullName: decodedToken.name,
+        profilePicture: decodedToken.picture,
+        password: decodedToken.sub,
+        phone: '',
+        domainName: `${firstName[0]}'s Domain`,
+        country: '',
+        emailVerified: true,
+        googleId: decodedToken.uid
+      });
+
+      await admin.auth().setCustomUserClaims(decodedToken.uid, {
+        userId: newUser.user_data.id,
+      });
+
+      return newUser;
+    }
+  }
+
+  async verifyAndUpdateUserThroughGithub(accessToken: string) {
+    const decodedToken = await admin.auth().verifyIdToken(accessToken);
+    console.log(decodedToken)
 
     const userInfo = await this.dbService.user.findUnique({
       where: {

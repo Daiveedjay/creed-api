@@ -35,6 +35,7 @@ type InviterPayload = {
   id: string;
   name: string;
   jobTitle: string;
+  profilePicture: string
 }
 
 export type InvitePayload = {
