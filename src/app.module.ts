@@ -69,7 +69,6 @@ export class AppModule {
       PanelController,
       NotificationsController,
       AnalyticsController,
-      UserController,
       AnnouncementsController,
       TaskController,
       StatusController,

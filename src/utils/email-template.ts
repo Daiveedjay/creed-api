@@ -5,6 +5,7 @@ interface GetEmailTemplateType {
   announcementUrl?: string,
   announcementText?: string,
   domainUrl?: string
+  verifyEmailLink?: string
 }
 
 interface GetEmailSubjectType {
@@ -19,15 +20,17 @@ export enum Format {
   REMOVED_DOMAIN = 'removed-domain',
   INVITED_TO_PANEL = 'invited-to-panel',
   REMOVED_FROM_PANEL = 'removed-from-panel',
+  DELETION_OF_TASK = 'deletion-of-task',
   ASSIGNED_TO_TASK = 'assigned-to-task',
   REMOVED_FROM_TASK = 'removed-from-task',
   MENTIONED_ON_CHAT = 'mentioned-on-chat',
   GETTING_PROMOTED = 'getting promoted',
-  GETTING_DEMOTED = 'getting-demoted'
+  GETTING_DEMOTED = 'getting-demoted',
+  VERIFYING_EMAIL = 'verifying-email'
 }
 
 export function getEmailTemplate(format: Format, name: string, args: GetEmailTemplateType) {
-  const { announcementText, announcementUrl, taskTitle, panelName, domainName } = args
+  const { announcementText, verifyEmailLink, announcementUrl, taskTitle, panelName, domainName } = args
 
   switch (format) {
     case (Format.JOIN_DOMAIN):
@@ -100,6 +103,178 @@ Let us know if you need any assistance getting started!
 
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
+            <p class="social-links">
+                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
+                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                for the latest updates, tutorials, and community engagement.
+            </p>
+
+            <small>© 2024 Kreed, All Rights Reserved.</small>
+        </div>
+    </div>
+</body>
+</html>
+`
+      );
+    case (Format.DELETION_OF_TASK):
+      return (
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            max-width: 100px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+        </div>
+
+        <h1>Task Deleted: ${taskTitle}</h1>
+
+        <p>Hi ${name},</p>
+
+        <p>
+            We wanted to inform you that the task titled "<strong>${taskTitle}</strong>" 
+            you were assigned to in the <strong>${panelName}</strong> panel under the 
+            <strong>${domainName}</strong> domain has been deleted by an admin.
+        </p>
+
+        <p>
+            If this was unexpected, or you have any questions regarding the deletion, 
+            feel free to reach out to your domain admin.
+        </p>
+
+        <p>Best regards,<br>The Kreed Team</p>
+
+        <div class="footer">
+            <p>Want to learn more about Kreed and how to make the most of it?</p>
+            <p class="social-links">
+                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
+                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                for the latest updates, tutorials, and community engagement.
+            </p>
+
+            <small>© 2024 Kreed, All Rights Reserved.</small>
+        </div>
+    </div>
+</body>
+</html>
+`
+      );
+    case (Format.VERIFYING_EMAIL):
+      return (
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            max-width: 100px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            background-color: #635fc7;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+        </div>
+        <p>Hi ${name},</p>
+
+        <p>Welcome to Kreed! We're excited to have you on board. To get started, please verify your email address by clicking the button below:</p>
+
+        <a href=${verifyEmailLink} class="button">Verify Email</a>
+
+        <p>If the button doesn't work, you can also verify your email by copying and pasting the link below into your browser:</p>
+        <p><a href=${verifyEmailLink}>${verifyEmailLink}</a></p>
+
+        <p>Thank you for joining Kreed. We're looking forward to helping you unlock the power of collaboration!</p>
+
+        <p>If you didn't sign up for Kreed, please ignore this email.</p>
+
+        <p>Best regards,<br>The Kreed Team</p>
+
+        <div class="footer">
+            <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
                 Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
@@ -933,6 +1108,10 @@ export function getEmailSubject(format: Format, args: GetEmailSubjectType) {
       return `You've Been Promoted to Admin on ${domainName}`
     case (Format.GETTING_DEMOTED):
       return `You've Been Demoted to Member on ${domainName}`
+    case (Format.DELETION_OF_TASK):
+      return `Task Deleted: ${taskTitle}`
+    case (Format.VERIFYING_EMAIL):
+      return `Verify your email address`
     default:
       break;
   }

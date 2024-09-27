@@ -495,7 +495,6 @@ export class TaskService {
         const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
           (assigned) => assigned.userId === id,
         );
-        console.log(existingAssignedCollaborators)
 
         if (!existingAssignedCollaborators) {
           throw new NotFoundException('Subtask not found!')
@@ -617,6 +616,16 @@ export class TaskService {
             }
           }
         },
+        domain: {
+          select: {
+            name: true
+          }
+        },
+        panel: {
+          select: {
+            name: true
+          }
+        },
         subTasks: true,
         Notifications: true
       },
@@ -643,8 +652,12 @@ export class TaskService {
           }
         })
 
-        const subject = 'This task has been deleted from the project!'
-        const body = 'SIKE!!!!!!!!!!!'
+        const subject = getEmailSubject(Format.DELETION_OF_TASK, { taskTitle: existingTask.title })
+        const body = getEmailTemplate(Format.DELETION_OF_TASK, collaborators.user.fullName, {
+          taskTitle: existingTask.title,
+          panelName: existingTask.panel.name,
+          domainName: existingTask.domain.name
+        })
         const now = new Date()
         if (this.timeService.isWithinAvailableHours(now, {
           start: collaborators.user.availableHoursFrom,
@@ -670,26 +683,6 @@ export class TaskService {
             { delay }
           );
         }
-
-
-        //const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
-        //panelName: existingTask.panel.name
-        //})
-
-        //const firstName = existingAssignedCollaborators.user.fullName.split(' ')
-        //const body = getEmailTemplate(Format.REMOVED_FROM_TASK, firstName[0], {
-        //panelName: existingTask.panel.name,
-        //taskTitle: dto.title
-        //})
-        //console.log(usersEmail)
-
-        //await this.emailQueue.add('sendEmail', {
-        //email: usersEmail,
-        //subject: subject,
-        //body: body
-        //}, {
-        //delay: 300000,
-        //})
       }
     }
 
@@ -1002,6 +995,7 @@ export class TaskService {
           })
 
           const now = new Date()
+
           if (this.timeService.isWithinAvailableHours(now, {
             start: user.user.availableHoursFrom,
             end: user.user.availableHoursTo
@@ -1029,106 +1023,107 @@ export class TaskService {
 
         }
 
-        if (dto.toBeDeletedSubTaskIds?.length > 0) {
-          for (const id of dto.toBeDeletedSubTaskIds) {
-            const existingSubtask = existingTask.subTasks.find(
-              (subtask) => subtask.id === id,
-            );
-
-            if (!existingSubtask) {
-              throw new NotFoundException('Subtask not found!')
-            }
-
-            await this.dbService.subTask.delete({
-              where: {
-                id: existingSubtask.id
-              }
-            })
-          }
-        }
-
-        if (dto.usersToDeleteFromAssigned?.length > 0) {
-          for (const id of dto.usersToDeleteFromAssigned) {
-            const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
-              (assigned) => assigned.userId === id,
-            );
-
-            if (!existingAssignedCollaborators) {
-              throw new NotFoundException('Subtask not found!')
-            }
-
-            await this.dbService.assignedCollaborators.delete({
-              where: {
-                id: existingAssignedCollaborators.id
-              }
-            })
-
-            const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
-              panelName: existingTask.panel.name
-            })
-
-            const firstName = existingAssignedCollaborators.user.fullName.split(' ')
-            const body = getEmailTemplate(Format.REMOVED_FROM_TASK, firstName[0], {
-              panelName: existingTask.panel.name,
-              taskTitle: dto.title
-            })
-
-            const now = new Date()
-            if (this.timeService.isWithinAvailableHours(now, {
-              start: existingAssignedCollaborators.user.availableHoursFrom,
-              end: existingAssignedCollaborators.user.availableHoursTo
-            })) {
-              await this.emailQueue.add('sendEmail', {
-                email: existingAssignedCollaborators.user.email,
-                subject: subject,
-                body: body
-              }, {
-                delay: 300000,
-              })
-            } else {
-              const nextAvailableTime = this.timeService.nextAvailableDate(now, {
-                start: existingAssignedCollaborators.user.availableHoursFrom,
-                end: existingAssignedCollaborators.user.availableHoursTo
-              });
-              const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
-
-              await this.emailQueue.add(
-                'sendEmail',
-                { email: existingAssignedCollaborators.user.email, subject, body },
-                { delay }
-              );
-            }
-
-          }
-        }
 
 
-        const updatedTask = await this.dbService.task.update({
-          where: {
-            id,
-            panelId: panelID,
-            domainId: domainID,
-          },
-          data: {
-            title: existingTask.title,
-            description: existingTask.description,
-            statusId: existingTask.statusId,
-            order: existingTask.order,
-            assignedTo: existingTask.assignedTo,
-            assignedFrom: existingTask.assignedFrom,
-          },
-          include: {
-            subTasks: true,
-            Status: true
-          }
-        });
-
-
-        updatedTasks.add(updatedTask)
       }
 
-      return Array.from(updatedTasks);
+      if (dto.toBeDeletedSubTaskIds?.length > 0) {
+        for (const id of dto.toBeDeletedSubTaskIds) {
+          const existingSubtask = existingTask.subTasks.find(
+            (subtask) => subtask.id === id,
+          );
+
+          if (!existingSubtask) {
+            throw new NotFoundException('Subtask not found!')
+          }
+
+          await this.dbService.subTask.delete({
+            where: {
+              id: existingSubtask.id
+            }
+          })
+        }
+      }
+
+      if (dto.usersToDeleteFromAssigned?.length > 0) {
+        for (const id of dto.usersToDeleteFromAssigned) {
+          const existingAssignedCollaborators = existingTask.assignedCollaborators.find(
+            (assigned) => assigned.userId === id,
+          );
+
+          if (!existingAssignedCollaborators) {
+            throw new NotFoundException('Subtask not found!')
+          }
+
+          await this.dbService.assignedCollaborators.delete({
+            where: {
+              id: existingAssignedCollaborators.id
+            }
+          })
+
+          const subject = getEmailSubject(Format.REMOVED_FROM_TASK, {
+            panelName: existingTask.panel.name
+          })
+
+          const firstName = existingAssignedCollaborators.user.fullName.split(' ')
+          const body = getEmailTemplate(Format.REMOVED_FROM_TASK, firstName[0], {
+            panelName: existingTask.panel.name,
+            taskTitle: dto.title
+          })
+
+          const now = new Date()
+          if (this.timeService.isWithinAvailableHours(now, {
+            start: existingAssignedCollaborators.user.availableHoursFrom,
+            end: existingAssignedCollaborators.user.availableHoursTo
+          })) {
+            await this.emailQueue.add('sendEmail', {
+              email: existingAssignedCollaborators.user.email,
+              subject: subject,
+              body: body
+            }, {
+              delay: 300000,
+            })
+          } else {
+            const nextAvailableTime = this.timeService.nextAvailableDate(now, {
+              start: existingAssignedCollaborators.user.availableHoursFrom,
+              end: existingAssignedCollaborators.user.availableHoursTo
+            });
+            const delay = this.timeService.differenceInMilliseconds(now, nextAvailableTime);
+
+            await this.emailQueue.add(
+              'sendEmail',
+              { email: existingAssignedCollaborators.user.email, subject, body },
+              { delay }
+            );
+          }
+
+        }
+      }
+      const updatedTask = await this.dbService.task.update({
+        where: {
+          id,
+          panelId: panelID,
+          domainId: domainID,
+        },
+        data: {
+          title: existingTask.title,
+          description: existingTask.description,
+          statusId: existingTask.statusId,
+          order: existingTask.order,
+          assignedTo: existingTask.assignedTo,
+          assignedFrom: existingTask.assignedFrom,
+        },
+        include: {
+          subTasks: true,
+          Status: true
+        }
+      });
+
+
+      updatedTasks.add(updatedTask)
     }
+
+    return Array.from(updatedTasks);
 
   }
 

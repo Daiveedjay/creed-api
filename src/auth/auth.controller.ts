@@ -73,4 +73,11 @@ export class AuthController {
     return this.authService.verifyAndCreateUser(dto.accessToken)
   }
 
+  @Post('github/login')
+  public async githubLogin(
+    @Body() dto: GoogleDto,
+  ) {
+    return await this.authService.verifyAndUpdateUserThroughGithub(dto.accessToken)
+  }
+
 }

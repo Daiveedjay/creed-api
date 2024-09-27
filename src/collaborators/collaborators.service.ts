@@ -78,7 +78,8 @@ export class CollaboratorsService {
       invitedBy: {
         id: currentUser.id,
         name: currentUser.fullName,
-        jobTitle: currentUser.jobTitle
+        jobTitle: currentUser.jobTitle,
+        profilePicture: currentUser.profilePicture
       },
     };
 
@@ -86,7 +87,7 @@ export class CollaboratorsService {
       secret: this.configService.get('JWT_SECRET'),
     });
 
-    return `https://kreed.tech/invite?invite_code=${hashedPayload}`;
+    return `https://app.kreed.tech/invite?invite_code=${hashedPayload}`;
 
   }
 
@@ -162,7 +163,7 @@ export class CollaboratorsService {
       this.announcementService.create(invitedByUser.email, joinCollaboratorDto.domainId, {
         content: `@${invitedByUser.fullName} invited @${inviteeUser.fullName} to the "${thereIsDomain.name}" domain`,
         mentions: [inviteeUser.id],
-        isAutomated: false,
+        isAutomated: true,
       })
     ])
 
