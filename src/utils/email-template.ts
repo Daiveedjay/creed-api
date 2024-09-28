@@ -1034,11 +1034,11 @@ If you think this was a mistake, please reach out to your panel admin.
             line-height: 1.6;
         }
         .button {
+            text-decoration: none;
             display: inline-block;
             background-color: #635fc7;
             color: #fff;
             padding: 10px 20px;
-            text-decoration: none;
             border-radius: 4px;
         }
         .footer {
@@ -1062,11 +1062,13 @@ You have been invited to join the domain "${domainName}", where they excel in th
         
         <p>Click the button below to join the domain:</p>
         
-        <a href=${inviteUrl} class="button">Join Domain</a>
-        
+        <div class="button">        
+          <a href=${inviteUrl} target="_blank">Join Domain</a>
+        </div>
+
         <p>If the button doesn't work, you can also join the domain by copying and pasting the link below into your browser:</p>
 
-        <a href=${inviteUrl}>${inviteUrl}</p>
+        <a href=${inviteUrl} target="_blank">Go to Link</a>
 
         <p>Best regards,<br>The Kreed Team</p>
 
