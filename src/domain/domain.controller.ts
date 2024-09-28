@@ -53,7 +53,7 @@ export class DomainController {
     return await this.domainService.create(id, dto);
   }
 
-  @Delete('/:domainID')
+  @Delete('/:domainID/leave')
   @UseGuards(AuthGuard)
   async leaveADomain(@Param('domainID') domainID: string, @CurrentUser('id') id: string) {
     return await this.domainService.leaveADomain(domainID, id);
