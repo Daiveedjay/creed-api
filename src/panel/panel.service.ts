@@ -66,7 +66,7 @@ export class PanelService {
           },
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: 'asc',
         },
       });
 

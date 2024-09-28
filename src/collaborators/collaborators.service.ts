@@ -243,7 +243,7 @@ export class CollaboratorsService {
       }
     })
     if (!currentUser) {
-      throw new UnauthorizedException('You do not have access boss')
+      throw new MethodNotAllowedException('You cannot demote yourself')
     };
 
     const userToBePromotedOrDemoted = await this.dbService.user.findUnique({
@@ -517,6 +517,9 @@ export class CollaboratorsService {
         where: {
           email
         },
+        select: {
+          fullName: true
+        }
       })
 
       const link = await this.createLinkForJoining({
@@ -524,11 +527,11 @@ export class CollaboratorsService {
         role: dto.role,
       }, userEmail)
 
-      const userToBeInvitedName = userInvited.fullName.split(' ')
+      const userToBeInvitedName = userInvited.fullName ? userInvited.fullName.split(' ')[0] : ''
       const subject = getEmailSubject(Format.INVITED_TO_DOMAIN, {
         domainName: domain.name
       })
-      const body = getEmailTemplate(Format.INVITED_TO_DOMAIN, userToBeInvitedName[0], {
+      const body = getEmailTemplate(Format.INVITED_TO_DOMAIN, userToBeInvitedName, {
         domainName: domain.name,
         inviteUrl: link
       })
