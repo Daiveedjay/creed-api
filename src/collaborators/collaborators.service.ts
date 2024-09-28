@@ -513,21 +513,23 @@ export class CollaboratorsService {
       },
     })
     for (const email of dto.usersEmails) {
-      const userInvited = await this.dbService.user.findUnique({
+      let userToBeInvitedName: string;
+      const user = await this.dbService.user.findUnique({
         where: {
           email
-        },
-        select: {
-          fullName: true
         }
       })
-
       const link = await this.createLinkForJoining({
         domainId: dto.domainId,
         role: dto.role,
       }, userEmail)
 
-      const userToBeInvitedName = userInvited.fullName ? userInvited.fullName.split(' ')[0] : ''
+      if (!user) {
+        userToBeInvitedName = 'There'
+      } else {
+        userToBeInvitedName = user.fullName.split(' ')[0]
+      }
+
       const subject = getEmailSubject(Format.INVITED_TO_DOMAIN, {
         domainName: domain.name
       })
