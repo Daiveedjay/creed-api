@@ -87,9 +87,7 @@ export class AWSService {
       Key: key, // The image file name
     });
 
-    return await getSignedUrl(this.s3Client, command, {
-      expiresIn: 31536000
-    });
+    return await getSignedUrl(this.s3Client, command);
   }
 }
 
