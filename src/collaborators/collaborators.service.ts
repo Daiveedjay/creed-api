@@ -510,24 +510,33 @@ export class CollaboratorsService {
     const domain = await this.dbService.domain.findUnique({
       where: {
         id: dto.domainId
-      }
+      },
     })
     for (const email of dto.usersEmails) {
+      const userInvited = await this.dbService.user.findUnique({
+        where: {
+          email
+        },
+      })
+
       const link = await this.createLinkForJoining({
         domainId: dto.domainId,
         role: dto.role,
       }, userEmail)
 
-      //const userToBePromotedOrDemotedName = userToBeRemoved.user.fullName.split(' ')
-      //const subject = getEmailSubject(Format.REMOVED_DOMAIN, domain.name)
-      //const body = getEmailTemplate(Format.REMOVED_DOMAIN, userToBePromotedOrDemotedName[0], {
-      //domainName: domain.name,
-      //})
+      const userToBeInvitedName = userInvited.fullName.split(' ')
+      const subject = getEmailSubject(Format.INVITED_TO_DOMAIN, {
+        domainName: domain.name
+      })
+      const body = getEmailTemplate(Format.INVITED_TO_DOMAIN, userToBeInvitedName[0], {
+        domainName: domain.name,
+        inviteUrl: link
+      })
 
       await this.emailService.sendEmail(
         email,
-        'You have been invited',
-        `You have been invited to join this particular domain called "${domain.name}", where they excell in whatever. Do create an account before joining. CLick on the link below to join the domain: \n ${link}`
+        subject,
+        body
       )
 
       return new HttpException('Email sent!', HttpStatus.OK)

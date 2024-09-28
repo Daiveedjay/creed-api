@@ -2,7 +2,6 @@
 import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, MethodNotAllowedException, NotFoundException } from '@nestjs/common';
 import { DbService } from 'src/utils/db.service';
 import { CreateDomainDTO } from './domain.dto';
-import { Roles } from '@prisma/client';
 import CONSTANTS from 'src/lib/constants';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 
@@ -149,15 +148,49 @@ export class DomainService {
       }
     })
 
+    const panelMembership = await this.dbService.panelMembership.findMany({
+      where: {
+        userId
+      }
+    })
+
+    const assignedToTask = await this.dbService.assignedCollaborators.findMany({
+      where: {
+        userId
+      }
+    })
+
     if (!domainMembership) {
       throw new MethodNotAllowedException('Domain not found!')
     };
 
-    await this.dbService.domainMembership.delete({
-      where: {
-        id: domainMembership.id
+    if (panelMembership.length > 0) {
+      for (const panelMember of panelMembership) {
+        await this.dbService.panelMembership.delete({
+          where: {
+            id: panelMember.id
+          }
+        })
       }
-    })
+    }
+
+    if (assignedToTask.length > 0) {
+      for (const task of assignedToTask) {
+        await this.dbService.assignedCollaborators.delete({
+          where: {
+            id: task.id
+          }
+        })
+      }
+    }
+
+    await Promise.all([
+      this.dbService.domainMembership.delete({
+        where: {
+          id: domainMembership.id
+        }
+      }),
+    ])
 
     return new HttpException('Left apparently', HttpStatus.OK)
   }

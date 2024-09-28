@@ -6,6 +6,7 @@ interface GetEmailTemplateType {
   announcementText?: string,
   domainUrl?: string
   verifyEmailLink?: string
+  inviteUrl?: string
 }
 
 interface GetEmailSubjectType {
@@ -17,6 +18,7 @@ interface GetEmailSubjectType {
 export enum Format {
   JOIN_DOMAIN = 'join-domain',
   LEAVE_DOMAIN = 'leave-domain',
+  INVITED_TO_DOMAIN = 'invited-to-domain',
   REMOVED_DOMAIN = 'removed-domain',
   INVITED_TO_PANEL = 'invited-to-panel',
   REMOVED_FROM_PANEL = 'removed-from-panel',
@@ -30,7 +32,7 @@ export enum Format {
 }
 
 export function getEmailTemplate(format: Format, name: string, args: GetEmailTemplateType) {
-  const { announcementText, verifyEmailLink, announcementUrl, taskTitle, panelName, domainName } = args
+  const { announcementText, inviteUrl, verifyEmailLink, announcementUrl, taskTitle, panelName, domainName } = args
 
   switch (format) {
     case (Format.JOIN_DOMAIN):
@@ -995,6 +997,95 @@ If you think this was a mistake, please reach out to your panel admin.
 </body>
 </html>
 `);
+    case (Format.INVITED_TO_DOMAIN):
+      return (
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+        }
+        .header img {
+            max-width: 100px;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .button {
+            display: inline-block;
+            background-color: #635fc7;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+        </div>
+        <p>Hi ${name},</p>
+
+        <p>
+You have been invited to join the domain "${domainName}", where they excel in their field. To become a part of this community, please create an account before joining.
+        </p>
+        
+        <p>Click the button below to join the domain:</p>
+        
+        <a href=${inviteUrl} class="button">Join Domain</a>
+        
+        <p>If the button doesn't work, you can also join the domain by copying and pasting the link below into your browser:</p>
+
+        <a href=${inviteUrl}>${inviteUrl}</p>
+
+        <p>Best regards,<br>The Kreed Team</p>
+
+        <div class="footer">
+            <p>Want to learn more about Kreed and how to make the most of it?</p>
+            <p class="social-links">
+                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
+                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                for the latest updates, tutorials, and community engagement.
+            </p>
+
+            <small>© 2024 Kreed, All Rights Reserved.</small>
+        </div>
+    </div>
+</body>
+</html>
+`
+      );
     case (Format.GETTING_DEMOTED):
       return (
         `
@@ -1078,7 +1169,7 @@ If you have questions, please contact your domain admin.
 </body>
 </html>
 `
-      )
+      );
     default:
       break;
 
@@ -1104,6 +1195,8 @@ export function getEmailSubject(format: Format, args: GetEmailSubjectType) {
       return `You've Been Removed from Task ${taskTitle}`
     case (Format.MENTIONED_ON_CHAT):
       return `You Were Mentioned in an Announcement`
+    case (Format.INVITED_TO_DOMAIN):
+      return `You're Invited to Join the ${domainName} Domain on Kreed`
     case (Format.GETTING_PROMOTED):
       return `You've Been Promoted to Admin on ${domainName}`
     case (Format.GETTING_DEMOTED):

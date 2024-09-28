@@ -153,7 +153,7 @@ export class EmailService {
           Data: subject,
         },
         Body: {
-          Text: {
+          Html: {
             Data: body,
           },
         },
