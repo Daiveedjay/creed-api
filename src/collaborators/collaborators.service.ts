@@ -543,9 +543,9 @@ export class CollaboratorsService {
         subject,
         body
       )
-
-      return new HttpException('Email sent!', HttpStatus.OK)
     }
+
+    return new HttpException('Email sent!', HttpStatus.OK)
   }
 }
 
