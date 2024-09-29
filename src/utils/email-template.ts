@@ -61,10 +61,9 @@ export function getEmailTemplate(format: Format, name: string, args: GetEmailTem
         }
         .header {
             text-align: center;
-            padding: 20px;
         }
         .header img {
-            max-width: 100px;
+            width: 100%;
         }
         h1 {
             color: #333;
@@ -80,6 +79,11 @@ export function getEmailTemplate(format: Format, name: string, args: GetEmailTem
             text-decoration: none;
             border-radius: 4px;
         }
+        
+        .link {
+          text-decoration: none;
+          color: #fff;
+        }
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -90,9 +94,6 @@ export function getEmailTemplate(format: Format, name: string, args: GetEmailTem
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -165,11 +166,6 @@ Let us know if you need any assistance getting started!
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
-
-        <h1>Task Deleted: ${taskTitle}</h1>
 
         <p>Hi ${name},</p>
 
@@ -189,9 +185,9 @@ Let us know if you need any assistance getting started!
         <div class="footer">
             <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -227,10 +223,9 @@ Let us know if you need any assistance getting started!
         }
         .header {
             text-align: center;
-            padding: 20px;
         }
         .header img {
-            max-width: 100px;
+            width: 100%;
         }
         h1 {
             color: #333;
@@ -247,6 +242,10 @@ Let us know if you need any assistance getting started!
             border-radius: 4px;
             margin-top: 20px;
         }
+        .link {
+          text-decoration: none;
+          color: #fff;
+        }
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -258,13 +257,15 @@ Let us know if you need any assistance getting started!
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+            <img src="../../public/banner.jpg" alt="Kreed Logo">
         </div>
         <p>Hi ${name},</p>
 
         <p>Welcome to Kreed! We're excited to have you on board. To get started, please verify your email address by clicking the button below:</p>
 
-        <a href=${verifyEmailLink} class="button">Verify Email</a>
+        <div class="button">
+          <a href=${verifyEmailLink} class="link">Verify Email</a>
+        </div>
 
         <p>If the button doesn't work, you can also verify your email by copying and pasting the link below into your browser:</p>
         <p><a href=${verifyEmailLink}>${verifyEmailLink}</a></p>
@@ -278,9 +279,9 @@ Let us know if you need any assistance getting started!
         <div class="footer">
             <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -347,9 +348,6 @@ Let us know if you need any assistance getting started!
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -363,9 +361,9 @@ If you left by mistake or need to rejoin, please contact the domain admin.
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -431,9 +429,6 @@ If you left by mistake or need to rejoin, please contact the domain admin.
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -446,11 +441,11 @@ If you believe this was an error, please contact the domain admin.        </p>
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
-                for the latest updates, tutorials, and community engagement.            </p>
-
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
+                for the latest updates, tutorials, and community engagement.
+            </p>
             <small>© 2024 Kreed, All Rights Reserved.</small>
         </div>
     </div>
@@ -484,10 +479,9 @@ If you believe this was an error, please contact the domain admin.        </p>
         }
         .header {
             text-align: center;
-            padding: 20px;
         }
         .header img {
-            max-width: 100px;
+            width: 100%;
         }
         h1 {
             color: #333;
@@ -514,7 +508,7 @@ If you believe this was an error, please contact the domain admin.        </p>
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+            <img src="../../public/banner.jpg" alt="Kreed Logo">
         </div>
         <p>Hi ${name},</p>
 
@@ -528,9 +522,9 @@ You can start assigning tasks, tracking progress, and staying organized.        
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -596,9 +590,6 @@ You can start assigning tasks, tracking progress, and staying organized.        
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -611,9 +602,9 @@ If you have any questions or believe this was a mistake, feel free to contact th
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -679,9 +670,6 @@ If you have any questions or believe this was a mistake, feel free to contact th
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -695,9 +683,9 @@ You can view and manage your tasks by logging into Kreed.
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -763,9 +751,6 @@ You can view and manage your tasks by logging into Kreed.
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -779,9 +764,9 @@ If you think this was a mistake, please reach out to your panel admin.
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -847,6 +832,10 @@ If you think this was a mistake, please reach out to your panel admin.
             text-decoration: none;
             border-radius: 4px;
         }
+        .link {
+          text-decoration: none;
+          color: #fff;
+        }
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -863,9 +852,6 @@ If you think this was a mistake, please reach out to your panel admin.
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>You were mentioned in an announcement in the <strong>${domainName}</strong> domain. The message is as follows:</p>
@@ -875,7 +861,7 @@ If you think this was a mistake, please reach out to your panel admin.
         </div>
 
         <div class="button">
-            <a href="${announcementUrl}" target="_blank">View Announcement</a>
+            <a class="link" href="${announcementUrl}" target="_blank">View Announcement</a>
         </div>
 
         <p>We hope this keeps you updated on important domain announcements.</p>
@@ -885,9 +871,9 @@ If you think this was a mistake, please reach out to your panel admin.
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -963,9 +949,6 @@ If you think this was a mistake, please reach out to your panel admin.
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
 
         <p>Hi ${name},</p>
 
@@ -984,9 +967,9 @@ If you think this was a mistake, please reach out to your panel admin.
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -1022,10 +1005,9 @@ If you think this was a mistake, please reach out to your panel admin.
         }
         .header {
             text-align: center;
-            padding: 20px;
         }
         .header img {
-            max-width: 100px;
+            width: 100%;
         }
         h1 {
             color: #333;
@@ -1041,6 +1023,10 @@ If you think this was a mistake, please reach out to your panel admin.
             padding: 10px 20px;
             border-radius: 4px;
         }
+        .link {
+          text-decoration: none;
+          color: #fff;
+        }
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -1052,7 +1038,7 @@ If you think this was a mistake, please reach out to your panel admin.
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+            <img src="../../public/banner.jpg" alt="Kreed Logo">
         </div>
         <p>Hi ${name},</p>
 
@@ -1063,7 +1049,7 @@ You have been invited to join the domain "${domainName}", where they excel in th
         <p>Click the button below to join the domain:</p>
         
         <div class="button">        
-          <a href=${inviteUrl} target="_blank">Join Domain</a>
+          <a class="link" href=${inviteUrl} target="_blank">Join Domain</a>
         </div>
 
         <p>If the button doesn't work, you can also join the domain by copying and pasting the link below into your browser:</p>
@@ -1075,9 +1061,9 @@ You have been invited to join the domain "${domainName}", where they excel in th
         <div class="footer">
             <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
@@ -1143,9 +1129,6 @@ You have been invited to join the domain "${domainName}", where they excel in th
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -1159,9 +1142,9 @@ If you have questions, please contact your domain admin.
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 

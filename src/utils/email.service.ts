@@ -52,10 +52,9 @@ export class EmailService {
         }
         .header {
             text-align: center;
-            padding: 20px;
         }
         .header img {
-            max-width: 100px;
+            width: 100%;
         }
         h1 {
             color: #333;
@@ -82,7 +81,7 @@ export class EmailService {
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://yourlogo.com/logo.png" alt="Kreed Logo">
+            <img src="../../public/banner.jpg" alt="Kreed Logo">
         </div>
         <p>Hi ${name},</p>
 
