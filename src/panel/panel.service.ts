@@ -259,6 +259,13 @@ export class PanelService {
         domainId: domainID,
         id: panelID,
       },
+      include: {
+        domain: {
+          select: {
+            name: true
+          }
+        }
+      }
     });
 
     const currentUser = await this.dbService.user.findUnique({
@@ -316,6 +323,13 @@ export class PanelService {
           panelId: panelID,
           domainId: domainID,
         },
+        include: {
+          panel: {
+            select: {
+              name: true
+            }
+          }
+        }
       });
 
       if (alreadyInPanel)
@@ -329,22 +343,30 @@ export class PanelService {
         }
       },
       select: {
-        email: true
+        email: true,
+        fullName: true
       }
     })
-    const usersEmails = users.map((user) => user.email)
 
-    await Promise.all([
-      this.dbService.panelMembership.createMany({
-        data: addUsersDto.userIds?.map((user) => ({
-          userId: user,
-          domainId: domainID,
-          panelId: panelID,
-        })),
-      }),
+    for (const user of users) {
+      const firstName = user.fullName.split(' ')[0]
+      const body = getEmailTemplate(Format.INVITED_TO_PANEL, firstName, {
+        panelName: existingPanel.name,
+        domainName: existingPanel.domain.name
+      })
+      const subject = getEmailSubject(Format.INVITED_TO_PANEL, {
+        panelName: existingPanel.name
+      })
+      this.emailService.sendEmail(user.email, subject, body)
+    }
 
-      this.emailService.sendMultipleEmails(usersEmails, 'ANything abeg!', 'Free me you have been added to panel abeg!')
-    ])
+    await this.dbService.panelMembership.createMany({
+      data: addUsersDto.userIds?.map((user) => ({
+        userId: user,
+        domainId: domainID,
+        panelId: panelID,
+      })),
+    })
 
     return new HttpException('Success', HttpStatus.CREATED);
   }

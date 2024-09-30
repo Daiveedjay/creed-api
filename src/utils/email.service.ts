@@ -80,9 +80,6 @@ export class EmailService {
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <img src="../../public/banner.jpg" alt="Kreed Logo">
-        </div>
         <p>Hi ${name},</p>
 
         <p>
@@ -102,7 +99,7 @@ export class EmailService {
 
         <p>
             Should you need any help, feel free to check out our 
-            <a href="https://yourwebsite.com/help" target="_blank">Help Center</a> or contact our support team anytime.
+            <a href="mailto:kreednotifications@gmail.com" target="_blank">Help Center</a> or contact our support team anytime.
         </p>
 
         <p>We're always here to assist you.</p>
@@ -114,9 +111,9 @@ export class EmailService {
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://youtube.com/channel" target="_blank">YouTube channel</a>, 
-                follow us on <a href="https://twitter.com/kreed" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.com" target="_blank">landing page</a> 
+                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
+                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
