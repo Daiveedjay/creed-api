@@ -107,9 +107,9 @@ Let us know if you need any assistance getting started!
         <div class="footer">
 <p>Want to learn more about Kreed and how to make the most of it?</p>
             <p class="social-links">
-                Check out our <a href="https://www.youtube.com/channel/UCpBOpGURgojgh1RQUsyCUtw" target="_blank">YouTube channel</a>, 
+                Check out our <a href="https://www.youtube.com/@kreed_yt" target="_blank">YouTube channel</a>, 
                 follow us on <a href="https://x.com/KreedTech" target="_blank">Twitter</a>, 
-                or visit our <a href="https://kreed.tech" target="_blank">Landing page</a> 
+                or visit our <a href="https://kreed.tech/" target="_blank">Landing page</a> 
                 for the latest updates, tutorials, and community engagement.
             </p>
 
