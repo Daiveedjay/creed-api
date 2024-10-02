@@ -18,7 +18,6 @@ import { DomainController } from './domain/domain.controller';
 import { PanelController } from './panel/panel.controller';
 import { NotificationsController } from './notifications/notifications.controller';
 import { AnalyticsController } from './analytics/analytics.controller';
-import { UserController } from './user/user.controller';
 import { AnnouncementsController } from './announcements/announcements.controller';
 import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
