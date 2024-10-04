@@ -7,12 +7,11 @@ import {
   UnauthorizedException,
   createParamDecorator,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
 import { DbService } from '../utils/db.service';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { admin } from 'src/lib/firebase';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -30,36 +29,47 @@ export class AuthGuard implements CanActivate {
   }
 
   async validateRequest(req: any) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) throw new UnauthorizedException('Please provide auth token');
-    const token: string | undefined = authHeader.split(' ').pop();
-    if (!token) {
-      throw new UnauthorizedException('Invalid token');
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) throw new UnauthorizedException('Please provide auth token');
+      const token: string | undefined = authHeader.split(' ').pop();
+      if (!token) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      const decoded = new JwtService().verify(token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      if (!decoded) {
+        throw new UnauthorizedException('Token has been expired!');
+      };
+
+      const user = await this.dbService.user.findUnique({
+        where: { id: decoded.uid },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          email: true,
+          fullName: true,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException();
+      }
+
+      req.user = user;
+      return true;
+
+
+    } catch (err) {
+      if (err instanceof TokenExpiredError) throw new UnauthorizedException('Token expired. Please log in again.');
+      if (err) {
+        throw new UnauthorizedException('No access');
+      }
     }
-
-    const decoded = await admin.auth().verifyIdToken(token);
-    if (!decoded) {
-      throw new UnauthorizedException('Token has been expired!');
-    };
-
-    const user = await this.dbService.user.findUnique({
-      where: { email: decoded.email },
-      select: {
-        id: true,
-        createdAt: true,
-        updatedAt: true,
-        email: true,
-        fullName: true,
-      },
-    });
-
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    req.user = user;
-    return true;
-
   }
 }
 

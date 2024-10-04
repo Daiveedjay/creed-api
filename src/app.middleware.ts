@@ -2,14 +2,13 @@ import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/commo
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { admin } from './lib/firebase';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
   constructor(
     private readonly configService: ConfigService,
   ) { }
-  async use(req: Request, res: Response, next: NextFunction) {
+  use(req: Request, res: Response, next: NextFunction) {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader) throw new UnauthorizedException('Please provide auth token');
@@ -17,8 +16,9 @@ export class JwtMiddleware implements NestMiddleware {
       if (!token) {
         throw new UnauthorizedException('Invalid token');
       }
-
-      const decoded = await admin.auth().verifyIdToken(token);
+      const decoded = new JwtService().verify(token, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
 
       if (decoded) {
         next();
