@@ -207,8 +207,6 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    // TODO: Send signin email
-
     const token = this.jwtService.sign(
       { uid: user.id },
       {
