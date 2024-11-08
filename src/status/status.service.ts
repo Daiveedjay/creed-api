@@ -10,7 +10,11 @@ export class StatusService {
   ) { }
 
   async getStatus(domainID: string) {
-    const status = await this.dbService.status.findMany({ where: { domainId: domainID } });
+    const status = await this.dbService.status.findMany({
+      where: { domainId: domainID }, orderBy: {
+        createdAt: "asc"
+      }
+    });
     return status;
   }
 
@@ -93,7 +97,7 @@ export class StatusService {
     if (!existingStatus) throw new NotFoundException('Status not found')
 
     const updatedStatus = await this.dbService.status.update({ where: { id: statusID, domainId: domainId }, data: { ...dto } });
-    
+
     return updatedStatus
 
   }
