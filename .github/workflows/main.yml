@@ -24,7 +24,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          REMOTE_HOST: -s-1vcpu-512mb-10gb-sfo3-01.digitaloceanspaces.com
+          REMOTE_HOST: -s-1vcpu-512mb-10gb-sfo3-01
           REMOTE_USER: ubuntu
           # REMOTE_HOST: ${{ secrets.HOST_DNS }}
           # REMOTE_USER: ${{ secrets.USERNAME }}
