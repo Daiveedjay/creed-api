@@ -25,7 +25,7 @@ jobs:
         with:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: 147.182.248.137
-          REMOTE_USER: root
+          REMOTE_USER: ubuntu
           REMOTE_PORT: 22
           # REMOTE_HOST: ${{ secrets.HOST_DNS }}
           # REMOTE_USER: ${{ secrets.USERNAME }}
