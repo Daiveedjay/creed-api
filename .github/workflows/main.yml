@@ -22,11 +22,13 @@ jobs:
       - name: Set up SSH and Deploy
         run: |
           # Set up SSH key
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 147.182.248.137 >> ~/.ssh/known_hosts
 
           # SSH into the server and execute commands
-          ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
+          ssh ubuntu@147.182.248.137 << 'EOF'
             cd /path/to/your/app
 
             # Recreate the .env file securely
