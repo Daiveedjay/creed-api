@@ -47,7 +47,8 @@ jobs:
           # token: ${{secrets.DGO_SECRET_TOKEN}}
           host: 209.38.74.238
           username: kreed
-          key: ${{secrets.DGO_SSH_KEY}}
+          key: ${{ secrets.DGO_SSH_KEY }}
+          port: 22
           script: |
             rm .env && touch .env
             echo "PORT=3000" >> ".env"
