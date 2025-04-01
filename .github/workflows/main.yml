@@ -21,13 +21,13 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY  }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.DGO_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H 147.182.248.137 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 209.38.74.238 >> ~/.ssh/known_hosts
 
       - name: Deploy to Server
         run: |
-            ssh -i ~/.ssh/id_ed25519 root@147.182.248.137 << 'EOF'
+            ssh -i ~/.ssh/id_ed25519 ubuntu@209.38.74.238 << 'EOF'
               rm .env && touch .env
               echo "PORT=3000" >> ".env"
               echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
