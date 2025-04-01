@@ -18,59 +18,61 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY  }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 147.182.248.137 >> ~/.ssh/known_hosts
 
       - name: Deploy to Server
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          key: ${{ secrets.EC2_SSH_KEY }}
-          host: 147.182.248.137
-          username: ubuntu
+        run: |
+            ssh -i ~/.ssh/id_ed25519 root@147.182.248.137 << 'EOF'
+              rm .env && touch .env
+              echo "PORT=3000" >> ".env"
+              echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+              echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+              echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+              echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+              echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+              echo "IAM_USERNAME=${{ secrets.IAM_USERNAME }}" >> ".env"
+              echo "SMTP_ENDPOINT=${{ secrets.SMTP_ENDPOINT }}" >> ".env"
+              echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> ".env"
+              echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> ".env"
+              echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> ".env"
+              echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> ".env"
+              echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> ".env"
+              echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
+              echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ".env"
+              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
+              echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
 
-          script: |
-            rm .env && touch .env
-            echo "PORT=3000" >> ".env"
-            echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-            echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-            echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
-            echo "IAM_USERNAME=${{ secrets.IAM_USERNAME }}" >> ".env"
-            echo "SMTP_ENDPOINT=${{ secrets.SMTP_ENDPOINT }}" >> ".env"
-            echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> ".env"
-            echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> ".env"
-            echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> ".env"
-            echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> ".env"
-            echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> ".env"
-            echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ".env"
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
-            echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
+              # Create Docker network if not exists
+              if ! sudo docker network ls | grep -q "kreed" ; then
+                sudo docker network create kreed
+              fi
 
-            # Create Docker network if not exists
-            if ! sudo docker network ls | grep -q "kreed" ; then
-              sudo docker network create kreed
-            fi
+              # Stop and remove existing kreed_api container
+              sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
 
-            # Stop and remove existing kreed_api container
-            sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
+              # Remove old Docker image
+              sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
 
-            # Remove old Docker image
-            sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
+              # Build Docker image
+              sudo docker build --no-cache -t kreed_api:latest .
 
-            # Build Docker image
-            sudo docker build --no-cache -t kreed_api:latest .
+              # Ensure Redis container is running and attached to the network
+              if ! sudo docker ps -q --filter "name=redis" | grep -q . ; then
+                sudo docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
+              else
+                sudo docker network connect kreed redis || true
+              fi
 
-            # Ensure Redis container is running and attached to the network
-            if ! sudo docker ps -q --filter "name=redis" | grep -q . ; then
-              sudo docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
-            else
-              sudo docker network connect kreed redis || true
-            fi
+              # Run the newly built Docker image and connect it to the same network as Redis
+              sudo docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
 
-            # Run the newly built Docker image and connect it to the same network as Redis
-            sudo docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
-
-            # Optionally restart Caddy (if needed)
-            #
-            #
+              # Optionally restart Caddy (if needed)
+              #
+              #
+            EOF
