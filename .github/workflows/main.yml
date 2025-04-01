@@ -12,12 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-
       - name: Create .env file      
         run: |
           #   rm .env && touch .env
@@ -41,7 +35,13 @@ jobs:
           #   echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
           #
 
-      - name: Build container image
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+            - name: Build container image
         run: docker build -t registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7) .
 
       - name: Deploy to Server
