@@ -19,7 +19,7 @@ jobs:
           cache: 'npm'
 
       - name: Update SHA
-        run: rm $GITHUB_WORKSPACE/site/_meta && touch $GITHUB_WORKSPACE/site/_meta && echo $GITHUB_SHA >> $GITHUB_WORKSPACE/site/_meta
+        run: touch $GITHUB_WORKSPACE/site/_meta && echo $GITHUB_SHA >> $GITHUB_WORKSPACE/site/_meta
 
       - name: Build container image
         run: docker build -t registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7) .
