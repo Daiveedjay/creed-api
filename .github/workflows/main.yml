@@ -18,9 +18,6 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Update SHA
-        run: mkdir $GITHUB_WORKSPACE/site/_meta && echo $GITHUB_SHA >> $GITHUB_WORKSPACE/site/_meta
-
       - name: Build container image
         run: docker build -t registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7) .
         # run: docker compose up -d
