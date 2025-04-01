@@ -23,34 +23,34 @@ jobs:
         run: |
           # Set up SSH key
           mkdir -p ~/.ssh
-          echo "${{ secrets.DO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.DO_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H 147.182.248.137 >> ~/.ssh/known_hosts
 
           # SSH into the server and execute commands
-          ssh ${{ secrets.DO_USER }}@${{ secrets.DO_HOST }} << 'EOF'
+          ssh ubuntu@147.182.248.137 << 'EOF'
             cd /path/to/your/app
 
             # Recreate the .env file securely
             cat <<EOT > .env
             PORT=3000
-            DATABASE_URL=$DATABASE_URL
-            JWT_SECRET=$JWT_SECRET
-            CLIENT_APP_URL=$CLIENT_APP_URL
-            GOOGLE_API_BASE_URL=$GOOGLE_API_BASE_URL
-            GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
-            GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
-            IAM_USERNAME=$IAM_USERNAME
-            SMTP_ENDPOINT=$SMTP_ENDPOINT
-            SMTP_PORT=$SMTP_PORT
-            SMTP_USERNAME=$SMTP_USERNAME
-            SMTP_PASSWORD=$SMTP_PASSWORD
-            FIREBASE_PRIVATE_KEY=$FIREBASE_PRIVATE_KEY
-            FIREBASE_CLIENT_EMAIL=$FIREBASE_CLIENT_EMAIL
-            FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID
-            AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-            AWS_S3_BUCKET_NAME=$AWS_S3_BUCKET_NAME
+            DATABASE_URL=${{secrets.DATABASE_URL}}
+            JWT_SECRET=${{secrets.JWT_SECRET}}
+            CLIENT_APP_URL=${{secrets.CLIENT_APP_URL}}
+            GOOGLE_API_BASE_URL=${{secrets.GOOGLE_API_BASE_URL}}
+            GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID}}
+            GOOGLE_CLIENT_SECRET=${{secrets.GOOGLE_CLIENT_SECRET}}
+            IAM_USERNAME=${{secrets.IAM_USERNAME}}
+            SMTP_ENDPOINT=${{secrets.SMTP_ENDPOINT}}
+            SMTP_PORT=${{secrets.SMTP_PORT}}
+            SMTP_USERNAME=${{secrets.SMTP_USERNAME}}
+            SMTP_PASSWORD=${{secrets.SMTP_PASSWORD}}
+            FIREBASE_PRIVATE_KEY=${{secrets.FIREBASE_PRIVATE_KEY}}
+            FIREBASE_CLIENT_EMAIL=${{secrets.FIREBASE_CLIENT_EMAIL}}
+            FIREBASE_PROJECT_ID=${{secrets.FIREBASE_PROJECT_ID}}
+            AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}}
+            AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}}
+            AWS_S3_BUCKET_NAME=${{secrets.AWS_S3_BUCKET_NAME}}
             EOT
 
             # Ensure Docker network exists
