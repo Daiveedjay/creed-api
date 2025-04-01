@@ -41,7 +41,7 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-            - name: Build container image
+      - name: Build container image
         run: docker build -t registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7) .
 
       - name: Deploy to Server
