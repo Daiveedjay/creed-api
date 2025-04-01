@@ -18,58 +18,68 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
+      - name: Update SHA
+        run: echo $GITHUB_SHA > $GITHUB_WORKSPACE/site/_meta
+
+      - name: Build container image
+        run: docker build -t registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7) .
+        # run: docker compose up -d
+
       - name: Deploy to Server
-        uses: appleboy/ssh-action@master
+        uses: digitalocean/action-doctl@v2.5.1
         with:
-          host: 209.38.74.238
-          username: root
-          key: ${{ secrets.DGO_SSH_KEY }}
-          port: 22
-          script: |
-            rm .env && touch .env
-            echo "PORT=3000" >> ".env"
-            echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-            echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-            echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
-            echo "IAM_USERNAME=${{ secrets.IAM_USERNAME }}" >> ".env"
-            echo "SMTP_ENDPOINT=${{ secrets.SMTP_ENDPOINT }}" >> ".env"
-            echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> ".env"
-            echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> ".env"
-            echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> ".env"
-            echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> ".env"
-            echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> ".env"
-            echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ".env"
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
-            echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
+          token: ${{secrets.DGO_SECRET_TOKEN}}
 
-            # Create Docker network if not exists
-            if ! sudo docker network ls | grep -q "kreed" ; then
-              sudo docker network create kreed
-            fi
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 600
 
-            # Stop and remove existing kreed_api container
-            sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
-
-            # Remove old Docker image
-            sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
-
-            # Build Docker image
-            sudo docker build --no-cache -t kreed_api:latest .
-
-              # Ensure Redis container is running and attached to the network
-            if ! sudo docker ps -q --filter "name=redis" | grep -q . ; then
-              sudo docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
-            else
-              sudo docker network connect kreed redis || true
-            fi
-
-            # Run the newly built Docker image and connect it to the same network as Redis
-            sudo docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
-
-            # Optionally restart Caddy (if needed)
-              #
-              #
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7)    
+          # script: |
+          #   rm .env && touch .env
+          #   echo "PORT=3000" >> ".env"
+          #   echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+          #   echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
+          #   echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
+          #   echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
+          #   echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
+          #   echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
+          #   echo "IAM_USERNAME=${{ secrets.IAM_USERNAME }}" >> ".env"
+          #   echo "SMTP_ENDPOINT=${{ secrets.SMTP_ENDPOINT }}" >> ".env"
+          #   echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> ".env"
+          #   echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> ".env"
+          #   echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> ".env"
+          #   echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> ".env"
+          #   echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> ".env"
+          #   echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
+          #   echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ".env"
+          #   echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
+          #   echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
+          #
+          #   # Create Docker network if not exists
+          #   if ! sudo docker network ls | grep -q "kreed" ; then
+          #     sudo docker network create kreed
+          #   fi
+          #
+          #   # Stop and remove existing kreed_api container
+          #   sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
+          #
+          #   # Remove old Docker image
+          #   sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
+          #
+          #   # Build Docker image
+          #   sudo docker build --no-cache -t kreed_api:latest .
+          #
+          #     # Ensure Redis container is running and attached to the network
+          #   if ! sudo docker ps -q --filter "name=redis" | grep -q . ; then
+          #     sudo docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
+          #   else
+          #     sudo docker network connect kreed redis || true
+          #   fi
+          #
+          #   # Run the newly built Docker image and connect it to the same network as Redis
+          #   sudo docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
+          #
+          #   # Optionally restart Caddy (if needed)
+          #     #
+          #     #
