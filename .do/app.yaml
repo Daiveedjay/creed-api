@@ -40,9 +40,9 @@ networks:
 
 volumes:
   redis-data:
-
-services:
-- name: kreed
-  github:
-    branch: main
-    repo: Dai
+#
+# services:
+# - name: kreed
+#   github:
+#     branch: main
+#     repo: Daiveedjay/creed-api
