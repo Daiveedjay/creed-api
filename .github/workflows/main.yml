@@ -64,7 +64,7 @@ jobs:
           AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
         with:
           token: ${{ secrets.DGO_SECRET_TOKEN }}
-        script: |
+        run: |
             sudo docker run hello-world
      
       # - name: Push image to DigitalOcean Container Registry
