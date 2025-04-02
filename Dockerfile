@@ -13,7 +13,7 @@ COPY .env .env
 
 # Creates a "dist" folder with the production build
 RUN npx prisma generate
-# RUN npx prisma db push
+RUN npx prisma db push
 RUN npm run build
 
 # Expose the port on which the app will run
