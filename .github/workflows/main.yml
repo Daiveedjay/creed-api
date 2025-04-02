@@ -22,7 +22,7 @@ jobs:
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
         with:
-          REMOTE_HOST: 137.184.83.80
+          REMOTE_HOST: 147.182.237.122
           EXCLUDE: "/dist/, /node_modules/"
           REMOTE_USER: kreed
           SSH_PRIVATE_KEY: ${{ secrets.DGO_SSH_KEY }}
