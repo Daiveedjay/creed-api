@@ -26,7 +26,6 @@ jobs:
           EXCLUDE: "/dist/, /node_modules/"
           REMOTE_USER: kreed
           SSH_PRIVATE_KEY: ${{ secrets.DGO_SSH_KEY }}
-          SCRIPT_BEFORE: ls
           SCRIPT_AFTER: |
             # Check for .env file and recreate it
             if [ -f ".env" ]; then
