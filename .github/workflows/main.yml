@@ -49,28 +49,28 @@ jobs:
             echo ".env file successfully created."
 
             # Create Docker network if not exists
-            if ! sudo docker network ls | grep -q "kreed" ; then
-              sudo docker network create kreed
+            if ! docker network ls | grep -q "kreed" ; then
+              docker network create kreed
             fi
 
             # Stop and remove existing kreed_api container
-            sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
+            docker ps -q --filter "name=kreed_api" | grep -q . && docker stop kreed_api && docker rm kreed_api || true
 
             # Remove old Docker image
-            sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
+            docker images -q kreed_api:latest | grep -q . && docker rmi kreed_api:latest || true
 
             # Build Docker image
-            sudo docker build --no-cache -t kreed_api:latest .
+            docker build --no-cache -t kreed_api:latest .
 
             # Ensure Redis container is running and attached to the network
-            if ! sudo docker ps -q --filter "name=redis" | grep -q . ; then
-              sudo docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
+            if ! docker ps -q --filter "name=redis" | grep -q . ; then
+              docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
             else
-              sudo docker network connect kreed redis || true
+              docker network connect kreed redis || true
             fi
 
             # Run the newly built Docker image and connect it to the same network as Redis
-            sudo docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
+            docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
 
             # Optionally restart Caddy (if needed)
             #
