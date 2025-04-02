@@ -24,7 +24,7 @@ jobs:
         with:
           REMOTE_HOST: 147.182.237.122
           EXCLUDE: "/dist/, /node_modules/"
-          REMOTE_USER: kreed
+          REMOTE_USER: root
           SSH_PRIVATE_KEY: ${{ secrets.DGO_SSH_KEY }}
           SCRIPT_BEFORE: ls
           SCRIPT_AFTER: |
