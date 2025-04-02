@@ -33,22 +33,22 @@ jobs:
               echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
               echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
           #
-
-        - name: Log in to the Container registry
-          uses: docker/login-action@v3
-          with:
-            registry: registry.digitalocean.com
-            username: kreed-container
-            password: ${{ secrets.DGO_SECRET_TOKEN }}
-
-        - name: Build and push Docker image
-          uses: docker/build-push-action@v6
-          with:
-            context: .
-            push: true
-            tags: |
-              registry.digitalocean.com/kreed-container/kreed:latest
-              registry.digitalocean.com/kreed-container/kreed:${{ github.sha }}
+        #
+        # - name: Log in to the Container registry
+        #   uses: docker/login-action@v3
+        #   with:
+        #     registry: registry.digitalocean.com
+        #     username: kreed-container
+        #     password: ${{ secrets.DGO_SECRET_TOKEN }}
+        #
+        # - name: Build and push Docker image
+        #   uses: docker/build-push-action@v6
+        #   with:
+        #     context: .
+        #     push: true
+        #     tags: |
+        #       registry.digitalocean.com/kreed-container/kreed:latest
+        #       registry.digitalocean.com/kreed-container/kreed:${{ github.sha }}
 
 
     deploy:
@@ -56,96 +56,11 @@ jobs:
       needs:
         - Build-and-push-image
       steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+        - name: Build container image
+          run: docker compose up -d
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v3
-          with:
-            node-version: '18'
-            cache: 'npm'
+        - name: Log in to DigitalOcean Container Registry with short-lived credentials
+          run: doctl registry login --expiry-seconds 1200
 
-      # - name: Deploy to Server
-      #   uses: digitalocean/app_action/deploy@v2
-      #   env:
-      #     SOME_SECRET_FROM_REPOSITORY: ${{ secrets.SOME_SECRET_FROM_REPOSITORY }}
-      #     PORT: 3000
-      #     JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      #     CLIENT_APP_URL: ${{ secrets.CLIENT_APP_URL }}
-      #     GOOGLE_API_BASE_URL: ${{ secrets.GOOGLE_API_BASE_URL }}
-      #     GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      #     GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      #     IAM_USERNAME: ${{ secrets.IAM_USERNAME }}
-      #     SMTP_ENDPOINT: ${{ secrets.SMTP_ENDPOINT }}
-      #     SMTP_PORT: ${{ secrets.SMTP_PORT }}
-      #     SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-      #     SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-      #     FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-      #     FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-      #     FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
-      #   with:
-      #     token: ${{ secrets.DGO_SECRET_TOKEN }}
-
-        - name: Docker Stack Deploy
-          uses: cssnr/stack-deploy-action@v1
-          with:
-            name: kreed
-            file: docker-compose.yaml
-            host: 209.38.74.238
-            user: kreed
-            ssh_key: ${{ secrets.DGO_SSH_KEY }}
-            env_file: ./env
-
-      # - name: Push image to DigitalOcean Container Registry
-      #   run: docker push registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7)    
-          # script: |
-          #   rm .env && touch .env
-          #   echo "PORT=3000" >> ".env"
-          #   echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
-          #   echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
-          #   echo "CLIENT_APP_URL=${{ secrets.CLIENT_APP_URL }}" >> ".env"
-          #   echo "GOOGLE_API_BASE_URL=${{ secrets.GOOGLE_API_BASE_URL }}" >> ".env"
-          #   echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> ".env"
-          #   echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> ".env"
-          #   echo "IAM_USERNAME=${{ secrets.IAM_USERNAME }}" >> ".env"
-          #   echo "SMTP_ENDPOINT=${{ secrets.SMTP_ENDPOINT }}" >> ".env"
-          #   echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> ".env"
-          #   echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> ".env"
-          #   echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> ".env"
-          #   echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> ".env"
-          #   echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> ".env"
-          #   echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> ".env"
-          #   echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ".env"
-          #   echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
-          #   echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
-          #
-          #   # Create Docker network if not exists
-          #   if ! sudo docker network ls | grep -q "kreed" ; then
-          #     sudo docker network create kreed
-          #   fi
-          #
-          #   # Stop and remove existing kreed_api container
-          #   sudo docker ps -q --filter "name=kreed_api" | grep -q . && sudo docker stop kreed_api && sudo docker rm kreed_api || true
-          #
-          #   # Remove old Docker image
-          #   sudo docker images -q kreed_api:latest | grep -q . && sudo docker rmi kreed_api:latest || true
-          #
-          #   # Build Docker image
-          #   sudo docker build --no-cache -t kreed_api:latest .
-          #
-          #     # Ensure Redis container is running and attached to the network
-          #   if ! sudo docker ps -q --filter "name=redis" | grep -q . ; then
-          #     sudo docker run -d --name redis --network kreed -p 6379:6379 redis:alpine
-          #   else
-          #     sudo docker network connect kreed redis || true
-          #   fi
-          #
-          #   # Run the newly built Docker image and connect it to the same network as Redis
-          #   sudo docker run -d --name kreed_api --network kreed -p 3000:3000 kreed_api:latest
-          #
-          #   # Optionally restart Caddy (if needed)
-          #     #
-          #     #
+        - name: Push image to DigitalOcean Container Registry
+          run: docker push registry.digitalocean.com/kreed-container/kreed:$(echo $GITHUB_SHA | head -c7)
