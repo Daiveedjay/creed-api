@@ -26,7 +26,26 @@ jobs:
           username: kreed
           password: ${{ secrets.DROPLET_PASSWORD }}
           script: |
-            rm -f .env && touch .env
+            # Set project directory
+            PROJECT_DIR="/home/${{ secrets.VPS_USER }}/app"
+
+            # Clone the repository if it doesn't exist
+            if [ ! -d "$PROJECT_DIR" ]; then
+              git clone https://github.com/Daiveedjay/creed-api.git "$PROJECT_DIR"
+            fi
+
+            cd "$PROJECT_DIR"
+
+            # Pull latest changes
+            git reset --hard
+            git pull origin main
+
+            # Check for .env file and recreate it
+            if [ -f ".env" ]; then
+              rm .env
+            fi
+
+            touch .env
             echo "PORT=3000" >> ".env"
             echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
