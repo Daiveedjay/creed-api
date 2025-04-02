@@ -20,15 +20,13 @@ jobs:
 
 
       - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@main
-        env: # Or as an environment variable
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        uses: appleboy/ssh-action@master
         with:
-          host: 64.23.167.133
+          host: 137.184.83.80
           username: kreed
-          password: 152001
+          password: ${{ secrets.DROPLET_PASSWORD }}
           script: |
-            rm .env && touch .env
+            rm -f .env && touch .env
             echo "PORT=3000" >> ".env"
             echo -e "PORT=3000\nDATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ".env"
@@ -47,6 +45,8 @@ jobs:
             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ".env"
             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ".env"
             echo "AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }}" >> ".env"
+
+            echo ".env file successfully created."
 
             # Create Docker network if not exists
             if ! sudo docker network ls | grep -q "kreed" ; then

@@ -1,6 +1,0 @@
-name: kreed
-services:
-- name: kreed
-  github:
-    branch: main
-    repo: Daiveedjay/creed-api
