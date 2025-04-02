@@ -57,7 +57,7 @@ jobs:
         - Build-and-push-image
       steps:
         - name: Build container image
-          run: docker compose up -d
+          run: docker build -t registry.digitalocean.com/kreed-container/kreed:$(echo $GITHUB_SHA | head -c7) .
 
         - name: Log in to DigitalOcean Container Registry with short-lived credentials
           run: doctl registry login --expiry-seconds 1200
