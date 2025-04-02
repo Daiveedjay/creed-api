@@ -4,9 +4,6 @@ FROM node:20-alpine
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
 
-# Install dependencies required for Prisma
-RUN apk add --no-cache openssl1.1-compat
-
 # Install app dependencies
 RUN npm install
 
