@@ -1,3 +1,4 @@
+name: kreed
 services:
 - name: kreed
   github:
