@@ -64,9 +64,10 @@ jobs:
           AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
         with:
           token: ${{ secrets.DGO_SECRET_TOKEN }}
+
+      - name: Run Docker Test
         run: |
-            sudo docker run hello-world
-     
+          sudo docker run hello-world
       # - name: Push image to DigitalOcean Container Registry
       #   run: docker push registry.digitalocean.com/kreed-container:$(echo $GITHUB_SHA | head -c7)    
           # script: |
