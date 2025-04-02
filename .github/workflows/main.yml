@@ -27,7 +27,7 @@ jobs:
           password: ${{ secrets.DROPLET_PASSWORD }}
           script: |
             # Set project directory
-            PROJECT_DIR="/home/${{ secrets.VPS_USER }}/app"
+            PROJECT_DIR="/home/kreed/app"
 
             # Clone the repository if it doesn't exist
             if [ ! -d "$PROJECT_DIR" ]; then
