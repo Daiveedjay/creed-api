@@ -20,26 +20,14 @@ jobs:
 
 
       - name: Deploy to Server
-        uses: appleboy/ssh-action@master
+        uses: easingthemes/ssh-deploy@main
         with:
-          host: 137.184.83.80
-          username: kreed
-          password: ${{ secrets.DROPLET_PASSWORD }}
-          script: |
-            # Set project directory
-            PROJECT_DIR="/home/kreed/app"
-
-            # Clone the repository if it doesn't exist
-            if [ ! -d "$PROJECT_DIR" ]; then
-              git clone https://github.com/Daiveedjay/creed-api.git "$PROJECT_DIR"
-            fi
-
-            cd "$PROJECT_DIR"
-
-            # Pull latest changes
-            git reset --hard
-            git pull origin main
-
+          REMOTE_HOST: 137.184.83.80
+          EXCLUDE: "/dist/, /node_modules/"
+          REMOTE_USER: kreed
+          SSH_PRIVATE_KEY: ${{ secrets.DGO_SSH_KEY }}
+          SCRIPT_BEFORE: ls
+          SCRIPT_AFTER: |
             # Check for .env file and recreate it
             if [ -f ".env" ]; then
               rm .env
