@@ -25,7 +25,7 @@ jobs:
           host: ${{ secrets.HOSTINGER_HOST}}
           username: ${{ secrets.HOSTINGER_USERNAME }}
           password: ${{ secrets.HOSTINGER_SSH_KEY }}
-          port: ${{secrets.HOSTINGER_PORT}}
+          port: ${{ secrets.HOSTINGER_PORT }}
           script: |
             # Check for .env file and recreate it
             if [ -f ".env" ]; then
