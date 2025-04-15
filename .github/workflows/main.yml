@@ -20,11 +20,12 @@ jobs:
 
 
       - name: Deploy to Server
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: 82.25.101.243
           username: kreed
           password: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: 22,
           script: |
             # Check for .env file and recreate it
             if [ -f ".env" ]; then
