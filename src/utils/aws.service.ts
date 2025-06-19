@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { Upload } from '@aws-sdk/lib-storage';
+import { v2 as cloudinary } from 'cloudinary';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { DbService } from './db.service';
 
@@ -13,6 +13,13 @@ export class AWSService {
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     }
   });
+
+  private readonly cloudinaryClient = cloudinary.config({
+    cloud_name: 'brownson',
+    api_key: '491131249681159',
+    api_secret: 'gqwnc-x5_WDwrVk5FvrWWxhKfTk' // Click 'View API Keys' above to copy your API secret
+  });
+
   constructor(
     private readonly dbService: DbService
   ) { }
@@ -22,31 +29,19 @@ export class AWSService {
     url: string,
     key: string
   }> {
-    const rearrangedName = encodeURI(file.originalname)
-    const key = `profile-pictures/${rearrangedName}`
-    const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: key,
-      Body: file.buffer,
-    }
+    const uploadRes = await this.cloudinaryClient.v2.uploader
+      .upload(file.path, {
+        public_id: `${file.filename}`,
+        overwrite: true,
+        //notification_url: "https://mysite.example.com/notify_endpoint"
+      })
 
-    try {
-      const command = new PutObjectCommand(params)
-      await this.s3Client.send(command);
-      const url = await this.getUrl(key)
+    console.log(uploadRes)
 
-      return {
-        success: true,
-        url,
-        key: key
-      };
-    } catch (error) {
-      console.log(error)
-      return {
-        success: false,
-        url: 'Could not save to s3',
-        key: ''
-      }
+    return {
+      success: true,
+      url: 'Success',
+      key: 'key'
     }
   }
 
@@ -90,4 +85,32 @@ export class AWSService {
     return await getSignedUrl(this.s3Client, command);
   }
 }
+
+//
+//const rearrangedName = encodeURI(file.originalname)
+//const key = `profile-pictures/${rearrangedName}`
+//const params = {
+//  Bucket: process.env.AWS_S3_BUCKET_NAME,
+//  Key: key,
+//  Body: file.buffer,
+//}
+//
+//try {
+//  const command = new PutObjectCommand(params)
+//  await this.s3Client.send(command);
+//  const url = await this.getUrl(key)
+//
+//  return {
+//    success: true,
+//    url,
+//    key: key
+//  };
+//} catch (error) {
+//  console.log(error)
+//  return {
+//    success: false,
+//    url: 'Could not save to s3',
+//    key: ''
+//  }
+//}
 
