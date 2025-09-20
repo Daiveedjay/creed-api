@@ -27,6 +27,7 @@ export class AWSService {
   public async uploadFile(file: Express.Multer.File): Promise<{
     success: boolean,
     url: string,
+    key: string,
   }> {
     const buffer = file.buffer
     // const buffer = Buffer.from()
@@ -44,7 +45,8 @@ export class AWSService {
 
     return {
       success: true,
-      url: result.secure_url
+      url: result.secure_url,
+      key: result.id
     }
   }
 
