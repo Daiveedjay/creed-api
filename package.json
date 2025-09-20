@@ -52,7 +52,7 @@
     "google-auth-library": "^9.7.0",
     "ioredis": "^5.4.1",
     "nestjs-redis-fork": "^9.0.5",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^6.10.1",
     "otp-agent": "^3.0.3",
     "passport-google-oauth20": "^2.0.0",
     "redis": "^4.7.0",

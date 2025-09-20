@@ -5,9 +5,9 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { DbService } from './db.service';
 
 cloudinary.config({
-  cloud_name: 'brownson',
-  api_key: '491131249681159',
-  api_secret: 'gqwnc-x5_WDwrVk5FvrWWxhKfTk' // Click 'View API Keys' above to copy your API secret
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 @Injectable()
@@ -46,7 +46,7 @@ export class AWSService {
     return {
       success: true,
       url: result.secure_url,
-      key: result.id
+      key: result.public_id
     }
   }
 
@@ -61,16 +61,18 @@ export class AWSService {
         }
       })
 
-      const deleteObjectCommand = new DeleteObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: user.profilePictureKey
-      })
+      const result = await cloudinary.uploader.destroy(user.profilePictureKey);
 
-      await this.s3Client.send(deleteObjectCommand)
+      if (result === 'ok') {
+        return {
+          success: true,
+          message: result
+        }
+      }
 
       return {
-        success: true,
-        message: 'Picture successfully deleted!'
+        success: false,
+        message: "Failed to delete profile picture"
       }
     } catch (error) {
       console.log(error)

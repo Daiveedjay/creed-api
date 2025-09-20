@@ -29,7 +29,7 @@ import { BullModule } from '@nestjs/bull';
   imports: [
     RedisModule.forRoot({
       config: {
-        //host: 'redis',
+        // host: 'redis',
         host: '127.0.0.1', // Redis server host
         port: 6379,
         db: 0
