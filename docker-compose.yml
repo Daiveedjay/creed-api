@@ -1,14 +1,12 @@
+
 version: '3'
 services:
   kreed:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    image: kreed-api:latest
+    image: daiveed/kreed:latest
     networks:
-        - kreed
+      - kreed
     ports:
-      - "80:80"
+      - '3000:3000'
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -19,20 +17,33 @@ services:
   database:
     image: postgres:alpine
     networks:
-        - kreed
+      - kreed
     environment:
-      POSTGRES_USER: krreddb
-      POSTGRES_PASSWORD: krreddb
-      POSTGRES_DB: kreeddb
+      DATABASE_URL: postgresql://kreed-backend_owner:npg_XXX@ep-little-leaf-a1bhgzms-pooler.ap-southeast-1.aws.neon.tech/kreed-backend?sslmode=require
 
   redis:
     image: redis:alpine
     networks:
       - kreed
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis-data:/data
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    networks:
+      - kreed
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - my-app
+    restart: unless-stopped
 
 networks:
   kreed:
@@ -40,4 +51,6 @@ networks:
 
 volumes:
   redis-data:
+  caddy_data:
+  caddy_config:
 

@@ -4,6 +4,12 @@ import { v2 as cloudinary } from 'cloudinary';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { DbService } from './db.service';
 
+cloudinary.config({
+  cloud_name: 'brownson',
+  api_key: '491131249681159',
+  api_secret: 'gqwnc-x5_WDwrVk5FvrWWxhKfTk' // Click 'View API Keys' above to copy your API secret
+});
+
 @Injectable()
 export class AWSService {
   private readonly s3Client = new S3Client({
@@ -14,12 +20,6 @@ export class AWSService {
     }
   });
 
-  private readonly cloudinaryClient = cloudinary.config({
-    cloud_name: 'brownson',
-    api_key: '491131249681159',
-    api_secret: 'gqwnc-x5_WDwrVk5FvrWWxhKfTk' // Click 'View API Keys' above to copy your API secret
-  });
-
   constructor(
     private readonly dbService: DbService
   ) { }
@@ -27,21 +27,24 @@ export class AWSService {
   public async uploadFile(file: Express.Multer.File): Promise<{
     success: boolean,
     url: string,
-    key: string
   }> {
-    const uploadRes = await this.cloudinaryClient.v2.uploader
-      .upload(file.path, {
-        public_id: `${file.filename}`,
-        overwrite: true,
-        //notification_url: "https://mysite.example.com/notify_endpoint"
-      })
+    const buffer = file.buffer
+    // const buffer = Buffer.from()
 
-    console.log(uploadRes)
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'uploads' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      stream.end(buffer);
+    }) as any;
 
     return {
       success: true,
-      url: 'Success',
-      key: 'key'
+      url: result.secure_url
     }
   }
 
