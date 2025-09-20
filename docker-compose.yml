@@ -1,0 +1,43 @@
+version: '3'
+services:
+  kreed:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: kreed-api:latest
+    networks:
+        - kreed
+    ports:
+      - "80:80"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+      - database
+
+  database:
+    image: postgres:alpine
+    networks:
+        - kreed
+    environment:
+      POSTGRES_USER: krreddb
+      POSTGRES_PASSWORD: krreddb
+      POSTGRES_DB: kreeddb
+
+  redis:
+    image: redis:alpine
+    networks:
+      - kreed
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+networks:
+  kreed:
+    driver: bridge
+
+volumes:
+  redis-data:
+

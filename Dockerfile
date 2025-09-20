@@ -9,9 +9,10 @@ RUN npm install
 
 # Bundle app source
 COPY . .
-COPY .env ./
+COPY .env .env
 
 # Creates a "dist" folder with the production build
+RUN npx prisma generate
 RUN npx prisma db push
 RUN npm run build
 
@@ -19,5 +20,5 @@ RUN npm run build
 EXPOSE 3000
 
 # Start the server using the production build
-# CMD ["npm", "start"]
+# CMD ["npm", "run", "start"]
 CMD ["node", "dist/main"]
