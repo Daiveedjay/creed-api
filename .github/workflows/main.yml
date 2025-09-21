@@ -3,7 +3,7 @@ name: Deploy application
 on:
   push:
     branches:
-      - main
+      - brown
 
 jobs:
   deploy:
@@ -17,7 +17,6 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.0
@@ -81,5 +80,3 @@ jobs:
             # Optionally restart Caddy (if needed)
             #
             #
-
-

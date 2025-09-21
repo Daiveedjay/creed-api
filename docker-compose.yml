@@ -1,10 +1,12 @@
-
 version: '3'
 services:
   kreed:
     image: daiveed/kreed:latest
     networks:
       - kreed
+    restart: always
+    env_file:
+      - .env
     ports:
       - '3000:3000'
     environment:
@@ -12,7 +14,6 @@ services:
       - REDIS_PORT=6379
     depends_on:
       - redis
-      - database
 
   database:
     image: postgres:alpine
@@ -53,4 +54,3 @@ volumes:
   redis-data:
   caddy_data:
   caddy_config:
-
