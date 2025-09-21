@@ -3,6 +3,7 @@ FROM node:20-alpine
 
 # Install openssl & tools for Prisma
 RUN apk add --no-cache openssl
+RUN apk add --no-cache jq
 
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
