@@ -10,6 +10,8 @@ RUN npm install
 # Bundle app source
 COPY . .
 # COPY .env .env
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 
 # Creates a "dist" folder with the production build
 RUN npx prisma generate
