@@ -5,6 +5,6 @@ export class AppController {
 
   @Get()
   homeController(): string {
-    return 'Creed API is live';
+    return 'Creed API from CI/CD is live';
   }
 }
