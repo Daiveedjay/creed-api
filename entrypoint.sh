@@ -1,17 +1,16 @@
 #!/bin/sh
 set -e
 
-echo "Checking for pending Prisma migrations..."
+# echo "Checking for pending Prisma migrations..."
 
-# Check if the _prisma_migrations table exists and has unapplied migrations
-HAS_PENDING=$(npx prisma migrate status --schema prisma/schema.prisma --json | jq '.executed === .applied ? "no" : "yes"')
+# PENDING=$(npx prisma migrate status --schema=prisma/schema.prisma | grep "Following migration have not yet been applied:" | wc -l)
 
-if [ "$HAS_PENDING" = "yes" ]; then
-  echo "Pending migrations found. Running migrate deploy..."
-  npx prisma migrate deploy
-else
-  echo "No pending migrations. Skipping."
-fi
+# if [ "$PENDING" -eq 1 ]; then
+#   echo "Pending migrations found. Running migrate deploy..."
+#   npx prisma migrate deploy
+# else
+#   echo "No pending migrations. Skipping."
+# fi
 
 echo "Starting application..."
 exec node dist/main
