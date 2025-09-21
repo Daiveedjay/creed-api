@@ -1,6 +1,9 @@
 # Base image
 FROM node:20-alpine
 
+# Install openssl & tools for Prisma
+RUN apk add --no-cache openssl
+
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
 
@@ -15,8 +18,8 @@ ENV DATABASE_URL=$DATABASE_URL
 
 # Creates a "dist" folder with the production build
 RUN npx prisma generate
-RUN npx prisma db push
 RUN npm run build
+RUN npx prisma migrate deploy
 
 # Expose the port on which the app will run
 EXPOSE 3000
