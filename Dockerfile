@@ -6,6 +6,8 @@ RUN apk add --no-cache openssl
 
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 COPY package*.json ./
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 # Install app dependencies
 RUN npm install
