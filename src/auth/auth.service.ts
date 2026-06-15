@@ -19,7 +19,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { AnalyticsService } from 'src/analytics/analytics.service';
 import { EmailService } from 'src/utils/email.service';
 import { UserService } from 'src/user/user.service';
-import { InjectRedis } from 'nestjs-redis-fork';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { Redis } from "ioredis";
 import { admin } from 'src/lib/firebase';
 

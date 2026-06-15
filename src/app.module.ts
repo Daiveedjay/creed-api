@@ -21,13 +21,14 @@ import { AnalyticsController } from './analytics/analytics.controller';
 import { AnnouncementsController } from './announcements/announcements.controller';
 import { TaskController } from './task/task.controller';
 import { StatusController } from './status/status.controller';
-import { RedisModule } from 'nestjs-redis-fork';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
     RedisModule.forRoot({
-      config: {
+      type: 'single',
+      options: {
         host: 'redis',
         // host: '127.0.0.1', // Redis server host
         port: 6379,

@@ -36,3 +36,5 @@ lerna-debug.log*
 
 # custom
 .env
+# Iris cache
+.iris-cache/

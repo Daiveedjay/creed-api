@@ -1,6 +1,6 @@
 import { Injectable, MethodNotAllowedException } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { InjectRedis } from 'nestjs-redis-fork';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { DbService } from './db.service';
 import { Socket } from 'socket.io';
 import { Params } from 'src/notification/notification.gateway';
